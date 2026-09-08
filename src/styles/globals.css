@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Playfair+Display:ital,wght@0,400..700;1,400..600&family=Be+Vietnam+Pro:wght@300;400;500;600&family=Dancing+Script:wght@500;600;700&display=swap');
+@import 'tailwindcss';
+@import './tokens.css';
+@import './animations.css';
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink);
+  color: var(--color-cream);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-rose-deep);
+  color: var(--color-cream);
+}
+
+/* Hide scrollbar until scrolling */
+html {
+  scrollbar-width: none;
+}
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Hero Vietnam Map Responsive Scaling */
+.hero-map-wrapper {
+  height: 380px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-map-stage {
+  transform: scale(0.68);
+  transform-origin: center center;
+}
+
+@media (min-width: 640px) {
+  .hero-map-wrapper {
+    height: 430px;
+  }
+  .hero-map-stage {
+    transform: scale(0.78);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-map-wrapper {
+    height: 480px;
+    max-width: 360px;
+  }
+  .hero-map-stage {
+    transform: scale(0.88);
+  }
+}
+
+/* Custom Cat Paw Cursor: Hide default mouse pointer on desktop fine devices */
+@media (pointer: fine) {
+  body.custom-cursor-enabled,
+  body.custom-cursor-enabled * {
+    cursor: none !important;
+  }
+}
+
+

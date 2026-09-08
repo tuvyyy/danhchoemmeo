@@ -1,0 +1,495 @@
+import { useEffect, useRef, useState } from "react";
+
+interface TrailParticle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  alpha: number;
+  decay: number;
+  color: string;
+  type: "heart" | "star" | "bubble";
+  rotation: number;
+  rotSpeed: number;
+}
+
+const TRAIL_COLORS = [
+  "rgba(244, 143, 177, ", // rose pink
+  "rgba(231, 185, 106, ", // warm gold
+  "rgba(255, 182, 193, ", // light pink
+  "rgba(255, 235, 180, ", // pale gold
+];
+
+export default function CustomCursor() {
+  const [enabled, setEnabled] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isClicking, setIsClicking] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  const cursorRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Position state with lerp for silky smooth movement
+  const mousePos = useRef({ x: -100, y: -100 });
+  const currentPos = useRef({ x: -100, y: -100 });
+  const lastSpawnPos = useRef({ x: -100, y: -100 });
+  const particles = useRef<TrailParticle[]>([]);
+
+  useEffect(() => {
+    // Only enable for desktop pointer devices with fine control (mouse / trackpad)
+    const isTouch =
+      window.matchMedia("(pointer: coarse)").matches ||
+      "ontouchstart" in window ||
+      navigator.maxTouchPoints > 0;
+
+    if (isTouch) return;
+
+    setEnabled(true);
+    document.body.classList.add("custom-cursor-enabled");
+
+    const onMouseMove = (e: MouseEvent) => {
+      mousePos.current.x = e.clientX;
+      mousePos.current.y = e.clientY;
+      setIsVisible(true);
+
+      // Robust hover detection via elementFromPoint
+      const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+      if (el) {
+        const isClickable =
+          el.tagName === "BUTTON" ||
+          el.tagName === "A" ||
+          el.getAttribute("role") === "button" ||
+          el.getAttribute("tabindex") !== null ||
+          el.closest("button") !== null ||
+          el.closest("a") !== null ||
+          el.closest('[role="button"]') !== null ||
+          window.getComputedStyle(el).cursor === "pointer";
+        setIsHovering(!!isClickable);
+      } else {
+        setIsHovering(false);
+      }
+
+      // Check distance from last particle spawn to create a steady fairy-dust trail
+      const dx = e.clientX - lastSpawnPos.current.x;
+      const dy = e.clientY - lastSpawnPos.current.y;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist > 14) {
+        lastSpawnPos.current = { x: e.clientX, y: e.clientY };
+
+        // Spawn 1 or 2 gentle trail sparkles / hearts
+        const count = Math.random() > 0.6 ? 2 : 1;
+        for (let k = 0; k < count; k++) {
+          const colorBase =
+            TRAIL_COLORS[Math.floor(Math.random() * TRAIL_COLORS.length)];
+          const types: ("heart" | "star" | "bubble")[] = [
+            "star",
+            "heart",
+            "star",
+            "bubble",
+          ];
+          const type = types[Math.floor(Math.random() * types.length)];
+
+          particles.current.push({
+            x: e.clientX + (Math.random() * 12 - 6),
+            y: e.clientY + (Math.random() * 12 - 6),
+            vx: (Math.random() - 0.5) * 1.2,
+            vy: Math.random() * 0.9 + 0.4, // gently drift downward like stardust
+            size: type === "heart" ? 9 + Math.random() * 4 : 7 + Math.random() * 5,
+            alpha: 1,
+            decay: 0.014 + Math.random() * 0.008, // lasts ~1.2s
+            color: colorBase,
+            type,
+            rotation: Math.random() * Math.PI * 2,
+            rotSpeed: (Math.random() - 0.5) * 0.08,
+          });
+        }
+
+        // Cap maximum particles
+        if (particles.current.length > 50) {
+          particles.current.shift();
+        }
+      }
+    };
+
+    const onMouseDown = (e: MouseEvent) => {
+      setIsClicking(true);
+
+      // Burst of hearts and stars on click
+      for (let i = 0; i < 10; i++) {
+        const angle = (i / 10) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+        const speed = 2.4 + Math.random() * 2.8;
+        const colorBase =
+          TRAIL_COLORS[Math.floor(Math.random() * TRAIL_COLORS.length)];
+
+        particles.current.push({
+          x: e.clientX,
+          y: e.clientY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          size: Math.random() > 0.4 ? 10 : 8,
+          alpha: 1,
+          decay: 0.02 + Math.random() * 0.01,
+          color: colorBase,
+          type: Math.random() > 0.35 ? "heart" : "star",
+          rotation: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.15,
+        });
+      }
+    };
+
+    const onMouseUp = () => {
+      setIsClicking(false);
+    };
+
+    const onMouseLeave = () => {
+      setIsVisible(false);
+    };
+
+    const onMouseEnter = () => {
+      setIsVisible(true);
+    };
+
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    window.addEventListener("mousedown", onMouseDown, { passive: true });
+    window.addEventListener("mouseup", onMouseUp, { passive: true });
+    document.documentElement.addEventListener("mouseleave", onMouseLeave);
+    document.documentElement.addEventListener("mouseenter", onMouseEnter);
+
+    return () => {
+      document.body.classList.remove("custom-cursor-enabled");
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mouseup", onMouseUp);
+      document.documentElement.removeEventListener("mouseleave", onMouseLeave);
+      document.documentElement.removeEventListener("mouseenter", onMouseEnter);
+    };
+  }, []);
+
+  // Animation frame loop for cursor physics & particle rendering
+  useEffect(() => {
+    if (!enabled) return;
+
+    let animId: number;
+
+    const updateCanvasSize = () => {
+      if (canvasRef.current) {
+        const dpr = window.devicePixelRatio || 1;
+        canvasRef.current.width = window.innerWidth * dpr;
+        canvasRef.current.height = window.innerHeight * dpr;
+        canvasRef.current.style.width = `${window.innerWidth}px`;
+        canvasRef.current.style.height = `${window.innerHeight}px`;
+      }
+    };
+    updateCanvasSize();
+    window.addEventListener("resize", updateCanvasSize);
+
+    const drawHeart = (
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      size: number,
+      alpha: number,
+      color: string,
+    ) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = `${color}${alpha})`;
+      ctx.beginPath();
+      const topCurveHeight = size * 0.3;
+      ctx.moveTo(0, topCurveHeight);
+      ctx.bezierCurveTo(0, 0, -size / 2, 0, -size / 2, topCurveHeight);
+      ctx.bezierCurveTo(
+        -size / 2,
+        (size + topCurveHeight) / 2,
+        0,
+        (size + topCurveHeight) / 2 + size * 0.25,
+        0,
+        size,
+      );
+      ctx.bezierCurveTo(
+        0,
+        (size + topCurveHeight) / 2 + size * 0.25,
+        size / 2,
+        (size + topCurveHeight) / 2,
+        size / 2,
+        topCurveHeight,
+      );
+      ctx.bezierCurveTo(size / 2, 0, 0, 0, 0, topCurveHeight);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    };
+
+    const drawStar = (
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      size: number,
+      alpha: number,
+      color: string,
+      rotation: number,
+    ) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rotation);
+      ctx.fillStyle = `${color}${alpha})`;
+      ctx.beginPath();
+      for (let i = 0; i < 4; i++) {
+        ctx.lineTo(Math.cos(((i * 90) * Math.PI) / 180) * size, Math.sin(((i * 90) * Math.PI) / 180) * size);
+        ctx.lineTo(
+          Math.cos(((i * 90 + 45) * Math.PI) / 180) * (size * 0.28),
+          Math.sin(((i * 90 + 45) * Math.PI) / 180) * (size * 0.28),
+        );
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    };
+
+    const drawBubble = (
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      size: number,
+      alpha: number,
+      color: string,
+    ) => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+      ctx.fillStyle = `${color}${alpha})`;
+      ctx.shadowColor = `${color}0.8)`;
+      ctx.shadowBlur = 6;
+      ctx.fill();
+      ctx.restore();
+    };
+
+    const loop = () => {
+      // 1. Lerp cursor position for buttery feel
+      const ease = 0.45;
+      currentPos.current.x += (mousePos.current.x - currentPos.current.x) * ease;
+      currentPos.current.y += (mousePos.current.y - currentPos.current.y) * ease;
+
+      if (cursorRef.current) {
+        cursorRef.current.style.transform = `translate3d(${currentPos.current.x}px, ${currentPos.current.y}px, 0)`;
+      }
+
+      // 2. Render particle trail on canvas
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          const dpr = window.devicePixelRatio || 1;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+          for (let i = particles.current.length - 1; i >= 0; i--) {
+            const p = particles.current[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vx *= 0.96;
+            p.vy *= 0.96;
+            p.alpha -= p.decay;
+            p.rotation += p.rotSpeed;
+
+            if (p.alpha <= 0) {
+              particles.current.splice(i, 1);
+              continue;
+            }
+
+            if (p.type === "heart") {
+              drawHeart(ctx, p.x, p.y, p.size, p.alpha, p.color);
+            } else if (p.type === "star") {
+              drawStar(ctx, p.x, p.y, p.size, p.alpha, p.color, p.rotation);
+            } else {
+              drawBubble(ctx, p.x, p.y, p.size, p.alpha, p.color);
+            }
+          }
+        }
+      }
+
+      animId = requestAnimationFrame(loop);
+    };
+
+    animId = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", updateCanvasSize);
+    };
+  }, [enabled]);
+
+  if (!enabled) return null;
+
+  return (
+    <>
+      {/* Background canvas for smooth sparkle & heart particle trail */}
+      <canvas
+        ref={canvasRef}
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-[9998]"
+      />
+
+      {/* Interactive Cat Paw Cursor */}
+      <div
+        ref={cursorRef}
+        aria-hidden
+        className="pointer-events-none fixed left-0 top-0 z-[9999] will-change-transform"
+        style={{
+          opacity: isVisible ? 1 : 0,
+          transition: "opacity 0.25s ease-out",
+        }}
+      >
+        <div
+          className="relative select-none transition-transform duration-150 ease-out"
+          style={{
+            // Hotspot adjustment: top-left pointing toe pad touches exact click coordinate (0, 0)
+            transform: `translate(-7px, -5px) scale(${
+              isClicking ? 0.84 : isHovering ? 1.22 : 1
+            }) rotate(${isClicking ? -22 : isHovering ? -6 : -14}deg)`,
+            transformOrigin: "7px 5px",
+            filter: isHovering
+              ? "drop-shadow(0 0 14px rgba(255,105,180,0.85)) drop-shadow(0 0 4px rgba(255,215,0,0.6))"
+              : isClicking
+              ? "drop-shadow(0 0 16px rgba(255,64,129,0.9))"
+              : "drop-shadow(0 3px 8px rgba(0,0,0,0.45)) drop-shadow(0 1px 4px rgba(244,143,177,0.5))",
+          }}
+        >
+          <svg
+            width="34"
+            height="34"
+            viewBox="0 0 34 34"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Outer Paw Cushion Silhouette (Warm white cream with strawberry glow) */}
+            <path
+              d="M7 15C5 18 4 23 6 27C8 31 13 33 18 33C23 33 28 31 30 27C32 23 31 18 29 15C27 12 24 11 21 12C19 9 15 9 13 12C10 11 8 12 7 15Z"
+              fill="#fffafc"
+              stroke="#ffb6c1"
+              strokeWidth="1.6"
+              strokeLinejoin="round"
+            />
+
+            {/* Central Heart Palm Pad (Đệm thịt chính giữa) */}
+            <path
+              d="M18 28.5C14.5 28.5 12 25.5 12 22.5C12 19.8 14.5 17.8 18 19.2C21.5 17.8 24 19.8 24 22.5C24 25.5 21.5 28.5 18 28.5Z"
+              fill="url(#catPadGrad)"
+            />
+            {/* Heart highlight shine */}
+            <path
+              d="M15.5 21C14.5 21.5 13.5 23 13.5 24"
+              stroke="#ffffff"
+              strokeWidth="0.8"
+              strokeLinecap="round"
+              opacity="0.65"
+            />
+
+            {/* 4 Little Toe Beans (4 đệm ngón xinh) */}
+            {/* Toe 1: Top-Left Pointing Toe (Tâm điểm bấm chuột) */}
+            <ellipse
+              cx="9"
+              cy="10.5"
+              rx="3.2"
+              ry="4"
+              transform="rotate(-22 9 10.5)"
+              fill="url(#catPadGrad)"
+            />
+            <ellipse
+              cx="8.2"
+              cy="9.8"
+              rx="1.2"
+              ry="1.8"
+              transform="rotate(-22 8.2 9.8)"
+              fill="#ffffff"
+              opacity="0.65"
+            />
+
+            {/* Toe 2: Middle-Left */}
+            <ellipse
+              cx="14.5"
+              cy="6.8"
+              rx="3.2"
+              ry="4.2"
+              transform="rotate(-6 14.5 6.8)"
+              fill="url(#catPadGrad)"
+            />
+            <ellipse
+              cx="13.8"
+              cy="6"
+              rx="1.2"
+              ry="1.8"
+              transform="rotate(-6 13.8 6)"
+              fill="#ffffff"
+              opacity="0.65"
+            />
+
+            {/* Toe 3: Middle-Right */}
+            <ellipse
+              cx="21"
+              cy="6.8"
+              rx="3.2"
+              ry="4.2"
+              transform="rotate(6 21 6.8)"
+              fill="url(#catPadGrad)"
+            />
+            <ellipse
+              cx="20.3"
+              cy="6"
+              rx="1.2"
+              ry="1.8"
+              transform="rotate(6 20.3 6)"
+              fill="#ffffff"
+              opacity="0.65"
+            />
+
+            {/* Toe 4: Right */}
+            <ellipse
+              cx="26.5"
+              cy="10.5"
+              rx="3.2"
+              ry="4"
+              transform="rotate(22 26.5 10.5)"
+              fill="url(#catPadGrad)"
+            />
+            <ellipse
+              cx="25.8"
+              cy="9.8"
+              rx="1.2"
+              ry="1.8"
+              transform="rotate(22 25.8 9.8)"
+              fill="#ffffff"
+              opacity="0.65"
+            />
+
+            {/* Gradient definition */}
+            <defs>
+              <linearGradient
+                id="catPadGrad"
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop offset="0%" stopColor="#ff7597" />
+                <stop offset="100%" stopColor="#e84a6f" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          {/* Tiny spark dot when hovering */}
+          {isHovering && (
+            <span
+              aria-hidden
+              className="absolute -top-1 -right-1 flex h-2 w-2 items-center justify-center text-[10px] text-gold animate-ping"
+            >
+              ✦
+            </span>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}

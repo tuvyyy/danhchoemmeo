@@ -1,0 +1,21 @@
+@theme {
+  --font-display: 'Cormorant Garamond', 'Playfair Display', serif;
+  --font-serif: 'Cormorant Garamond', serif;
+  --font-body: 'Be Vietnam Pro', sans-serif;
+  --font-hand: 'Dancing Script', cursive;
+
+  --color-ink: #0a0708;
+  --color-ink-soft: #141013;
+  --color-cream: #f4ece4;
+  --color-cream-dim: #b9ada2;
+  --color-gold: #e7b96a;
+  --color-gold-deep: #b8873a;
+  --color-rose: #e18aa0;
+  --color-rose-deep: #a63c56;
+  --color-wine: #3a1420;
+}
+
+:root {
+  --background: var(--color-ink);
+  --foreground: var(--color-cream);
+}

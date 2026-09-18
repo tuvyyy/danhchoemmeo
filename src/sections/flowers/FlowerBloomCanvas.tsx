@@ -18,6 +18,7 @@ interface FlowerBloomCanvasProps {
   isSecondary?: boolean;
   delayMs?: number;
   durationMs?: number;
+  baseRotation?: number;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -33,6 +34,7 @@ export default function FlowerBloomCanvas({
   isSecondary = false,
   delayMs = 0,
   durationMs = DEFAULT_BLOOM_DURATION_MS,
+  baseRotation = 0,
   className,
   style,
 }: FlowerBloomCanvasProps) {
@@ -44,6 +46,8 @@ export default function FlowerBloomCanvas({
   const startTimeRef = useRef<number | null>(null);
   const rafIdRef = useRef<number | null>(null);
   const isPlayingRef = useRef<boolean>(false);
+  const elapsedRef = useRef(0);
+  const [isFullyOpen, setIsFullyOpen] = useState(hasBloomed);
 
   // Milestone triggers
   const quoteTriggeredRef = useRef<boolean>(false);
@@ -126,13 +130,13 @@ export default function FlowerBloomCanvas({
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (prefersReducedMotion || !containerRef.current) return;
+    if (prefersReducedMotion || !isActive || !isFullyOpen || !containerRef.current) return;
 
     const ctx = gsap.context(() => {
       if (isSecondary) {
         gsap.to(containerRef.current, {
-          rotation: -0.65,
-          x: -2,
+          rotation: baseRotation - 0.3,
+          x: -0.5,
           duration: 8.8,
           delay: 0.5,
           ease: "sine.inOut",
@@ -141,8 +145,8 @@ export default function FlowerBloomCanvas({
         });
       } else {
         gsap.to(containerRef.current, {
-          rotation: 0.45,
-          x: 2,
+          rotation: baseRotation + 0.25,
+          x: 0.5,
           duration: 7.6,
           ease: "sine.inOut",
           yoyo: true,
@@ -152,14 +156,16 @@ export default function FlowerBloomCanvas({
     }, containerRef);
 
     return () => ctx.revert();
-  }, [isSecondary]);
+  }, [isSecondary, isActive, isFullyOpen, baseRotation]);
 
   // ── 2. Ensure initial frame (001) and final frame (060) are quickly ready ──
   useEffect(() => {
+    let cancelled = false;
     // Standalone preloading for instant placeholder and instant reduced motion
     const img001 = new Image();
     img001.src = getBloomFrameUrl(1);
     img001.onload = () => {
+      if (cancelled) return;
       try {
         initialFrameImgRef.current = createKeyedBloomFrame(img001);
       } catch {
@@ -173,6 +179,7 @@ export default function FlowerBloomCanvas({
     const img060 = new Image();
     img060.src = getBloomFrameUrl(60);
     img060.onload = () => {
+      if (cancelled) return;
       try {
         finalFrameImgRef.current = createKeyedBloomFrame(img060);
       } catch {
@@ -185,6 +192,7 @@ export default function FlowerBloomCanvas({
 
     // Preload full sequence
     preloadBloomSequence().then((images) => {
+      if (cancelled) return;
       cachedFramesRef.current = images;
       setFramesReady(true);
       if (hasBloomed) {
@@ -193,6 +201,11 @@ export default function FlowerBloomCanvas({
         drawFrame(0);
       }
     });
+    return () => {
+      cancelled = true;
+      img001.onload = null;
+      img060.onload = null;
+    };
   }, [hasBloomed]);
 
   // ── 3. Chapter Lifecycle, RAF Playback & Timing ──
@@ -202,7 +215,8 @@ export default function FlowerBloomCanvas({
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // Return Visit: show frame 60 immediately, do not replay
-    if (hasBloomed) {
+    if (hasBloomed || completeTriggeredRef.current) {
+      setIsFullyOpen(true);
       currentFrameIndexRef.current = TOTAL_BLOOM_FRAMES - 1;
       drawFrame(TOTAL_BLOOM_FRAMES - 1);
       if (containerRef.current) {
@@ -224,6 +238,7 @@ export default function FlowerBloomCanvas({
 
     // Reduced Motion: immediate final frame, no animation
     if (prefersReducedMotion) {
+      setIsFullyOpen(true);
       currentFrameIndexRef.current = TOTAL_BLOOM_FRAMES - 1;
       drawFrame(TOTAL_BLOOM_FRAMES - 1);
       if (containerRef.current) {
@@ -249,22 +264,24 @@ export default function FlowerBloomCanvas({
       return;
     }
 
+    if (!framesReady) return;
+
     // First visit & active: begin continuous bloom playback
     if (!isPlayingRef.current) {
       isPlayingRef.current = true;
-      startTimeRef.current = performance.now();
+      startTimeRef.current = performance.now() - elapsedRef.current;
 
       // Ensure frame 1 is visible at start
-      drawFrame(0);
-      containerRef.current?.setAttribute("data-bloom-frame", "1");
+      drawFrame(currentFrameIndexRef.current);
+      containerRef.current?.setAttribute("data-bloom-frame", String(currentFrameIndexRef.current + 1));
 
       const tick = (now: number) => {
         if (!startTimeRef.current) startTimeRef.current = now;
         const timeSinceStart = now - startTimeRef.current;
+        elapsedRef.current = timeSinceStart;
 
         // Staggered delay: wait at bud frame 0 until delayMs has elapsed
         if (timeSinceStart < delayMs) {
-          drawFrame(0);
           if (containerRef.current) {
             containerRef.current.setAttribute("data-bloom-frame", "1");
           }
@@ -320,12 +337,6 @@ export default function FlowerBloomCanvas({
           onStageTriggerRef.current?.(4);
         }
 
-        // CTA threshold at >= 96% or sequence complete
-        if (progress >= 0.96 && !completeTriggeredRef.current) {
-          completeTriggeredRef.current = true;
-          onBloomCompleteRef.current?.();
-        }
-
         if (progress < 1) {
           rafIdRef.current = requestAnimationFrame(tick);
         } else {
@@ -337,6 +348,11 @@ export default function FlowerBloomCanvas({
             containerRef.current.setAttribute("data-bloom-complete", "true");
           }
           isPlayingRef.current = false;
+          setIsFullyOpen(true);
+          if (!completeTriggeredRef.current) {
+            completeTriggeredRef.current = true;
+            onBloomCompleteRef.current?.();
+          }
         }
       };
 
@@ -377,6 +393,7 @@ export default function FlowerBloomCanvas({
       className={className || defaultClass}
       style={{
         transformOrigin: "center bottom",
+        transform: `rotate(${baseRotation}deg)`,
         ...style,
       }}
     >

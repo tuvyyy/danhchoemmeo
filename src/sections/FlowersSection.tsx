@@ -1,25 +1,75 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import { useChapterLifecycle } from "@/chapters/useChapterLifecycle";
 import FlowerBloomCanvas from "./flowers/FlowerBloomCanvas";
-import FloatingPetals from "./flowers/FloatingPetals";
+import TulipBloom, { preloadTulipSequence } from "./flowers/TulipBloom";
+import FlowerAtmosphere from "./flowers/FlowerAtmosphere";
+import { preloadBloomSequence } from "@/lib/assets/preloadBloomSequence";
+
+const easeOut = [0.22, 1, 0.36, 1] as const;
+const TULIPS = [
+  { id: "tulip-1", x: 43, y: 1, scale: 0.48, rotate: -6, delay: 1400, depth: "foreground" },
+  { id: "tulip-2", x: 79, y: -5, scale: 0.53, rotate: 5, delay: 1950, depth: "foreground" },
+  { id: "tulip-3", x: 88, y: 11, scale: 0.43, rotate: -3, delay: 2500, depth: "background" },
+  { id: "tulip-gold-left", x: 38, y: -3, scale: 0.44, rotate: -9, delay: 1700, depth: "foreground", color: "butter" },
+  { id: "tulip-lavender-left", x: 47, y: 12, scale: 0.34, rotate: 7, delay: 2250, depth: "background", color: "lavender" },
+  { id: "tulip-coral-low", x: 59, y: -4, scale: 0.42, rotate: -7, delay: 1850, depth: "foreground", color: "coral" },
+  { id: "tulip-gold-low", x: 64, y: 3, scale: 0.32, rotate: 5, delay: 2350, depth: "midground", color: "butter" },
+  { id: "tulip-coral-right", x: 85, y: 3, scale: 0.4, rotate: -5, delay: 2050, depth: "foreground", color: "coral" },
+  { id: "tulip-lavender-right", x: 93, y: 10, scale: 0.32, rotate: 8, delay: 2600, depth: "background", color: "lavender" },
+  { id: "tulip-gold-edge", x: 33, y: -6, scale: 0.36, rotate: 6, delay: 2150, depth: "foreground", color: "butter" },
+  { id: "tulip-lavender-front", x: 46, y: -8, scale: 0.43, rotate: -4, delay: 2450, depth: "foreground", color: "lavender" },
+  { id: "tulip-coral-front", x: 73, y: -4, scale: 0.35, rotate: 8, delay: 2750, depth: "foreground", color: "coral" },
+  { id: "tulip-gold-right", x: 91, y: -2, scale: 0.38, rotate: -6, delay: 2300, depth: "foreground", color: "butter" },
+] as const;
+
+function MeadowLayer() {
+  return (
+    <div className="nature-bloom__meadow" aria-hidden="true">
+      <motion.img
+        src="/assets/flowers/nature/grass-airy-tall.png"
+        className="nature-bloom__grass nature-bloom__grass--left"
+        alt=""
+        animate={{ rotate: [-0.8, 0.8, -0.8], x: [-2, 3, -2] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <img
+        src="/assets/flowers/nature/grass-back-strip.png"
+        className="nature-bloom__grass nature-bloom__grass--strip"
+        alt=""
+      />
+      <motion.img
+        src="/assets/flowers/nature/grass-airy-tall.png"
+        className="nature-bloom__grass nature-bloom__grass--right"
+        alt=""
+        animate={{ rotate: [0.6, -0.6, 0.6], x: [2, -3, 2] }}
+        transition={{ duration: 9.5, repeat: Infinity, ease: "easeInOut" }}
+      />
+    </div>
+  );
+}
 
 export default function FlowersSection({ onComplete }: { onComplete: () => void }) {
   const { isActive } = useChapterLifecycle(1);
   const { flowers } = BIRTHDAY_DATA;
+  const completedFlowers = useRef(new Set<string>());
+  const [hasBloomed, setHasBloomed] = useState(false);
+  const [revealedStage, setRevealedStage] = useState(0);
+  const [isCtaReady, setIsCtaReady] = useState(false);
+  const [gardenReady, setGardenReady] = useState(false);
+  const tulips = TULIPS;
 
-  // Track bloom progression and revealed quadrant message stages (1..4)
-  const [hasBloomed, setHasBloomed] = useState<boolean>(false);
-  const [revealedStage, setRevealedStage] = useState<number>(0);
-  const [isCtaReady, setIsCtaReady] = useState<boolean>(false);
-
-  // Immediate availability for reduced-motion users
   useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
+    let cancelled = false;
+    Promise.all([preloadBloomSequence(), preloadTulipSequence()]).then(() => {
+      if (!cancelled) setGardenReady(true);
+    }).catch((error: unknown) => console.error("Garden assets failed to load", error));
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setHasBloomed(true);
       setRevealedStage(4);
       setIsCtaReady(true);
@@ -27,181 +77,117 @@ export default function FlowersSection({ onComplete }: { onComplete: () => void 
   }, []);
 
   const handleStageTrigger = useCallback((stage: number) => {
-    setRevealedStage((prev) => Math.max(prev, stage));
+    setRevealedStage((previous) => Math.max(previous, stage));
   }, []);
 
-  const handleBloomComplete = useCallback(() => {
-    setHasBloomed(true);
-    setRevealedStage(4);
-    setIsCtaReady(true);
-  }, []);
+  const handleBloomComplete = useCallback((flower: string) => {
+    completedFlowers.current.add(flower);
+    // Let every delayed bloom finish before holding the scene and revealing the CTA.
+    if (["lily-main", "lily-secondary", ...tulips.map(({ id }) => id)].every((id) => completedFlowers.current.has(id))) {
+      setHasBloomed(true);
+      setRevealedStage(4);
+      setIsCtaReady(true);
+    }
+  }, [tulips]);
 
-  const [msg1, msg2, msg3, msg4] = flowers.quadMessages;
+  const activeMessage = flowers.quadMessages[Math.max(0, revealedStage - 1)];
 
   return (
-    <section
-      className="relative flex min-h-screen min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden px-4 sm:px-6 transition-colors duration-700"
-      style={{
-        background:
-          "radial-gradient(125% 105% at 50% 45%, #240826 0%, #150518 50%, #08020a 100%)",
-      }}
-    >
-      {/* Chapter identifier badge */}
-      <div className="absolute top-12 sm:top-14 z-30 font-body text-[10px] uppercase tracking-[0.4em] text-gold/70">
-        {flowers.chapter}
-      </div>
+    <section className="nature-bloom">
+      <div className="nature-bloom__wash" aria-hidden="true" />
+      <div className="nature-bloom__grain" aria-hidden="true" />
+      <FlowerAtmosphere isActive={isActive && gardenReady} />
 
-      {/* ── Soft, seamless celestial bloom halo behind the centered flower ── */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[1] h-[520px] w-[520px] rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(244,143,177,0.14) 0%, rgba(231,185,106,0.06) 45%, transparent 70%)",
-          filter: "blur(60px)",
-        }}
-      />
+      <header className="nature-bloom__header">
+        <span>{flowers.chapter}</span>
+        <span>một khoảng trời cho em</span>
+      </header>
 
-      {/* ── CENTERPIECE: Single Magnificent 60-Frame Blooming Lily (Original Smooth Animation, Centered & Clean) ── */}
-      <div className="relative z-10 flex w-full max-w-4xl items-center justify-center my-auto py-6">
+      <motion.div
+        className="nature-bloom__intro"
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, ease: easeOut }}
+      >
+        <p className="nature-bloom__kicker">where the wind keeps our little secrets</p>
+        <h2>
+          Có những điều dịu dàng,
+          <em> cứ để gió kể thay.</em>
+        </h2>
+      </motion.div>
+
+      <div className="nature-bloom__flower-cluster" role="img" aria-label="Hai bông hoa ly hồng giữa vườn tulip trắng, vàng bơ, hồng san hô và tím lavender đang nở">
+        {tulips.map((tulip) => (
+          <TulipBloom key={tulip.id} {...tulip} isActive={isActive && gardenReady} hasBloomed={hasBloomed}
+            onBloomComplete={() => handleBloomComplete(tulip.id)} />
+        ))}
         <FlowerBloomCanvas
-          isActive={isActive}
+          className="nature-bloom__flower nature-bloom__flower--left"
+          isActive={isActive && gardenReady}
           hasBloomed={hasBloomed}
-          onStageTrigger={handleStageTrigger}
-          onBloomComplete={handleBloomComplete}
-          durationMs={4200}
+          isSecondary
+          baseRotation={-4}
+          onBloomComplete={() => handleBloomComplete("lily-secondary")}
+          delayMs={700}
+          durationMs={4300}
         />
+        <FlowerBloomCanvas
+          className="nature-bloom__flower nature-bloom__flower--main"
+          isActive={isActive && gardenReady}
+          hasBloomed={hasBloomed}
+          baseRotation={3}
+          onStageTrigger={handleStageTrigger}
+          onBloomComplete={() => handleBloomComplete("lily-main")}
+          delayMs={0}
+          durationMs={4600}
+        />
+
       </div>
 
-      {/* ── 4 Quadrant Message Boxes (symmetrically surrounding the centered flower) ── */}
-      {/* Box 1: Top Left (Stage 1) */}
-      <AnimatePresence>
-        {revealedStage >= 1 && msg1 && (
-          <motion.div
-            key="box-top-left"
-            data-layer="quad-msg-1"
-            initial={{ opacity: 0, x: -16, filter: "blur(4px)" }}
-            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute top-[12%] sm:top-[16%] md:top-[18%] left-3 sm:left-10 md:left-16 lg:left-24 z-20 max-w-[155px] sm:max-w-[280px] md:max-w-[340px] pointer-events-none"
-          >
-            <div className="flex flex-col items-start border-l-2 border-[#e05676] bg-gradient-to-r from-[#e05676]/15 via-[#e05676]/5 to-transparent pl-3 sm:pl-4 py-2 rounded-r-xl backdrop-blur-sm shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-              <span className="font-body text-[9px] sm:text-xs font-semibold tracking-[0.25em] text-[#f48fb1] uppercase mb-0.5 sm:mb-1">
-                {msg1.tag}
-              </span>
-              <p className="font-display text-[13px] sm:text-lg md:text-2xl font-light italic leading-snug text-[#fff4e6]">
-                {msg1.line1}
-                <br />
-                <span className="text-cream/90 font-normal">{msg1.line2}</span>
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="nature-bloom__message" aria-live="polite">
+        <AnimatePresence mode="wait">
+          {revealedStage > 0 && activeMessage ? (
+            <motion.div
+              key={activeMessage.id}
+              initial={{ opacity: 0, y: 12, filter: "blur(5px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
+              transition={{ duration: 0.7, ease: easeOut }}
+            >
+              <span>{activeMessage.tag} / 04</span>
+              <p>{activeMessage.line1}<br /><em>{activeMessage.line2}</em></p>
+            </motion.div>
+          ) : (
+            <motion.p key="waiting" initial={{ opacity: 0 }} animate={{ opacity: 0.55 }}>
+              chờ một chút, hoa đang thức dậy…
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </div>
 
-      {/* Box 2: Top Right (Stage 2) */}
-      <AnimatePresence>
-        {revealedStage >= 2 && msg2 && (
-          <motion.div
-            key="box-top-right"
-            data-layer="quad-msg-2"
-            initial={{ opacity: 0, x: 16, filter: "blur(4px)" }}
-            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute top-[12%] sm:top-[16%] md:top-[18%] right-3 sm:right-10 md:right-16 lg:right-24 z-20 max-w-[155px] sm:max-w-[280px] md:max-w-[340px] pointer-events-none text-right"
-          >
-            <div className="flex flex-col items-end border-r-2 border-[#e05676] bg-gradient-to-l from-[#e05676]/15 via-[#e05676]/5 to-transparent pr-3 sm:pr-4 py-2 rounded-l-xl backdrop-blur-sm shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-              <span className="font-body text-[9px] sm:text-xs font-semibold tracking-[0.25em] text-[#f48fb1] uppercase mb-0.5 sm:mb-1">
-                {msg2.tag}
-              </span>
-              <p className="font-display text-[13px] sm:text-lg md:text-2xl font-light italic leading-snug text-[#fff4e6]">
-                {msg2.line1}
-                <br />
-                <span className="text-cream/90 font-normal">{msg2.line2}</span>
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <MeadowLayer />
 
-      {/* Box 3: Bottom Left (Stage 3) */}
-      <AnimatePresence>
-        {revealedStage >= 3 && msg3 && (
-          <motion.div
-            key="box-bottom-left"
-            data-layer="quad-msg-3"
-            initial={{ opacity: 0, x: -16, filter: "blur(4px)" }}
-            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute bottom-[16%] sm:bottom-[18%] md:bottom-[20%] left-3 sm:left-10 md:left-16 lg:left-24 z-20 max-w-[155px] sm:max-w-[280px] md:max-w-[340px] pointer-events-none"
-          >
-            <div className="flex flex-col items-start border-l-2 border-[#e05676] bg-gradient-to-r from-[#e05676]/15 via-[#e05676]/5 to-transparent pl-3 sm:pl-4 py-2 rounded-r-xl backdrop-blur-sm shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-              <span className="font-body text-[9px] sm:text-xs font-semibold tracking-[0.25em] text-[#f48fb1] uppercase mb-0.5 sm:mb-1">
-                {msg3.tag}
-              </span>
-              <p className="font-display text-[13px] sm:text-lg md:text-2xl font-light italic leading-snug text-[#fff4e6]">
-                {msg3.line1}
-                <br />
-                <span className="text-cream/90 font-normal">{msg3.line2}</span>
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Box 4: Bottom Right (Stage 4) */}
-      <AnimatePresence>
-        {revealedStage >= 4 && msg4 && (
-          <motion.div
-            key="box-bottom-right"
-            data-layer="quad-msg-4"
-            initial={{ opacity: 0, x: 16, filter: "blur(4px)" }}
-            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute bottom-[16%] sm:bottom-[18%] md:bottom-[20%] right-3 sm:right-10 md:right-16 lg:right-24 z-20 max-w-[155px] sm:max-w-[280px] md:max-w-[340px] pointer-events-none text-right"
-          >
-            <div className="flex flex-col items-end border-r-2 border-[#e05676] bg-gradient-to-l from-[#e05676]/15 via-[#e05676]/5 to-transparent pr-3 sm:pr-4 py-2 rounded-l-xl backdrop-blur-sm shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
-              <span className="font-body text-[9px] sm:text-xs font-semibold tracking-[0.25em] text-[#f48fb1] uppercase mb-0.5 sm:mb-1">
-                {msg4.tag}
-              </span>
-              <p className="font-display text-[13px] sm:text-lg md:text-2xl font-light italic leading-snug text-[#fff4e6]">
-                {msg4.line1}
-                <br />
-                <span className="text-cream/90 font-normal">{msg4.line2}</span>
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Ambient drifting petals ── */}
-      <FloatingPetals />
-
-      {/* ── Gated CTA Button ── */}
-      <div className="absolute bottom-8 z-30 flex h-14 items-center">
+      <div className="nature-bloom__footer">
+        <span>11.01.2025 · 10.11</span>
         <AnimatePresence mode="wait">
           {isCtaReady ? (
             <motion.button
-              key="go"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              whileHover={{ scale: 1.05, boxShadow: "0 0 24px rgba(231,185,106,0.3)" }}
-              whileTap={{ scale: 0.97 }}
+              key="next"
+              type="button"
               onClick={onComplete}
-              className="group flex items-center gap-3 rounded-full border border-gold/50 bg-gradient-to-r from-gold/20 to-transparent px-8 py-3.5 font-body text-xs sm:text-sm uppercase tracking-[0.22em] text-gold backdrop-blur-md transition-all hover:border-gold hover:bg-gold/25 cursor-pointer shadow-[0_4px_20px_rgba(231,185,106,0.15)]"
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.65, ease: easeOut }}
+              whileHover={{ x: 5 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <span>{flowers.cta}</span>
-              <span className="transition-transform group-hover:translate-y-0.5">↓</span>
+              {flowers.cta}<i>↗</i>
             </motion.button>
           ) : (
             <motion.span
-              key="hint"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0.35, 0.9, 0.35] }}
-              exit={{ opacity: 0, transition: { duration: 0.25 } }}
+              key="loading"
+              animate={{ opacity: [0.35, 0.85, 0.35] }}
               transition={{ duration: 2.2, repeat: Infinity }}
-              className="font-body text-[10px] uppercase tracking-[0.35em] text-gold/70 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]"
             >
               {flowers.loadingStatus}
             </motion.span>

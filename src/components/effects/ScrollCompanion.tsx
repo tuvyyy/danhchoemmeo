@@ -25,11 +25,11 @@ const COMPANION_CONFIGS: CompanionConfig[] = [
     chapter: 0,
     name: "Phi công tình yêu",
     badge: "✈️ SÀI GÒN ➔ HÀ NỘI",
-    speech: "Tui bay từ Nam ra Bắc tìm em mèo nè~ 🐷✈️",
+    speech: "Tui bay từ Nam ra Bắc tìm em meo nè~ 🐷✈️",
     altSpeeches: [
       "Hành trình 1,730 km vì tình yêu! 💖",
-      "Hà Nội ơi, tui tới với mèo đâyyy! 🐱",
-      "Em mèo sinh nhật vui vẻ nha~ 🌸",
+      "Hà Nội ơi, tui tới với meo đâyyy! 🐱",
+      "Em meo sinh nhật vui vẻ nha~ 🌸",
     ],
     icon: "🐷",
     propEmoji: "✈️",
@@ -45,9 +45,9 @@ const COMPANION_CONFIGS: CompanionConfig[] = [
     chapter: 1,
     name: "Bé Heo ngắm hoa",
     badge: "🌸 HOA TẶNG EM",
-    speech: "Đóa bách hợp nở rộ tặng riêng em mèo đó! 🌸",
+    speech: "Đóa bách hợp nở rộ tặng riêng em meo đó! 🌸",
     altSpeeches: [
-      "Bông hoa đẹp nhất cũng không bằng mèo! ✨",
+      "Bông hoa đẹp nhất cũng không bằng meo! ✨",
       "Em có thấy cánh hoa hé nở lộng lẫy hông? 🌷",
       "Mỗi cánh hoa là một lời chúc yêu thương 🤍",
     ],
@@ -65,7 +65,7 @@ const COMPANION_CONFIGS: CompanionConfig[] = [
     chapter: 2,
     name: "Bé Heo Thần Tài",
     badge: "💰 QUỸ CHIỀU EM",
-    speech: "Quỹ yêu chiều em mèo 100% full bảo hành! 🧧",
+    speech: "Quỹ yêu chiều em meo 100% full bảo hành! 🧧",
     altSpeeches: [
       "Lì xì tuổi 21 may mắn ngập tràn nè! 🧧",
       "Muốn ăn gì, mua gì cứ bảo tui lo nha! 💸",
@@ -105,7 +105,7 @@ const COMPANION_CONFIGS: CompanionConfig[] = [
     chapter: 4,
     name: "Nhiếp ảnh gia Heo",
     badge: "📸 KỶ NIỆM",
-    speech: "Nụ cười của mèo là khoảnh khắc đẹp nhất thế gian! 📸",
+    speech: "Nụ cười của meo là khoảnh khắc đẹp nhất thế gian! 📸",
     altSpeeches: [
       "Tách! Lưu lại nụ cười rạng rỡ của em 🌟",
       "Lật từng tấm ảnh xem kỷ niệm của chúng mình nè! 📷",
@@ -120,16 +120,16 @@ const COMPANION_CONFIGS: CompanionConfig[] = [
     yMobile: "14vh",
     glowColor: "rgba(14, 165, 233, 0.5)",
   },
-  // 5. Finale (Ước - Đôi bạn sinh nhật Heo & Mèo)
+  // 5. Finale (Ước - Đôi bạn sinh nhật Heo & meo)
   {
     chapter: 5,
     name: "Đôi bạn sinh nhật",
     badge: "🎂 HAPPY 21ST!",
-    speech: "Chúc em mèo tuổi 21 rạng rỡ, bình yên và thật hạnh phúc! 💖",
+    speech: "Chúc em meo tuổi 21 rạng rỡ, bình yên và thật hạnh phúc! 💖",
     altSpeeches: [
       "Nhắm mắt lại và ước một điều thật đẹp nha em! 🕯️",
       "Thổi nến sinh nhật cùng tui nèee! 🎂🥳",
-      "Yêu em mèo nhiều ơi là nhiều! 💖✨",
+      "Yêu em meo nhiều ơi là nhiều! 💖✨",
     ],
     icon: "🐷",
     propEmoji: "🎉",

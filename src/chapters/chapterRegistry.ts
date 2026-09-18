@@ -3,6 +3,7 @@ import FlowersSection from "@/sections/FlowersSection";
 import WalletSection from "@/sections/WalletSection";
 import LetterSection from "@/sections/LetterSection";
 import MomentsSection from "@/sections/MomentsSection";
+import AnniversarySection from "@/sections/AnniversarySection";
 import FinaleSection from "@/sections/FinaleSection";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import type { ChapterMeta } from "./types";
@@ -39,9 +40,15 @@ export const CHAPTER_REGISTRY: ChapterMeta[] = [
     Component: MomentsSection,
   },
   {
-    id: "finale",
+    id: "anniversary",
     index: 5,
-    label: BIRTHDAY_DATA.steps[5] ?? "Ước",
+    label: BIRTHDAY_DATA.steps[5] ?? "Tụi mình",
+    Component: AnniversarySection,
+  },
+  {
+    id: "finale",
+    index: 6,
+    label: BIRTHDAY_DATA.steps[6] ?? "Ước",
     Component: FinaleSection,
   },
 ];

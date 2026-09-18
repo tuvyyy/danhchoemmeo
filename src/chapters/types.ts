@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-export type ChapterId = "hero" | "flowers" | "wallet" | "letter" | "moments" | "finale";
+export type ChapterId = "hero" | "flowers" | "wallet" | "letter" | "moments" | "anniversary" | "finale";
 
 export type ChapterLifecycleState =
   | "locked"

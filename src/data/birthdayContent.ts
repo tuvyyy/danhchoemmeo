@@ -21,17 +21,18 @@ export const BIRTHDAY_DATA = {
     dateFormatted: "10 · 11 · 2003",
     dateShort: "10.11",
   },
-  steps: ["Mở đầu", "Hoa", "Lì xì", "Lá thư", "Khoảnh khắc", "Ước"],
+  steps: ["Mở đầu", "Hoa", "Lì xì", "Lá thư", "Khoảnh khắc", "Tụi mình", "Ước"],
   hero: {
-    quote: "“Tui phi từ Nam ra Bắc, tui mang tình yêu từ Sài Gòn đến mèo đây hayyaaaaaa~” 🐷💨",
+    quote: "“Tui phi từ Nam ra Bắc, tui mang tình yêu từ Sài Gòn đến meo đây hayyaaaaaa~” 🐷💨",
     headingPrefix: "Chúc mừng",
     headingHighlight: "sinh nhật",
     date: "10 · 11 · 2003",
-    cta: "Bắt đầu hành trình",
+    cta: "Bắt đầu câu chuyện",
   },
   flowers: {
     chapter: "Chương 01",
     loadingStatus: "hoa đang nở…",
+    marquee: "CHO EM MEO · ",
     cta: "Món quà nhỏ tiếp theo",
     quadMessages: [
       {
@@ -133,7 +134,7 @@ export const BIRTHDAY_DATA = {
     heading: "Khoảng cách xa, nhưng kỷ niệm thì luôn gần.",
     subtitle: "Lật từng tấm hình để nhớ lại nha.",
     tapPrompt: "chạm 👆",
-    cta: "Điều cuối tui muốn nói",
+    cta: "Đến ngày của tụi mình",
     items: [
       {
         src: "https://images.unsplash.com/photo-1615966650071-855b15f29ad1?w=800&h=800&fit=crop&auto=format",
@@ -157,14 +158,26 @@ export const BIRTHDAY_DATA = {
       },
     ] as MomentItem[],
   },
+  anniversary: {
+    chapter: "Chương 05 — Ngày của tụi mình",
+    since: "11 · 01 · 2025",
+    heading: "Từ hôm đó, mọi ngày đều có thêm một người để nhớ.",
+    body: "Từ hai đầu Sài Gòn — Hà Nội, tụi mình đã đi qua từng cuộc gọi khuya, từng lần nhớ và từng lời hẹn. Cảm ơn em vì vẫn ở đây, cùng tui viết tiếp câu chuyện này.",
+    beats: [
+      { label: "11.01.2025", copy: "tụi mình bắt đầu" },
+      { label: "Sài Gòn ↔ Hà Nội", copy: "xa một chút, thương nhiều chút" },
+      { label: "Hôm nay", copy: "vẫn là em và tui" },
+    ],
+    cta: "Còn một cảnh cuối",
+  },
   finale: {
-    chapter: "Chương 05 — Ước một điều nha",
+    chapter: "Chương 06 — Ước một điều nha",
     heading: "Thổi nến và ước đi em,",
     subtitle: "năm nay để tui lo phần còn lại.",
     candlePrompt: "chạm để thổi nến ✨",
     shimmerTitle: "Chúc mừng sinh nhật em",
     quote: "Cảm ơn em vì đã yêu tui, kể cả khi mình cách nhau cả một khoảng trời.",
     body: "Khoảng cách chỉ là tạm thời. Còn tui thương em thì lâu dài lắm. Hẹn ngày mình được thổi nến chung một cái bánh nha. 🤍",
-    footerBadge: "10 · 11 · 2003 — mãi thương",
+    footerBadge: "10 · 11 · 2003 · 11 · 01 · 2025 — mãi thương",
   },
 };

@@ -3,6 +3,8 @@
   --font-serif: 'Cormorant Garamond', serif;
   --font-body: 'Be Vietnam Pro', sans-serif;
   --font-hand: 'Dancing Script', cursive;
+  --font-play: 'Baloo 2', 'Be Vietnam Pro', sans-serif;
+  --font-film: 'Cormorant Garamond', 'Playfair Display', serif;
 
   --color-ink: #0a0708;
   --color-ink-soft: #141013;
@@ -13,6 +15,13 @@
   --color-rose: #e18aa0;
   --color-rose-deep: #a63c56;
   --color-wine: #3a1420;
+  --color-charcoal: #111312;
+  --color-forest: #29342c;
+  --color-moss: #859479;
+  --color-paper: #eee4d5;
+  --color-orange: #c95f32;
+  --color-orange-burnt: #8e351f;
+  --color-pink-dust: #c9838c;
 }
 
 :root {

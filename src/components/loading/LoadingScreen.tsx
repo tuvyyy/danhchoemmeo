@@ -109,7 +109,7 @@ export default function LoadingScreen({ onFinish }: LoadingScreenProps) {
         {/* Quiet, refined typography */}
         <div className="flex flex-col items-center gap-1.5 text-center">
           <span className="font-body text-[11px] font-medium uppercase tracking-[0.32em] text-gold/80">
-            Dành Cho Em Mèo
+            Dành Cho Em meo
           </span>
           <span className="font-body text-[10px] uppercase tracking-[0.25em] text-cream-dim/50">
             10 · 11 · 2003

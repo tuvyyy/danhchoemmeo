@@ -31,16 +31,18 @@ function BirthdayJourney() {
           <AmbientGlow />
 
           {/* Floating petals and journey companion */}
-          <Petals />
-          <ScrollCompanion />
+          {currentChapter > 1 && <Petals />}
+          {currentChapter > 1 && currentChapter < 5 && <ScrollCompanion />}
 
           {/* Chapter navigation rail */}
-          <ProgressRail
-            steps={BIRTHDAY_DATA.steps}
-            current={currentChapter}
-            unlocked={unlockedThrough + 1}
-            onSelect={goTo}
-          />
+          {currentChapter > 1 && (
+            <ProgressRail
+              steps={BIRTHDAY_DATA.steps}
+              current={currentChapter}
+              unlocked={unlockedThrough + 1}
+              onSelect={goTo}
+            />
+          )}
 
           {/* Sequential chapter stages */}
           <main className="relative z-10 w-full">

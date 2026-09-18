@@ -1,6 +1,6 @@
 /**
  * Preloader and memory cache for the 60-frame continuous WebP flower bloom sequence.
- * Frames are static public assets located at /assets/flowers/lily-bloom/lily_bloom_001.webp ... 060.webp.
+ * Uses the existing transparent version of the lily sequence, with opaque petals.
  */
 
 export const TOTAL_BLOOM_FRAMES = 60;
@@ -16,14 +16,14 @@ let cachedFrames: BloomCanvasFrame[] | null = null;
 let preloadPromise: Promise<BloomCanvasFrame[]> | null = null;
 
 /**
- * Returns the image element directly as HD assets are pre-processed and transparent.
+ * Existing cutout frames need no pixel processing or blend effects.
  */
 export function createKeyedBloomFrame(source: HTMLImageElement): BloomCanvasFrame {
   return source;
 }
 
 /**
- * Preloads all 60 HD frames in the background.
+ * Preloads all 60 pack frames in the background.
  */
 export function preloadBloomSequence(): Promise<BloomCanvasFrame[]> {
   if (cachedFrames && cachedFrames.length === TOTAL_BLOOM_FRAMES) {

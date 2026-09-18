@@ -1,0 +1,24 @@
+{
+  "name": "white_tulip_bloom_sequence_v2",
+  "version": 2,
+  "type": "staged_bloom",
+  "stageCount": 7,
+  "recommendedStageDurationMs": 180,
+  "recommendedTotalBloomMs": 1260,
+  "frames": [
+    "tulip_01_closed.webp",
+    "tulip_02_bud.webp",
+    "tulip_03_first_open.webp",
+    "tulip_04_opening.webp",
+    "tulip_05_half_open.webp",
+    "tulip_06_nearly_open.webp",
+    "tulip_07_full_open.webp"
+  ],
+  "recommendedWaves": [
+    {"wave": 1, "flowers": ["lily_main"], "delayMs": 0},
+    {"wave": 2, "flowers": ["lily_small"], "delayMs": 700},
+    {"wave": 3, "flowers": ["tulip_1", "tulip_2"], "delayMs": 1400},
+    {"wave": 4, "flowers": ["tulip_3"], "delayMs": 2050},
+    {"wave": 5, "flowers": ["tulip_4", "tulip_5"], "delayMs": 2700}
+  ]
+}

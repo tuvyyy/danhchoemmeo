@@ -1,0 +1,195 @@
+﻿/* Only atmosphere is layered; flower, grass and copy rendering stays intact. */
+.flower-atmosphere {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+}
+
+.flower-atmosphere__warm-glow {
+  z-index: 1;
+  left: 70%;
+  top: 62%;
+  width: clamp(420px, 33vw, 600px);
+  height: min(62svh, 560px);
+  transform: translate(-50%, -50%);
+  opacity: 0.16;
+  background: radial-gradient(ellipse, #f1c58a 0%, rgba(220, 170, 107, 0.72) 25%, rgba(181, 123, 62, 0.3) 49%, transparent 74%);
+  filter: blur(24px);
+}
+
+.flower-atmosphere__warm-glow--secondary {
+  left: 54%;
+  top: 76%;
+  width: 330px;
+  height: 290px;
+  opacity: 0.055;
+}
+
+/* Apply opacity once. Irregular veils stay between stems and foreground grass. */
+.flower-atmosphere__mist {
+  left: 55%;
+  width: 40%;
+  filter: blur(17px);
+  animation: flower-atmosphere-mist var(--duration) ease-in-out var(--delay) infinite alternate;
+}
+
+.flower-atmosphere__mist--low {
+  z-index: 3;
+  bottom: 9%;
+  height: clamp(90px, 14svh, 130px);
+  --duration: 34s;
+  --delay: -9s;
+  --mist-opacity: 0.14;
+  opacity: var(--mist-opacity);
+  background:
+    radial-gradient(ellipse at 21% 66%, #dfd9ca 0%, rgba(220, 214, 198, 0.9) 18%, transparent 60%),
+    radial-gradient(ellipse at 62% 36%, #e2ddcc 0%, rgba(211, 203, 185, 0.85) 20%, transparent 58%),
+    radial-gradient(ellipse at 89% 73%, #c6c3b5 0%, transparent 43%);
+}
+
+.flower-atmosphere__mist--high {
+  z-index: 1;
+  bottom: 21.5%;
+  height: 72px;
+  --duration: 49s;
+  --delay: -23s;
+  --mist-opacity: 0.075;
+  opacity: var(--mist-opacity);
+  animation-direction: alternate-reverse;
+  background:
+    radial-gradient(ellipse at 34% 57%, #d9d1bf 0% 15%, transparent 60%),
+    radial-gradient(ellipse at 77% 42%, #ccc7b7 0% 12%, transparent 50%);
+}
+
+.flower-atmosphere__fireflies {
+  left: 45%;
+  top: 40%;
+  width: 49%;
+  height: 42%;
+}
+
+.flower-atmosphere__firefly {
+  position: absolute;
+  z-index: 5;
+  width: var(--fly-size);
+  height: var(--fly-size);
+  --light-min: 0.68;
+  --light-max: 1;
+  animation: flower-atmosphere-drift var(--duration) ease-in-out var(--delay) infinite;
+}
+
+.flower-atmosphere__firefly::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #ffe3a8;
+  box-shadow: 0 0 13px 4px rgba(255, 186, 76, 0.72), 0 0 24px 7px rgba(228, 152, 46, 0.26);
+  filter: blur(0.35px);
+  animation: flower-atmosphere-flicker var(--pulse) ease-in-out var(--delay) infinite;
+}
+
+.flower-atmosphere__firefly[data-depth="far"] {
+  z-index: 1;
+  --light-min: 0.25;
+  --light-max: 0.4;
+}
+
+.flower-atmosphere__firefly[data-depth="far"]::before {
+  box-shadow: 0 0 4px 1px rgba(222, 164, 75, 0.3);
+  filter: none;
+}
+
+/* Two near lights double as faint warm bokeh; no extra particles. */
+.flower-atmosphere__firefly[data-depth="near"] {
+  z-index: 6;
+  --light-min: 0.28;
+  --light-max: 0.48;
+}
+
+.flower-atmosphere__firefly[data-depth="near"]::before {
+  background: #edc17e;
+  filter: blur(2.2px);
+  box-shadow: 0 0 22px 9px rgba(245, 176, 79, 0.55), 0 0 30px 15px rgba(223, 146, 49, 0.2);
+}
+
+.flower-atmosphere__petals {
+  left: 47%;
+  top: 28%;
+  width: 49%;
+  height: 60%;
+  --petal-fall: 48svh;
+}
+
+.flower-atmosphere__petal {
+  position: absolute;
+  z-index: 5;
+  --petal-opacity: 0.7;
+  border-radius: 12% 90% 22% 85%;
+  background: radial-gradient(ellipse at 30% 25%, #f5c5ce, #cd8b9f 48%, #885260 88%);
+  box-shadow: inset 0 1px 1px rgba(249, 221, 217, 0.3);
+  opacity: 0;
+  animation: flower-atmosphere-petal var(--duration) linear var(--delay) infinite;
+}
+
+.flower-atmosphere__petal[data-ivory="true"] {
+  background: radial-gradient(ellipse at 30% 25%, #f0e3cb, #c3b199 48%, #887764 88%);
+}
+
+.flower-atmosphere__petal[data-depth="far"] { z-index: 1; --petal-opacity: 0.32; }
+.flower-atmosphere__petal[data-depth="near"] { z-index: 6; --petal-opacity: 0.38; }
+
+@keyframes flower-atmosphere-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  29% { transform: translate3d(var(--drift-x), var(--drift-y), 0); }
+  63% { transform: translate3d(calc(var(--drift-x) * -0.45), calc(var(--drift-y) * 0.65), 0); }
+  82% { transform: translate3d(calc(var(--drift-x) * -0.7), calc(var(--drift-y) * -0.3), 0); }
+}
+
+@keyframes flower-atmosphere-flicker {
+  0%, 100% { opacity: var(--light-min); }
+  37% { opacity: var(--light-max); }
+  68% { opacity: calc(var(--light-min) + (var(--light-max) - var(--light-min)) * 0.3); }
+  82% { opacity: calc(var(--light-min) + (var(--light-max) - var(--light-min)) * 0.65); }
+}
+
+@keyframes flower-atmosphere-mist {
+  from { transform: translate3d(-18px, 3px, 0) scaleY(0.92); opacity: calc(var(--mist-opacity) * 0.78); }
+  to { transform: translate3d(22px, -4px, 0) scaleY(1.05); opacity: var(--mist-opacity); }
+}
+
+@keyframes flower-atmosphere-petal {
+  0% { transform: translate3d(0, 0, 0) rotate(var(--rotation)) scaleY(0.65); opacity: 0; }
+  14% { opacity: calc(var(--petal-opacity) * 0.84); }
+  38% { transform: translate3d(calc(var(--drift-x) * 0.7), calc(var(--petal-fall) * 0.38), 0) rotate(calc(var(--rotation) + 48deg)) scaleY(0.9); opacity: var(--petal-opacity); }
+  67% { transform: translate3d(calc(var(--drift-x) * 0.25), calc(var(--petal-fall) * 0.67), 0) rotate(calc(var(--rotation) - 22deg)) scaleY(0.55); opacity: calc(var(--petal-opacity) * 0.76); }
+  85% { opacity: calc(var(--petal-opacity) * 0.48); }
+  100% { transform: translate3d(var(--drift-x), var(--petal-fall), 0) rotate(calc(var(--rotation) + 65deg)) scaleY(0.8); opacity: 0; }
+}
+
+.flower-atmosphere[data-running="false"],
+.flower-atmosphere[data-running="false"] *,
+.flower-atmosphere[data-running="false"] *::before {
+  animation-play-state: paused;
+}
+
+@media (max-width: 760px) {
+  .flower-atmosphere__warm-glow { left: 68%; top: 61%; width: 340px; height: 330px; }
+  .flower-atmosphere__warm-glow--secondary { left: 38%; top: 70%; width: 190px; height: 180px; }
+  .flower-atmosphere__mist { left: 34%; width: 64%; filter: blur(13px); }
+  .flower-atmosphere__mist--low { bottom: 28%; height: 64px; }
+  .flower-atmosphere__mist--high { bottom: 37%; height: 42px; }
+  .flower-atmosphere__fireflies { left: 22%; top: 43%; width: 68%; height: 26%; }
+  .flower-atmosphere__firefly[data-depth="mid"] { scale: 0.8; }
+  .flower-atmosphere__petals { left: 25%; top: 38%; width: 68%; height: 23%; --petal-fall: 24svh; }
+  .flower-atmosphere__petal { scale: 0.75; }
+  .flower-atmosphere__petal[data-depth="near"] { scale: 0.6; --petal-fall: 17svh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flower-atmosphere,
+  .flower-atmosphere *,
+  .flower-atmosphere *::before { animation: none !important; }
+  .flower-atmosphere__firefly::before { opacity: var(--light-min); }
+  .flower-atmosphere__petals { display: none; }
+}

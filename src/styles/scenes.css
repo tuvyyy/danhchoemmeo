@@ -1,0 +1,60 @@
+/* Each chapter owns its decorative layers; GSAP owns the outer content wrapper. */
+[data-chapter-content] > section { isolation: isolate; }
+.scene-background { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.scene-background--ribbon { background: radial-gradient(ellipse at 20% 50%, #6d394624, transparent 60%), radial-gradient(ellipse at 80% 30%, #cba37518, transparent 60%); }
+.scene-background--ribbon .scene-webgl { opacity: .34; filter: sepia(.6) saturate(.6) hue-rotate(325deg); mask-image: linear-gradient(transparent, #000 20%, #000 80%, transparent); }
+.scene-webgl { display: block; width: 100%; height: 100%; }
+.scene-background--orb { inset: 4% 0 6%; background: radial-gradient(ellipse at center, #d7879740, transparent 58%); }
+.scene-background--orb .scene-webgl { opacity: .53; }
+.scene-background--orb[data-blown="true"] { animation: wish-halo 2.4s ease-out both; }
+.cinematic-hero__image-stage { perspective: 1400px; }
+.cinematic-hero__photo { transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform .5s ease-out; }
+.cinematic-hero { padding-bottom: 135px; }
+.cinematic-hero__header, .cinematic-hero__content { position: relative; }
+.nature-bloom__wash { translate: 0 calc(var(--garden-depth, 0px) * -.5); }
+.nature-bloom__flower-cluster > * { translate: 0 var(--garden-depth, 0px); }
+.nature-bloom__meadow > * { translate: 0 calc(var(--garden-depth, 0px) * -1); }
+.wallet-scene { padding-bottom: 145px; }
+.wallet-object-stage { filter: drop-shadow(0 24px 22px #0006); }
+.wallet-object-stage[data-wallet-state="closed"] { animation: wallet-float 5s ease-in-out infinite; }
+.wallet-gold-burst { position: absolute; inset: -45%; pointer-events: none; z-index: -1; border-radius: 50%; background: radial-gradient(ellipse, #edc88955, #e7b96a10 38%, transparent 68%); animation: wallet-burst 1.6s ease-out both; }
+.letter-scene { padding-bottom: 150px; }
+.letter-scene::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse at 25% 25%, #b88b4520, transparent 60%); }
+.letter-scene[data-reading="true"] > span { animation-play-state: paused !important; }
+.scrapbook-scene { background-image: radial-gradient(ellipse at 50% 30%, #2c383f, #111e25 65%, #080f14) !important; padding-bottom: 150px; }
+.scrapbook-scene::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .1; background: repeating-linear-gradient(0deg, transparent 0 31px, #c9bba54d 32px); }
+.scrapbook-card { perspective: 1000px; }
+.scrapbook-card__surface { position: relative; padding: 12px 12px 42px; background: #f1e4cd; box-shadow: 0 20px 35px #0005; transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform .3s ease-out, box-shadow .3s; }
+.scrapbook-card:hover .scrapbook-card__surface { box-shadow: 0 28px 45px #0008; }
+.scrapbook-card__surface::before { content: ""; position: absolute; z-index: 2; top: -10px; left: 30%; width: 42%; height: 23px; background: #e0c7959c; border-inline: 1px dashed #aa946970; rotate: -4deg; }
+.scrapbook-card__caption { position: absolute; inset-inline: 7px; bottom: 9px; text-align: center; font: 16px/1.1 var(--font-hand); color: #4a3a31; }
+.anniversary-scene { padding-bottom: 150px; }
+.anniversary-scene__sun { animation: sunset-breathe 12s ease-in-out infinite; }
+.finale-scene { padding-bottom: 155px; }
+.wish-stars { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.wish-stars span { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #f5d4ac; box-shadow: 0 0 8px #f3c0a780; animation: wish-star 5s ease-in-out infinite; }
+[data-chapter-state="completed"] .wallet-object-stage, [data-chapter-state="ready"] .wallet-object-stage,
+[data-chapter-state="completed"] .anniversary-scene__sun, [data-chapter-state="ready"] .anniversary-scene__sun,
+[data-chapter-state="completed"] .wish-stars span, [data-chapter-state="ready"] .wish-stars span { animation-play-state: paused; }
+@keyframes wallet-float { 50% { translate: 0 -5px; } }
+@keyframes wallet-burst { 0% { opacity: 0; scale: .6; } 30% { opacity: 1; } 100% { opacity: .12; scale: 1.2; } }
+@keyframes wish-halo { 0% { transform: scale(1); opacity: 1; } 20% { transform: scale(1.13); opacity: 1; } 100% { transform: scale(1.03); opacity: .38; } }
+@keyframes wish-star { 50% { opacity: .2; translate: 0 -5px; } }
+@keyframes sunset-breathe { 50% { opacity: .65; scale: 1.04; } }
+@media (max-width: 767px) {
+  .cinematic-hero { padding-bottom: 125px; }
+  .nature-bloom__footer { padding-left: 80px; }
+  .wallet-scene, .letter-scene, .scrapbook-scene, .anniversary-scene, .finale-scene { padding-bottom: 130px; }
+  .scrapbook-grid { gap: 24px 18px; width: min(100%, 370px); }
+  .scrapbook-card__surface { padding: 8px 8px 44px; }
+  .scrapbook-card__image { width: 100% !important; }
+  .scrapbook-card__caption { font-size: 14px; }
+  .scene-background--ribbon .scene-webgl { opacity: .24; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-hero__photo, .scrapbook-card__surface { transform: none !important; transition: none; }
+  .wallet-object-stage, .wallet-gold-burst, .scene-background, .wish-stars span, .anniversary-scene__sun { animation: none !important; }
+  .scene-background--orb[data-blown="true"] { opacity: .38; }
+  .nature-bloom__wash, .nature-bloom__flower-cluster > *, .nature-bloom__meadow > * { translate: none; }
+  .letter-scene > span { animation: none !important; }
+}

@@ -11,3 +11,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Generated browser test captures
+docs/screenshots/
+split-check.png

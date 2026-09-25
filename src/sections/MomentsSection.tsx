@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
+import { useSceneTilt } from "@/components/effects/useSceneDepth";
+import { useScenePreferences } from "@/components/effects/useScenePreferences";
 
 export default function MomentsSection({ onComplete }: { onComplete: () => void }) {
+  const tilt = useSceneTilt(12);
+  const { reducedMotion } = useScenePreferences();
   const [flipped, setFlipped] = useState<Set<number>>(new Set());
   const { moments } = BIRTHDAY_DATA;
   const allFlipped = flipped.size === moments.items.length;
@@ -16,7 +20,7 @@ export default function MomentsSection({ onComplete }: { onComplete: () => void 
 
   return (
     <section
-      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-24 transition-colors duration-700"
+      className="scrapbook-scene relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-24 transition-colors duration-700"
       style={{
         background:
           "radial-gradient(125% 100% at 50% 30%, #091a27 0%, #05111a 55%, #02080e 100%)",
@@ -30,19 +34,23 @@ export default function MomentsSection({ onComplete }: { onComplete: () => void 
         <span className="mt-3 block font-hand text-2xl text-rose">{moments.subtitle}</span>
       </h2>
 
-      <div className="grid grid-cols-2 gap-6 sm:gap-10 md:grid-cols-4">
+      <div className="scrapbook-grid grid grid-cols-2 gap-6 sm:gap-10 md:grid-cols-4">
         {moments.items.map((m, i) => (
           <motion.button
             key={i}
             onClick={() => flip(i)}
-            initial={{ opacity: 0, y: 40, rotate: m.rot }}
-            whileInView={{ opacity: 1, y: 0, rotate: m.rot }}
+            initial={{ opacity: 0, y: reducedMotion ? 0 : 40, x: reducedMotion ? 0 : (i % 2 ? 22 : -22), rotate: m.rot }}
+            whileInView={{ opacity: 1, y: 0, x: 0, rotate: m.rot }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ delay: i * 0.12, duration: 0.7 }}
             whileHover={{ scale: 1.06, rotate: 0, zIndex: 20 }}
-            className="relative rounded-sm bg-cream p-3 pb-10 shadow-2xl cursor-pointer"
+            className="scrapbook-card relative rounded-sm cursor-pointer"
+            aria-label={`${flipped.has(i) ? "Kỷ niệm" : "Mở kỷ niệm"} ${i + 1}`}
+            aria-pressed={flipped.has(i)}
+            {...tilt}
           >
-            <div className="relative aspect-square w-32 overflow-hidden bg-ink-soft sm:w-40">
+            <div className="scrapbook-card__surface">
+            <div className="scrapbook-card__image relative aspect-square w-32 overflow-hidden bg-ink-soft sm:w-40">
               <img src={m.src} alt={m.caption} className="h-full w-full object-cover" />
               {!flipped.has(i) && (
                 <div className="absolute inset-0 flex items-center justify-center bg-ink/70 font-hand text-lg text-gold">
@@ -50,9 +58,10 @@ export default function MomentsSection({ onComplete }: { onComplete: () => void 
                 </div>
               )}
             </div>
-            <p className="absolute inset-x-0 bottom-2 px-2 text-center font-hand text-base text-ink">
+            <p className="scrapbook-card__caption">
               {flipped.has(i) ? m.caption : "· · ·"}
             </p>
+            </div>
           </motion.button>
         ))}
       </div>

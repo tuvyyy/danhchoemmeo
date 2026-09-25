@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { useChapterFlowContext } from "./ChapterFlowContext";
 import type { ChapterMeta } from "./types";
+import { CHAPTER_EFFECTS } from "@/components/effects/sceneConfig";
 
 interface ChapterStageProps {
   meta: ChapterMeta;
@@ -17,6 +18,7 @@ export default function ChapterStage({ meta, children, className = "" }: Chapter
       id={`chapter-${meta.id}`}
       data-idx={meta.index}
       data-chapter-id={meta.id}
+      data-scene-effect={CHAPTER_EFFECTS[meta.id]}
       data-chapter-state={state}
       tabIndex={-1}
       ref={(el) => registerStageRef(meta.index, el)}

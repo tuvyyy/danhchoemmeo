@@ -3,6 +3,10 @@ import { motion } from "framer-motion";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import { preloadFlowerAssets } from "@/lib/assets/preloadFlowers";
 import couplePhoto from "@/assets/hero/couple-original-tone.png";
+import SceneBackground from "@/components/effects/SceneBackground";
+import { useChapterLifecycle } from "@/chapters/useChapterLifecycle";
+import { useSceneTilt } from "@/components/effects/useSceneDepth";
+import { useScenePreferences } from "@/components/effects/useScenePreferences";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
@@ -82,6 +86,9 @@ function SpiderMeoSplit({ active }: { active: boolean }) {
 }
 
 export default function HeroSection({ onComplete }: { onComplete: () => void }) {
+  const { isActive } = useChapterLifecycle(0);
+  const tilt = useSceneTilt(4);
+  const { reducedMotion } = useScenePreferences();
   const { hero } = BIRTHDAY_DATA;
   const [isSplitting, setIsSplitting] = useState(false);
 
@@ -91,6 +98,7 @@ export default function HeroSection({ onComplete }: { onComplete: () => void }) 
 
   const startStory = () => {
     if (isSplitting) return;
+    if (reducedMotion) { onComplete(); return; }
     setIsSplitting(true);
     window.setTimeout(onComplete, 720);
     window.setTimeout(() => setIsSplitting(false), 1650);
@@ -98,6 +106,7 @@ export default function HeroSection({ onComplete }: { onComplete: () => void }) 
 
   return (
     <section className="cinematic-hero">
+      <SceneBackground effect="ribbon" active={isActive} />
       <header className="cinematic-hero__header">
         <motion.p className="cinematic-hero__eyebrow" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.75, ease: easeOut }}>
           sinh nhật em meo · ngày của tụi mình
@@ -110,7 +119,7 @@ export default function HeroSection({ onComplete }: { onComplete: () => void }) 
         </motion.div>
       </header>
 
-      <div className="cinematic-hero__image-stage">
+      <div className="cinematic-hero__image-stage" {...tilt}>
         <img src={couplePhoto} alt="Hai đứa ôm nhau trước gương" className="cinematic-hero__photo" />
       </div>
 

@@ -6,6 +6,7 @@ import FlowerBloomCanvas from "./flowers/FlowerBloomCanvas";
 import TulipBloom, { preloadTulipSequence } from "./flowers/TulipBloom";
 import FlowerAtmosphere from "./flowers/FlowerAtmosphere";
 import { preloadBloomSequence } from "@/lib/assets/preloadBloomSequence";
+import { useGardenDepth } from "@/components/effects/useSceneDepth";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 const TULIPS = [
@@ -52,6 +53,7 @@ function MeadowLayer() {
 
 export default function FlowersSection({ onComplete }: { onComplete: () => void }) {
   const { isActive } = useChapterLifecycle(1);
+  const sceneRef = useGardenDepth(isActive);
   const { flowers } = BIRTHDAY_DATA;
   const completedFlowers = useRef(new Set<string>());
   const [hasBloomed, setHasBloomed] = useState(false);
@@ -93,7 +95,7 @@ export default function FlowersSection({ onComplete }: { onComplete: () => void 
   const activeMessage = flowers.quadMessages[Math.max(0, revealedStage - 1)];
 
   return (
-    <section className="nature-bloom">
+    <section ref={sceneRef} className="nature-bloom">
       <div className="nature-bloom__wash" aria-hidden="true" />
       <div className="nature-bloom__grain" aria-hidden="true" />
       <FlowerAtmosphere isActive={isActive && gardenReady} />

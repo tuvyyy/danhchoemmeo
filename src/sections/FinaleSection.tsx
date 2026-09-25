@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
+import SceneBackground from "@/components/effects/SceneBackground";
+import { useChapterLifecycle } from "@/chapters/useChapterLifecycle";
+import { useSceneExperience } from "@/components/effects/SceneExperience";
+import { useScenePreferences } from "@/components/effects/useScenePreferences";
 
 const CONFETTI_COLORS = ["#e7b96a", "#e18aa0", "#a63c56", "#f4ece4", "#f0c04a"];
 
@@ -24,19 +28,26 @@ const STABLE_CONFETTI = Array.from({ length: 60 }, (_, i) => {
 });
 
 export default function FinaleSection({ onComplete }: { onComplete?: () => void } = {}) {
+  const { isActive } = useChapterLifecycle(6);
+  const { celebrate } = useSceneExperience();
+  const { mobile, reducedMotion } = useScenePreferences();
   const [blown, setBlown] = useState(false);
   const { finale } = BIRTHDAY_DATA;
 
   return (
     <section
-      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-24 text-center transition-colors duration-700"
+      className="finale-scene relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-24 text-center transition-colors duration-700"
       style={{
         background:
           "radial-gradient(125% 100% at 50% 35%, #2a111a 0%, #1a0910 55%, #0a0306 100%)",
       }}
     >
+      <SceneBackground effect="orb" active={isActive} blown={blown} />
+      <div className="wish-stars" aria-hidden="true">
+        {Array.from({ length: mobile ? 12 : 24 }, (_, i) => <span key={i} style={{ left: `${8 + ((i * 37) % 84)}%`, top: `${10 + ((i * 23) % 76)}%`, animationDelay: `${-i * .7}s` }} />)}
+      </div>
       <AnimatePresence>
-        {blown &&
+        {blown && !reducedMotion &&
           STABLE_CONFETTI.map((c) => (
             <motion.div
               key={c.i}
@@ -66,7 +77,7 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
           </h2>
 
           <motion.button
-            onClick={() => setBlown(true)}
+            onClick={() => { setBlown(true); celebrate(); }}
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.96 }}
             className="relative cursor-pointer"
@@ -76,7 +87,7 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
             <div className="relative flex flex-col items-center">
               <div className="relative -mb-2 h-10 w-1.5 rounded-full bg-cream">
                 <motion.div
-                  animate={{ scaleY: [1, 1.25, 1], opacity: [1, 0.8, 1] }}
+                  animate={reducedMotion ? { scaleY: 1, opacity: 1 } : { scaleY: [1, 1.25, 1], opacity: [1, 0.8, 1] }}
                   transition={{ duration: 0.5, repeat: Infinity }}
                   className="absolute -top-5 left-1/2 h-6 w-4 -translate-x-1/2 rounded-full bg-gradient-to-t from-gold to-[#fff4dd] blur-[1px]"
                 />

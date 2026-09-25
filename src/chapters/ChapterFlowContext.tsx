@@ -103,7 +103,7 @@ export function ChapterFlowProvider({ children }: { children: ReactNode }) {
           setCurrentChapter(nextIndex);
         });
         const targetStage = stageRefs.current[nextIndex];
-        targetStage?.scrollIntoView({ behavior: "smooth", block: "start" });
+        targetStage?.scrollIntoView({ behavior: "instant", block: "start" });
         targetStage?.focus({ preventScroll: true });
         isTransitioningRef.current = false;
         setIsTransitioning(false);
@@ -180,7 +180,7 @@ export function ChapterFlowProvider({ children }: { children: ReactNode }) {
 
       const targetStage = stageRefs.current[targetIndex];
       if (targetStage) {
-        targetStage.scrollIntoView({ behavior: "smooth", block: "start" });
+        targetStage.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
         targetStage.focus({ preventScroll: true });
       }
     },
@@ -190,18 +190,23 @@ export function ChapterFlowProvider({ children }: { children: ReactNode }) {
   // Centralized IntersectionObserver for robust active chapter detection across backscroll & forward scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !isTransitioningRef.current) {
-            const idx = Number((entry.target as HTMLElement).dataset.idx);
-            if (!isNaN(idx)) {
-              setCurrentChapter(idx);
-            }
-          }
+      () => {
+        if (isTransitioningRef.current) return;
+        // An outgoing entry may still be "intersecting" below its threshold.
+        // Compare current geometry instead of letting the last callback entry win.
+        // Visible pixels also work for mobile chapters taller than two viewports.
+        let bestIndex = -1;
+        let bestVisible = 0;
+        stageRefs.current.forEach((stage, index) => {
+          if (!stage || index > unlockedThrough) return;
+          const rect = stage.getBoundingClientRect();
+          const visible = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+          if (visible > bestVisible) { bestIndex = index; bestVisible = visible; }
         });
+        if (bestIndex >= 0) setCurrentChapter(bestIndex);
       },
       {
-        threshold: 0.5,
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
         rootMargin: "0px",
       },
     );

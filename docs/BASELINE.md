@@ -1,3 +1,5 @@
+> Historical reference: this document describes earlier phases. The archived prototype, unused assets/components, and generated screenshots were removed from the working project on 2026-09-25. See README.md and the current source for the active structure.
+
 # Baseline Architecture & Migration Documentation — Phase 1
 
 Document version: 1.0.0  

@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { GiftCardData } from "@/data/birthdayContent";
+import { useSceneOverlay } from "@/components/effects/SceneExperience";
+import { useDialogFocus } from "@/components/effects/useDialogFocus";
 
 interface GiftCardModalProps {
   card: GiftCardData | null;
@@ -53,6 +55,8 @@ const MODAL_THEME_MAP: Record<
 };
 
 export default function GiftCardModal({ card, onClose }: GiftCardModalProps) {
+  useSceneOverlay(card !== null);
+  const dialogRef = useDialogFocus(card !== null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   // Focus close button on mount and handle Escape key
@@ -90,6 +94,8 @@ export default function GiftCardModal({ card, onClose }: GiftCardModalProps) {
       >
         <motion.div
           role="dialog"
+          ref={dialogRef}
+          tabIndex={-1}
           aria-modal="true"
           aria-label={card.title}
           onClick={(e) => e.stopPropagation()}
@@ -105,6 +111,7 @@ export default function GiftCardModal({ card, onClose }: GiftCardModalProps) {
           {/* Close button */}
           <button
             ref={closeBtnRef}
+            data-dialog-close
             type="button"
             onClick={onClose}
             aria-label="Đóng thẻ"

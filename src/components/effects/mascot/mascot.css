@@ -1,0 +1,48 @@
+.journey-mascot { position: fixed; z-index: 45; width: 88px; bottom: max(var(--mascot-bottom, 20px), env(safe-area-inset-bottom)); filter: drop-shadow(0 8px 12px #180c1240); }
+.journey-mascot[hidden] { display: none; }
+.journey-mascot[data-side="left"] { left: max(24px, env(safe-area-inset-left)); }
+.journey-mascot[data-side="right"] { right: max(24px, env(safe-area-inset-right)); }
+.journey-mascot button { cursor: pointer; }
+.journey-mascot button:focus-visible { outline: 2px solid #e7b96a; outline-offset: 4px; }
+.journey-mascot__character { display: block; width: 100%; border: 0; padding: 0; background: none; border-radius: 40%; transition: scale .25s; }
+.journey-mascot__character:hover { scale: 1.06; }
+.journey-mascot__character:active { scale: .96; }
+.pig-art { width: 100%; overflow: visible; animation: pig-breathe 4s ease-in-out infinite; }
+.pig-head { transform-origin: 60px 85px; animation: pig-curious 7s ease-in-out infinite; }
+.pig-eyes { transform-box: fill-box; transform-origin: center; animation: pig-blink 5.5s infinite; }
+.pig-gaze { transform: translate(var(--gaze-x, 0), var(--gaze-y, 0)); transition: transform .16s ease-out; }
+.pig-ear { transform-origin: 60px 48px; }
+.pig-ear--right { animation: pig-ear 6s ease-in-out infinite; }
+.pig-wave { transform-origin: 37px 86px; }
+.pig-art--pilot .pig-wave { animation: pig-wave 3.8s ease-in-out infinite; }
+.pig-art--flower .pig-head { transform: rotate(6deg); animation: none; }
+[data-reacting="true"] .pig-wave { animation: pig-wave .5s ease-in-out 2; }
+[data-reacting="true"] .pig-flash { animation: pig-flash .6s ease-out; }
+.journey-mascot__collapse, .journey-mascot__restore { display: grid; place-items: center; border: 1px solid #e7b96a45; border-radius: 50%; color: #f4ece4; background: #24131ce8; }
+.journey-mascot__collapse { position: absolute; z-index: 2; right: -8px; top: -8px; width: 28px; height: 28px; font-size: 17px; }
+.journey-mascot__restore { width: 44px; height: 44px; font-size: 24px; margin-inline: auto; }
+.journey-mascot__speech { position: absolute; bottom: calc(100% + 14px); width: 230px; display: flex; gap: 8px; padding: 14px 12px 14px 16px; border-radius: 16px 16px 16px 4px; background: #f5e7d9; color: #543340; box-shadow: 0 10px 36px #0003; font: 14px/1.6 var(--font-body); animation: mascot-message .25s ease-out; }
+[data-side="left"] .journey-mascot__speech { left: 0; }
+[data-side="right"] .journey-mascot__speech { right: 0; border-radius: 16px 16px 4px 16px; }
+.journey-mascot__speech button { flex: 0 0 24px; align-self: start; color: #845365; font-size: 20px; background: none; border: 0; }
+.journey-mascot__hearts { position: absolute; left: 50%; top: 38%; pointer-events: none; }
+.journey-mascot__hearts span { position: absolute; font-size: 21px; color: #f2b0bb; animation: mascot-heart 1s var(--heart-delay) both ease-out; }
+[data-resting="true"] .pig-art, [data-resting="true"] .pig-art * { animation-play-state: paused; }
+@keyframes pig-breathe { 50% { transform: translateY(-3px); } }
+@keyframes pig-curious { 0%, 65%, 100% { transform: rotate(0); } 72%, 85% { transform: rotate(-4deg); } }
+@keyframes pig-blink { 0%, 42%, 46%, 100% { transform: scaleY(1); } 44% { transform: scaleY(.08); } }
+@keyframes pig-ear { 0%, 80%, 100% { transform: rotate(0); } 84%, 92% { transform: rotate(7deg); } 88% { transform: rotate(-3deg); } }
+@keyframes pig-wave { 0%, 60%, 100% { transform: rotate(0); } 15%, 40% { transform: rotate(65deg); } 28% { transform: rotate(35deg); } }
+@keyframes pig-flash { 15% { fill: white; filter: drop-shadow(0 0 14px white); } }
+@keyframes mascot-message { from { opacity: 0; transform: translateY(6px); } }
+@keyframes mascot-heart { from { opacity: 1; transform: translate(0, 0) scale(.5); } to { opacity: 0; transform: translate(var(--heart-x), -75px) scale(1.1); } }
+@media (max-width: 767px) {
+  .journey-mascot { width: 56px; bottom: max(var(--mascot-bottom, 12px), env(safe-area-inset-bottom)); }
+  .journey-mascot[data-side="left"] { left: max(12px, env(safe-area-inset-left)); }
+  .journey-mascot[data-side="right"] { right: max(12px, env(safe-area-inset-right)); }
+  .journey-mascot__speech { width: min(230px, calc(100vw - 40px)); font-size: 12px; }
+  .journey-mascot__collapse { top: -22px; right: -4px; width: 32px; height: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .journey-mascot *, .journey-mascot *::before { animation: none !important; transition: none !important; }
+}

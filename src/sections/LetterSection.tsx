@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
+import { useSceneOverlay } from "@/components/effects/SceneExperience";
+import { useDialogFocus } from "@/components/effects/useDialogFocus";
 
 const PAPER = "linear-gradient(135deg, #efe6d3 0%, #e7dcc4 45%, #ddd0b4 100%)";
 const DUST = Array.from({ length: 7 }, (_, i) => i);
@@ -31,6 +33,8 @@ function Page({ src, side }: { src: string; side: "left" | "right" }) {
 export default function LetterSection({ onComplete }: { onComplete: () => void }) {
   const [open, setOpen] = useState(false);
   const [zoom, setZoom] = useState<null | 0 | 1>(null);
+  useSceneOverlay(zoom !== null);
+  const dialogRef = useDialogFocus(zoom !== null);
   const { letter } = BIRTHDAY_DATA;
   const { leftScan, rightScan, faintFlower } = letter.placeholders;
 
@@ -45,7 +49,8 @@ export default function LetterSection({ onComplete }: { onComplete: () => void }
 
   return (
     <section
-      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-24 transition-colors duration-700"
+      data-reading={zoom !== null}
+      className="letter-scene relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-24 transition-colors duration-700"
       style={{
         background:
           "radial-gradient(125% 100% at 50% 35%, #22150f 0%, #150d09 55%, #090503 100%)",
@@ -211,6 +216,11 @@ export default function LetterSection({ onComplete }: { onComplete: () => void }
       <AnimatePresence>
         {zoom !== null && (
           <motion.div
+            role="dialog"
+            ref={dialogRef}
+            tabIndex={-1}
+            aria-modal="true"
+            aria-label="Đọc thư tình"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -253,7 +263,7 @@ export default function LetterSection({ onComplete }: { onComplete: () => void }
               >
                 02 →
               </button>
-              <button onClick={() => setZoom(null)} className="ml-4 hover:text-gold cursor-pointer">
+              <button data-dialog-close onClick={() => setZoom(null)} className="ml-4 hover:text-gold cursor-pointer">
                 {letter.shrinkBtn}
               </button>
             </div>

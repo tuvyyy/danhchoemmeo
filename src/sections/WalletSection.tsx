@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BIRTHDAY_DATA, type GiftCardData } from "@/data/birthdayContent";
 import { useChapterLifecycle } from "@/chapters/useChapterLifecycle";
@@ -18,6 +18,8 @@ export default function WalletSection({ onComplete }: { onComplete: () => void }
   const [isCtaReady, setIsCtaReady] = useState<boolean>(false);
   const [selectedCard, setSelectedCard] = useState<GiftCardData | null>(null);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const openingTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(openingTimer.current), []);
 
   // Track viewport size for mobile layout adjustments
   useEffect(() => {
@@ -52,13 +54,12 @@ export default function WalletSection({ onComplete }: { onComplete: () => void }
     }
 
     setWalletState("opening");
-    const timer = setTimeout(() => {
+    openingTimer.current = window.setTimeout(() => {
       setWalletState("open");
       setHasOpened(true);
       setIsCtaReady(true);
     }, 1100);
 
-    return () => clearTimeout(timer);
   }, [walletState]);
 
   const handleSelectCard = useCallback((card: GiftCardData) => {
@@ -76,7 +77,7 @@ export default function WalletSection({ onComplete }: { onComplete: () => void }
   return (
     <section
       data-testid="wallet-section"
-      className="relative flex min-h-screen min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden px-4 py-16 sm:px-6 sm:py-20 transition-colors duration-700"
+      className="wallet-scene relative flex min-h-screen min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden px-4 py-16 sm:px-6 sm:py-20 transition-colors duration-700"
       style={{
         background:
           "radial-gradient(120% 95% at 50% 35%, #2b0714 0%, #1b040d 55%, #0a0105 100%)",
@@ -96,7 +97,8 @@ export default function WalletSection({ onComplete }: { onComplete: () => void }
       </h2>
 
       {/* ── Center Stage: Physical Leather Wallet & Contents ── */}
-      <div className="relative mb-6 mt-14 flex h-64 w-full max-w-sm items-center justify-center sm:mb-8 sm:mt-20 sm:h-72">
+      <div className="wallet-object-stage relative mb-6 mt-14 flex h-64 w-full max-w-sm items-center justify-center sm:mb-8 sm:mt-20 sm:h-72" data-wallet-state={walletState}>
+        {showContents && <div className="wallet-gold-burst" aria-hidden="true" />}
         <LeatherWallet
           walletState={walletState}
           onOpen={handleOpenWallet}

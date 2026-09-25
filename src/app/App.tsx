@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, MotionConfig } from "framer-motion";
+import { SceneExperienceProvider } from "@/components/effects/SceneExperience";
 import LoadingScreen from "@/components/loading/LoadingScreen";
 import AmbientGlow from "@/components/layout/AmbientGlow";
 import ProgressRail from "@/components/navigation/ProgressRail";
@@ -32,7 +33,7 @@ function BirthdayJourney() {
 
           {/* Floating petals and journey companion */}
           {currentChapter > 1 && <Petals />}
-          {currentChapter > 1 && currentChapter < 5 && <ScrollCompanion />}
+          <ScrollCompanion />
 
           {/* Chapter navigation rail */}
           {currentChapter > 1 && (
@@ -62,9 +63,13 @@ function BirthdayJourney() {
 
 export default function App() {
   return (
+    <MotionConfig reducedMotion="user">
     <ChapterFlowProvider>
+      <SceneExperienceProvider>
       <CustomCursor />
       <BirthdayJourney />
+      </SceneExperienceProvider>
     </ChapterFlowProvider>
+    </MotionConfig>
   );
 }

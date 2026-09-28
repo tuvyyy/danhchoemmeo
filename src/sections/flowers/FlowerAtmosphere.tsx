@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import ConstellationSky from "./ConstellationSky";
 import "./FlowerAtmosphere.css";
 
 // Fixed, sparse positions stay stable through the bloom's text-stage updates.
@@ -42,6 +43,7 @@ export default function FlowerAtmosphere({ isActive }: { isActive: boolean }) {
 
   return (
     <>
+      <ConstellationSky isRunning={isRunning} />
       <div className="flower-atmosphere flower-atmosphere__warm-glow" aria-hidden="true" />
       <div className="flower-atmosphere flower-atmosphere__warm-glow flower-atmosphere__warm-glow--secondary" aria-hidden="true" />
       <div className="flower-atmosphere flower-atmosphere__mist flower-atmosphere__mist--low" data-running={isRunning} aria-hidden="true" />

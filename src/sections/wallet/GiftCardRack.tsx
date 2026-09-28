@@ -1,130 +1,130 @@
-import { forwardRef } from "react";
+﻿import { forwardRef } from "react";
+import { motion } from "framer-motion";
 import type { GiftCardData } from "@/data/birthdayContent";
 import type { WalletOpenState } from "./wallet.types";
-import { GIFT_CARD_SLOTS, GIFT_CARD_SLOTS_MOBILE } from "./walletConfig";
 
 interface GiftCardRackProps {
   cards: GiftCardData[];
   walletState: WalletOpenState;
-  isMobile?: boolean;
   onSelectCard: (card: GiftCardData) => void;
 }
 
-const COLOR_MAP: Record<
-  string,
-  { bg: string; border: string; badge: string; text: string }
-> = {
+/* Wide fan — 4 cards, spread to fill right column */
+const SLOTS = [
+  { rot: -24, x: -218, y: 32 },
+  { rot:  -8, x:  -72, y:  -8 },
+  { rot:   8, x:   72, y:  -8 },
+  { rot:  24, x:  218, y:  32 },
+];
+
+const THEMES: Record<string, {
+  bg: string; border: string; badgeBg: string; badgeText: string;
+  iconBg: string; title: string; glow: string; shine: string;
+}> = {
   rose: {
-    bg: "from-[#2b151b] via-[#3d1a24] to-[#1f0e13]",
-    border: "border-rose/50 hover:border-rose",
-    badge: "bg-rose/20 text-rose border-rose/30",
-    text: "text-rose-100",
+    bg: "from-[#fef0f3] to-[#fcd8e3]",
+    border: "border-rose-300/70 hover:border-rose-400",
+    badgeBg: "bg-rose-100", badgeText: "text-rose-600",
+    iconBg: "bg-rose-50 border-rose-200",
+    title: "text-rose-900",
+    glow: "hover:shadow-[0_16px_50px_rgba(225,100,130,0.45)]",
+    shine: "from-rose-100/60",
   },
   gold: {
-    bg: "from-[#291e12] via-[#3d2c18] to-[#1e150b]",
-    border: "border-gold/50 hover:border-gold",
-    badge: "bg-gold/20 text-gold border-gold/30",
-    text: "text-gold-100",
+    bg: "from-[#fdf8ed] to-[#faeabb]",
+    border: "border-amber-400/70 hover:border-amber-500",
+    badgeBg: "bg-amber-100", badgeText: "text-amber-700",
+    iconBg: "bg-amber-50 border-amber-200",
+    title: "text-amber-900",
+    glow: "hover:shadow-[0_16px_50px_rgba(200,150,30,0.45)]",
+    shine: "from-amber-100/60",
   },
   emerald: {
-    bg: "from-[#11261d] via-[#1a382b] to-[#0b1a13]",
-    border: "border-emerald-500/50 hover:border-emerald-400",
-    badge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
-    text: "text-emerald-100",
+    bg: "from-[#edfaf4] to-[#b8ecd6]",
+    border: "border-emerald-400/70 hover:border-emerald-500",
+    badgeBg: "bg-emerald-100", badgeText: "text-emerald-700",
+    iconBg: "bg-emerald-50 border-emerald-200",
+    title: "text-emerald-900",
+    glow: "hover:shadow-[0_16px_50px_rgba(16,185,100,0.40)]",
+    shine: "from-emerald-100/60",
   },
   wine: {
-    bg: "from-[#2d111c] via-[#421727] to-[#1e0911]",
-    border: "border-rose-400/50 hover:border-rose-400",
-    badge: "bg-rose-400/20 text-rose-300 border-rose-400/30",
-    text: "text-rose-100",
+    bg: "from-[#fdf0f7] to-[#f8c8e4]",
+    border: "border-pink-400/70 hover:border-pink-500",
+    badgeBg: "bg-pink-100", badgeText: "text-pink-700",
+    iconBg: "bg-pink-50 border-pink-200",
+    title: "text-pink-900",
+    glow: "hover:shadow-[0_16px_50px_rgba(220,80,140,0.40)]",
+    shine: "from-pink-100/60",
   },
 };
 
 export const GiftCardRack = forwardRef<HTMLDivElement, GiftCardRackProps>(
-  ({ cards, walletState, isMobile = false, onSelectCard }, ref) => {
-    const isOpen = walletState === "open";
+  ({ cards, walletState, onSelectCard }, ref) => {
+    const isOpen    = walletState === "open";
     const isOpening = walletState === "opening";
-    const showCards = isOpen || isOpening;
-    const slots = isMobile ? GIFT_CARD_SLOTS_MOBILE : GIFT_CARD_SLOTS;
+    const show      = isOpen || isOpening;
+    const cW = 148, cH = 200;
 
     return (
-      <div
-        ref={ref}
-        data-testid="gift-card-rack"
-        className="absolute left-1/2 top-14 z-[8] -translate-x-1/2"
+      <div ref={ref} data-testid="gift-card-rack"
+        className="absolute left-1/2 top-0 -translate-x-1/2"
+        style={{ width:"1px", height:"1px" }}
       >
-        {cards.map((card, index) => {
-          const slot = slots[index] || { rot: 0, x: 0, y: 0 };
-          const theme = COLOR_MAP[card.colorTheme] || COLOR_MAP.gold;
-
+        {cards.map((card, i) => {
+          const s  = SLOTS[i] ?? { rot:0, x:0, y:0 };
+          const th = THEMES[card.colorTheme] ?? THEMES.gold;
           return (
-            <button
-              key={card.id}
-              type="button"
-              data-card-id={card.id}
-              disabled={!isOpen}
+            <motion.button key={card.id} type="button" disabled={!isOpen}
               onClick={() => onSelectCard(card)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onSelectCard(card);
-                }
-              }}
-              aria-label={`Mở voucher: ${card.title}`}
-              className={`gift-card-item group absolute left-1/2 top-0 origin-bottom cursor-pointer rounded-lg border p-2 text-left shadow-lg transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-gold ${
-                theme.border
-              } ${
-                showCards
-                  ? "pointer-events-auto hover:-translate-y-3 hover:scale-105 hover:shadow-gold/20 hover:z-20"
-                  : "pointer-events-none"
-              }`}
+              aria-label={`Xem voucher: ${card.title}`}
+              whileHover={isOpen ? { y:-22, scale:1.10, zIndex:50, rotate:0, transition:{duration:.22} } : {}}
+              whileTap={isOpen ? { scale:.95 } : {}}
+              className={`gift-card-item absolute origin-bottom rounded-2xl border shadow-[0_10px_40px_rgba(0,0,0,0.40)] transition-[border,box-shadow] duration-300 focus:outline-none focus:ring-2 focus:ring-rose/50 ${th.border} ${th.glow} ${show?"pointer-events-auto cursor-pointer":"pointer-events-none"}`}
               style={{
-                width: isMobile ? "78px" : "92px",
-                height: isMobile ? "74px" : "86px",
-                marginLeft: isMobile ? "-39px" : "-46px",
-                zIndex: 10 + index,
-                background: `linear-gradient(135deg, var(--tw-gradient-stops))`,
-                transform: showCards
-                  ? `translate(${slot.x}px, ${slot.y}px) rotate(${slot.rot}deg)`
-                  : `translate(0px, 0px) rotate(0deg) scale(0.6)`,
-                opacity: showCards ? 1 : 0,
-                transitionDelay: isOpening ? `${0.35 + index * 0.08}s` : "0s",
+                width:`${cW}px`, height:`${cH}px`,
+                left:"50%", top:"0", marginLeft:`-${cW/2}px`,
+                zIndex:10+i,
+                transform: show
+                  ? `translate(${s.x}px,${s.y}px) rotate(${s.rot}deg)`
+                  : `translate(0px,90px) rotate(${s.rot*.15}deg) scale(.25)`,
+                opacity: show ? 1 : 0,
+                transition:`transform .72s cubic-bezier(.34,1.5,.64,1) ${isOpening?.26+i*.12:0}s, opacity .42s ease ${isOpening?.23+i*.12:0}s`,
               }}
             >
-              {/* Background gradient container */}
-              <div
-                className={`flex h-full w-full flex-col justify-between rounded-md bg-gradient-to-br ${theme.bg} p-1.5`}
-              >
-                {/* Header with Icon & Badge */}
-                <div className="flex items-center justify-between">
-                  <span className="text-xs">{card.icon}</span>
-                  <span
-                    className={`rounded-[3px] border px-1 py-[1px] font-mono text-[7px] uppercase tracking-wider ${theme.badge}`}
-                  >
-                    {card.badge}
-                  </span>
+              <div className={`group relative flex h-full w-full flex-col overflow-hidden rounded-[14px] bg-gradient-to-b ${th.bg} p-4`}>
+                {/* Top shine */}
+                <div aria-hidden className={`pointer-events-none absolute inset-x-0 top-0 h-[45%] rounded-t-[14px] bg-gradient-to-b ${th.shine} to-transparent`} />
+                {/* Inner border */}
+                <div aria-hidden className="pointer-events-none absolute inset-[3px] rounded-[11px] border border-white/80" />
+
+                {/* Icon big */}
+                <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-xl border shadow-sm text-2xl ${th.iconBg}`}>
+                  {card.icon}
                 </div>
 
-                {/* Card Title */}
-                <div className="my-auto">
-                  <p className="line-clamp-2 font-display text-[9px] font-semibold leading-tight text-cream group-hover:text-gold sm:text-[10px]">
-                    {card.title}
-                  </p>
-                </div>
+                {/* Badge */}
+                <span className={`mb-3 inline-flex w-fit rounded-md px-2.5 py-1 font-body text-[9px] font-semibold uppercase tracking-widest ${th.badgeBg} ${th.badgeText}`}>
+                  {card.badge}
+                </span>
 
-                {/* Footer hint */}
-                <div className="flex items-center justify-between text-[6px] font-medium text-cream-dim/60">
-                  <span>chạm xem</span>
-                  <span className="transition-transform group-hover:translate-x-0.5">↗</span>
+                {/* Title — large font matching app */}
+                <p className={`flex-1 font-display text-base font-semibold leading-snug ${th.title} group-hover:opacity-80 transition-opacity`}>
+                  {card.title}
+                </p>
+
+                {/* Footer */}
+                <div className="mt-3 flex items-center justify-between border-t border-black/8 pt-2.5">
+                  <span className="font-body text-[10px] text-gray-400">chạm để xem</span>
+                  <span className="text-xs text-gray-300 transition-transform group-hover:translate-x-0.5">↗</span>
                 </div>
               </div>
-            </button>
+            </motion.button>
           );
         })}
       </div>
     );
   }
 );
-
 GiftCardRack.displayName = "GiftCardRack";
 export default GiftCardRack;

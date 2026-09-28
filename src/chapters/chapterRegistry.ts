@@ -1,6 +1,6 @@
 import HeroSection from "@/sections/HeroSection";
 import FlowersSection from "@/sections/FlowersSection";
-import WalletSection from "@/sections/WalletSection";
+import VoucherSection from "@/sections/voucher/CinematicVoucherSection";
 import LetterSection from "@/sections/LetterSection";
 import MomentsSection from "@/sections/MomentsSection";
 import AnniversarySection from "@/sections/AnniversarySection";
@@ -25,7 +25,7 @@ export const CHAPTER_REGISTRY: ChapterMeta[] = [
     id: "wallet",
     index: 2,
     label: BIRTHDAY_DATA.steps[2] ?? "Lì xì",
-    Component: WalletSection,
+    Component: VoucherSection,
   },
   {
     id: "letter",

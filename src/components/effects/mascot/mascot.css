@@ -46,3 +46,26 @@
 @media (prefers-reduced-motion: reduce) {
   .journey-mascot *, .journey-mascot *::before { animation: none !important; transition: none !important; }
 }
+
+/* Chapter 02 (wallet) mascot refinement */
+.journey-mascot[data-chapter="wallet"] {
+  opacity: 0.55;
+  transition: opacity 0.35s ease, left 0.35s ease;
+}
+.journey-mascot[data-chapter="wallet"]:hover {
+  opacity: 0.88;
+}
+.journey-mascot[data-chapter="wallet"][data-side="left"] {
+  left: max(16px, env(safe-area-inset-left));
+}
+.journey-mascot[data-chapter="wallet"] .journey-mascot__restore,
+.journey-mascot[data-chapter="wallet"] .journey-mascot__collapse {
+  border-color: rgba(231, 185, 106, 0.25);
+  box-shadow: none;
+}
+body.chapter02-transitioning .journey-mascot {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  transition: opacity 0.3s ease !important;
+}

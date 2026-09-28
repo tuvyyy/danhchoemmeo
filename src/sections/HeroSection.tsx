@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import { preloadFlowerAssets } from "@/lib/assets/preloadFlowers";
@@ -28,7 +29,7 @@ function SpiderMeoSplit({ active }: { active: boolean }) {
 
   if (!active) return null;
 
-  return (
+  return createPortal(
     <div className="spider-split" aria-hidden="true">
       <motion.div
         className="spider-split__panel spider-split__panel--left"
@@ -81,27 +82,33 @@ function SpiderMeoSplit({ active }: { active: boolean }) {
           <span className="spider-split__nose" />
         </motion.div>
       </div>
-    </div>
+    </div>, document.body
   );
 }
 
-export default function HeroSection({ onComplete }: { onComplete: () => void }) {
+export default function HeroSection({ onComplete }: { onComplete: (options?: { instant?: boolean }) => void }) {
   const { isActive } = useChapterLifecycle(0);
   const tilt = useSceneTilt(4);
   const { reducedMotion } = useScenePreferences();
   const { hero } = BIRTHDAY_DATA;
   const [isSplitting, setIsSplitting] = useState(false);
+  const splitTimers = useRef<number[]>([]);
 
   useEffect(() => {
     preloadFlowerAssets();
+    return () => splitTimers.current.forEach(window.clearTimeout);
   }, []);
 
   const startStory = () => {
     if (isSplitting) return;
     if (reducedMotion) { onComplete(); return; }
     setIsSplitting(true);
-    window.setTimeout(onComplete, 720);
-    window.setTimeout(() => setIsSplitting(false), 1650);
+    // The split already covers the handoff; a second chapter transition would
+    // dim and zoom the scene again underneath it.
+    splitTimers.current = [
+      window.setTimeout(() => onComplete({ instant: true }), 720),
+      window.setTimeout(() => setIsSplitting(false), 1650),
+    ];
   };
 
   return (

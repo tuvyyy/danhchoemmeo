@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+﻿import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useChapterFlow } from "@/chapters/useChapterFlow";
 import { CHAPTER_REGISTRY } from "@/chapters/chapterRegistry";
 import { useSceneExperience } from "./SceneExperience";
@@ -32,12 +32,14 @@ export default function ScrollCompanion() {
       const width = collapsed ? 44 : mobile ? 56 : 88;
       const height = collapsed ? 44 : width * 140 / 120;
       const edge = mobile ? 12 : 24;
+      // Leave the stationery corners clear in the envelope chapter.
+      const lowest = chapter === "wallet" ? (mobile ? 112 : 164) : edge;
       const bubbleHeight = host.current?.querySelector('.journey-mascot__speech')?.getBoundingClientRect().height ?? 0;
       const obstacles = [...document.querySelectorAll(`#chapter-${chapter} h1, #chapter-${chapter} h2, #chapter-${chapter} p, #chapter-${chapter} button, nav`)]
         .map(node => node.getBoundingClientRect()).filter(rect => rect.width && rect.height && rect.bottom > 0 && rect.top < innerHeight);
       let best = { side: config.side, bottom: edge, score: Infinity };
       for (const side of [config.side, config.side === "left" ? "right" as const : "left" as const]) {
-        for (const bottom of [edge, edge + 120, edge + 240]) {
+        for (const bottom of [lowest, lowest + 120, lowest + 240]) {
           const x = side === "left" ? edge : innerWidth - edge - width;
           const y = innerHeight - bottom - height;
           const boxes = [{ left: x - 4, right: x + width + 8, top: y - 28, bottom: y + height }];

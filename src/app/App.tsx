@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { AnimatePresence, MotionConfig } from "framer-motion";
 import { SceneExperienceProvider } from "@/components/effects/SceneExperience";
 import LoadingScreen from "@/components/loading/LoadingScreen";
@@ -32,11 +32,12 @@ function BirthdayJourney() {
           <AmbientGlow />
 
           {/* Floating petals and journey companion */}
-          {currentChapter > 1 && <Petals />}
+          {currentChapter > 2 && <Petals />}
           <ScrollCompanion />
+          {currentChapter !== 2 && <CustomCursor />}
 
           {/* Chapter navigation rail */}
-          {currentChapter > 1 && (
+          {currentChapter > 2 && (
             <ProgressRail
               steps={BIRTHDAY_DATA.steps}
               current={currentChapter}
@@ -50,7 +51,7 @@ function BirthdayJourney() {
             {CHAPTER_REGISTRY.map((meta) =>
               isUnlocked(meta.index) ? (
                 <ChapterStage key={meta.id} meta={meta}>
-                  <meta.Component onComplete={() => advance(meta.index)} />
+                  <meta.Component onComplete={(opts) => advance(meta.index, opts)} />
                 </ChapterStage>
               ) : null,
             )}
@@ -66,7 +67,6 @@ export default function App() {
     <MotionConfig reducedMotion="user">
     <ChapterFlowProvider>
       <SceneExperienceProvider>
-      <CustomCursor />
       <BirthdayJourney />
       </SceneExperienceProvider>
     </ChapterFlowProvider>

@@ -1,4 +1,4 @@
-/* Each chapter owns its decorative layers; GSAP owns the outer content wrapper. */
+/* Each chapter owns its decorative layers; navigation moves the native page. */
 [data-chapter-content] > section { isolation: isolate; }
 .scene-background { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .scene-background--ribbon { background: radial-gradient(ellipse at 20% 50%, #6d394624, transparent 60%), radial-gradient(ellipse at 80% 30%, #cba37518, transparent 60%); }

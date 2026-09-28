@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+﻿import type { ComponentType } from "react";
 
 export type ChapterId = "hero" | "flowers" | "wallet" | "letter" | "moments" | "anniversary" | "finale";
 
@@ -12,27 +12,27 @@ export type ChapterLifecycleState =
   | "leaving";
 
 export interface ChapterSectionProps {
-  onComplete?: () => void;
+  onComplete?: (options?: { instant?: boolean }) => void;
 }
 
 export interface ChapterMeta {
   id: ChapterId;
   index: number;
   label: string;
-  Component: ComponentType<{ onComplete: () => void }> | ComponentType<{ onComplete?: () => void }>;
+  Component: ComponentType<{ onComplete: (options?: { instant?: boolean }) => void }> | ComponentType<{ onComplete?: (options?: { instant?: boolean }) => void }>;
 }
 
 export interface ChapterFlowContextValue {
-  /** Current chapter index in focus/view (0..5) */
+  /** Current chapter index in focus/view (0..6) */
   currentChapter: number;
-  /** Highest chapter index unlocked (0..5) */
+  /** Highest chapter index unlocked (0..6) */
   unlockedThrough: number;
-  /** Set of indices that have completed their chapter interaction */
+  /** Chapters the visitor has advanced past through navigation */
   completedChapters: Set<number>;
   /** True while a chapter advance transition animation/scroll is running */
   isTransitioning: boolean;
   /** Advance from current chapter to the next chapter */
-  advance: (fromIndex: number) => void;
+  advance: (fromIndex: number, options?: { instant?: boolean }) => void;
   /** Navigate to an already unlocked chapter (backwards or forwards within unlocked range) */
   goTo: (targetIndex: number) => void;
   /** Check if a given chapter index is unlocked */

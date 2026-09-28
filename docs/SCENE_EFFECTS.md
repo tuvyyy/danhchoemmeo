@@ -11,18 +11,18 @@ needed for these effects.
 | Chapter | Effect | Pig accessory |
 | --- | --- | --- |
 | hero | ThreeUI Ribbon Field + gentle photo tilt | pilot goggles and scarf |
-| flowers | layered scroll depth on the existing garden | flower |
-| wallet | floating closed wallet, gold opening light | red envelope |
+| flowers | Full HD garden video and rotating film reel | flower |
+| wallet | taller hinged envelope, falling flowers, seal open/close and voucher reader | red envelope |
 | letter | warm paper lighting and existing folding interaction | sealed letter |
 | moments | taped polaroids with alternating entry and pointer tilt | camera |
 | anniversary | sunset breathing light, existing timeline/count reveal | heart |
 | finale | ThreeUI Energy Orb, sparse stars, one wish pulse | party hat |
 
 `CHAPTER_EFFECTS` and `MASCOT_SCENES` are keyed by `ChapterId`, including the
-anniversary and finale separately. The existing chapter gates and interaction
-state are retained on backscroll. Outer chapter transforms belong to GSAP;
-new transforms operate on section children or the independent `translate`
-property.
+anniversary and finale separately. Wheel, touch, keyboard and next buttons now
+share the vertical chapter navigation in `CHAPTER_SCROLL.md`. Chapters mount
+as first reached. The envelope returns closed on backscroll. Page navigation
+does not transform chapter wrappers; local effects own their section children.
 
 Active chapter detection compares the visible pixel height of unlocked stages,
 so backscroll cannot select an outgoing intersection entry or miss a tall mobile

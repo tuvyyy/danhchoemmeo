@@ -100,19 +100,19 @@ async function journey(width, reduced = false, noWebgl = false) {
   await page.waitForSelector('.nature-bloom__footer button', { timeout: 45000 });
   await click('.nature-bloom__footer button');
   await stage('wallet');
-  await click('[data-testid="wallet-open-trigger"]');
-  await page.waitForSelector('[data-testid="wallet-next-btn"]');
+  await page.waitForSelector('.chapter-envelope-scene[data-state="open"]');
+  await page.waitForSelector('.scene-next:not(:disabled)');
   await pause(700);
-  await click('[aria-label^="Mở voucher:"]');
+  await click('[data-voucher="coffee"]');
   await page.waitForSelector('[role="dialog"]');
-  await page.waitForFunction(() => document.querySelector('.journey-mascot').hidden);
+  await page.waitForFunction(() => document.querySelector('.journey-mascot')?.hidden);
   await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(() => document.querySelector('[role="dialog"]').contains(document.activeElement)), true, 'Voucher traps keyboard focus');
-  assert.equal(await page.$eval('.journey-mascot', el => el.hidden), true, 'Voucher hides mascot');
+  assert.equal(await page.$eval('.journey-mascot', el => el.hidden), true, 'Mascot rests during voucher reading');
   await page.keyboard.press('Escape');
   await page.waitForSelector('[role="dialog"]', { hidden: true });
-  await page.waitForFunction(() => !document.querySelector('.journey-mascot').hidden);
-  await click('[data-testid="wallet-next-btn"]');
+  await page.waitForFunction(() => !document.querySelector('.journey-mascot')?.hidden);
+  await click('.scene-next');
   await stage('letter');
   await click('[aria-label="Mở thư"]');
   await pause(1300);
@@ -145,13 +145,13 @@ async function journey(width, reduced = false, noWebgl = false) {
   for (const id of ['moments', 'wallet', 'hero', 'finale']) {
     console.log(`${name}: revisit ${id}`);
     await page.$eval(`#chapter-${id}`, el => el.scrollIntoView({ block: 'start', behavior: 'instant' }));
-    await page.waitForFunction(chapter => document.querySelector('.journey-mascot').dataset.chapter === chapter, { timeout: 10000 }, id).catch(async error => {
+    await page.waitForFunction(chapter => document.querySelector('.journey-mascot')?.dataset.chapter === chapter, { timeout: 10000 }, id).catch(async error => {
       console.log(await page.evaluate(() => ({ current: document.querySelector('.journey-mascot')?.dataset.chapter, stages: [...document.querySelectorAll('[data-chapter-id]')].map(el => ({ id: el.dataset.chapterId, top: el.getBoundingClientRect().top, height: el.getBoundingClientRect().height })) })));
       throw error;
     });
     await pause(300);
     if (id === 'moments') assert.equal(await page.$$eval('.scrapbook-card[aria-pressed="true"]', nodes => nodes.length), 4);
-    if (id === 'wallet') assert.equal(await page.$eval('.wallet-object-stage', el => el.dataset.walletState), 'open');
+    if (id === 'wallet') assert.equal(await page.$eval('.chapter-envelope-scene', el => el.dataset.state), 'open');
     if (id === 'finale') assert.equal(await page.$('[aria-label="Thổi nến"]'), null);
   }
   assert.deepEqual(errors, [], `${name}: console errors`);

@@ -3,9 +3,10 @@ interface ProgressRailProps {
   current: number;
   unlocked: number;
   onSelect?: (index: number) => void;
+  compact?: boolean;
 }
 
-export default function ProgressRail({ steps, current, unlocked, onSelect }: ProgressRailProps) {
+export default function ProgressRail({ steps, current, unlocked, onSelect, compact = false }: ProgressRailProps) {
   return (
     <nav
       aria-label="Tiến trình hành trình"
@@ -39,7 +40,7 @@ export default function ProgressRail({ steps, current, unlocked, onSelect }: Pro
             <span
               className={`font-body text-[10px] uppercase tracking-[0.25em] transition-all duration-300 ${
                 isCurrent
-                  ? "text-gold opacity-100"
+                  ? `text-gold ${compact ? "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100" : "opacity-100"}`
                   : isUnlocked
                     ? "text-cream-dim opacity-0 group-hover:opacity-75"
                     : "text-cream-dim/30 opacity-0"

@@ -16,8 +16,13 @@ export default function EnvelopeArtwork({ state, onToggle, hovered, inspected, i
         <div className="envelope__flap"><VoucherAsset asset={ENVELOPE_ASSETS.flap} stretch /></div>
       </div>
       <div className="envelope__contents" id={contentsId}>
-        <div className="envelope__letter envelope__paper" style={{ "--paper-delay": ".95s" } as CSSProperties}>
-          <VoucherAsset asset={ENVELOPE_ASSETS.letter} />
+        <div className="envelope__letter envelope__paper"
+          data-hovered={hovered === "letter"}
+          data-inspected={inspected === "letter"}
+          style={{ "--paper-delay": ".95s" } as CSSProperties}>
+          <div className="envelope__letter-paper">
+            <VoucherAsset asset={ENVELOPE_ASSETS.letter} />
+          </div>
         </div>
         {VOUCHERS.map(voucher => {
           const placement = VOUCHER_PLACEMENTS[voucher.id];

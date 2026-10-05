@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useChapterFlow } from "@/chapters/useChapterFlow";
+import { useSceneExperience } from "./SceneExperience";
 
 interface TrailParticle {
   x: number;
@@ -22,6 +24,11 @@ const TRAIL_COLORS = [
 ];
 
 export default function CustomCursor() {
+  const { isTransitioning } = useChapterFlow();
+  const { overlayOpen } = useSceneExperience();
+  const paused = isTransitioning || overlayOpen;
+  const pausedRef = useRef(paused); pausedRef.current = paused;
+  const wakeRef = useRef(() => {});
   const [enabled, setEnabled] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
@@ -46,12 +53,14 @@ export default function CustomCursor() {
     if (isTouch) return;
 
     setEnabled(true);
-    document.body.classList.add("custom-cursor-enabled");
+
 
     const onMouseMove = (e: MouseEvent) => {
       mousePos.current.x = e.clientX;
       mousePos.current.y = e.clientY;
+      if (pausedRef.current) return;
       setIsVisible(true);
+      wakeRef.current();
 
       // Robust hover detection via elementFromPoint
       const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
@@ -75,7 +84,7 @@ export default function CustomCursor() {
       const dy = e.clientY - lastSpawnPos.current.y;
       const dist = Math.hypot(dx, dy);
 
-      if (dist > 14) {
+      if (dist > 14 && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
         lastSpawnPos.current = { x: e.clientX, y: e.clientY };
 
         // Spawn 1 or 2 gentle trail sparkles / hearts
@@ -114,7 +123,10 @@ export default function CustomCursor() {
     };
 
     const onMouseDown = (e: MouseEvent) => {
+      if (pausedRef.current) return;
       setIsClicking(true);
+      wakeRef.current();
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
       // Burst of hearts and stars on click
       for (let i = 0; i < 10; i++) {
@@ -148,6 +160,7 @@ export default function CustomCursor() {
     };
 
     const onMouseEnter = () => {
+      wakeRef.current();
       setIsVisible(true);
     };
 
@@ -167,11 +180,16 @@ export default function CustomCursor() {
     };
   }, []);
 
-  // Animation frame loop for cursor physics & particle rendering
   useEffect(() => {
-    if (!enabled) return;
+    document.body.classList.toggle("custom-cursor-enabled", enabled && !paused);
+    return () => document.body.classList.remove("custom-cursor-enabled");
+  }, [enabled, paused]);
 
-    let animId: number;
+  // Sleep when the pointer settles, and release the canvas during scene changes.
+  useEffect(() => {
+    if (!enabled || paused) return;
+
+    let animId = 0;
 
     const updateCanvasSize = () => {
       if (canvasRef.current) {
@@ -181,6 +199,7 @@ export default function CustomCursor() {
         canvasRef.current.style.width = `${window.innerWidth}px`;
         canvasRef.current.style.height = `${window.innerHeight}px`;
       }
+      wakeRef.current();
     };
     updateCanvasSize();
     window.addEventListener("resize", updateCanvasSize);
@@ -267,6 +286,8 @@ export default function CustomCursor() {
     };
 
     const loop = () => {
+      animId = 0;
+      if (document.hidden) return;
       // 1. Lerp cursor position for buttery feel
       const ease = 0.45;
       currentPos.current.x += (mousePos.current.x - currentPos.current.x) * ease;
@@ -310,16 +331,24 @@ export default function CustomCursor() {
         }
       }
 
-      animId = requestAnimationFrame(loop);
+      const moving = Math.hypot(mousePos.current.x - currentPos.current.x, mousePos.current.y - currentPos.current.y) > .05;
+      if (moving || particles.current.length) animId = requestAnimationFrame(loop);
     };
-
-    animId = requestAnimationFrame(loop);
+    const wake = () => { if (!animId && !document.hidden) animId = requestAnimationFrame(loop); };
+    wakeRef.current = wake;
+    document.addEventListener("visibilitychange", wake);
+    wake();
 
     return () => {
       cancelAnimationFrame(animId);
+      wakeRef.current = () => {};
+      particles.current = [];
+      const canvas = canvasRef.current;
+      canvas?.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
+      document.removeEventListener("visibilitychange", wake);
       window.removeEventListener("resize", updateCanvasSize);
     };
-  }, [enabled]);
+  }, [enabled, paused]);
 
   if (!enabled) return null;
 
@@ -335,10 +364,11 @@ export default function CustomCursor() {
       {/* Interactive Cat Paw Cursor */}
       <div
         ref={cursorRef}
+        data-custom-cursor
         aria-hidden
         className="pointer-events-none fixed left-0 top-0 z-[9999] will-change-transform"
         style={{
-          opacity: isVisible ? 1 : 0,
+          opacity: isVisible && !paused ? 1 : 0,
           transition: "opacity 0.25s ease-out",
         }}
       >

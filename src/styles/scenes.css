@@ -1,5 +1,23 @@
 /* Each chapter owns its decorative layers; navigation moves the native page. */
+[data-chapter-state="locked"] { display: none; }
+html[data-flowers-voucher-handoff] .journey-mascot,
+html[data-flowers-voucher-handoff] [data-journey-ui],
+html[data-flowers-voucher-handoff] nav { visibility: hidden !important; pointer-events: none !important; }
+html[data-flowers-voucher-handoff] .nature-bloom { overflow: hidden !important; }
+html[data-flowers-voucher-handoff] .nature-bloom > * { position: relative; z-index: 1; }
+html[data-flowers-voucher-handoff] .nature-bloom > .flowers-voucher-background {
+  position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse at 50% 47%, #30121a 0%, #17080e 52%, #070306 100%);
+}
+html[data-flowers-voucher-handoff] .chapter-envelope-scene::after { display: none; }
+html[data-flowers-voucher-handoff] .envelope__seal-hint,
+html[data-flowers-voucher-handoff] .garden-video-toggle { visibility: hidden; }
 [data-chapter-content] > section { isolation: isolate; }
+/* Hero & Flowers continuous transition stacking */
+#chapter-hero { position: relative; z-index: 10; }
+#chapter-flowers { position: relative; z-index: 20; }
+#chapter-flowers .nature-bloom { overflow-x: clip; overflow-y: visible; }
+#chapter-flowers .nature-bloom__flower-cluster { position: relative; z-index: 25; }
 .scene-background { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .scene-background--ribbon { background: radial-gradient(ellipse at 20% 50%, #6d394624, transparent 60%), radial-gradient(ellipse at 80% 30%, #cba37518, transparent 60%); }
 .scene-background--ribbon .scene-webgl { opacity: .34; filter: sepia(.6) saturate(.6) hue-rotate(325deg); mask-image: linear-gradient(transparent, #000 20%, #000 80%, transparent); }

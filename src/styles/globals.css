@@ -308,6 +308,12 @@ html {
   color: #eee9e1;
 }
 
+/* Mounted chapters keep their assets ready without running offscreen decorations. */
+[data-chapter-state="locked"] *, [data-chapter-state="ready"] *,
+[data-chapter-state="completed"] *, [data-chapter-state="leaving"] *, [data-chapter-state="entering"] * {
+  animation-play-state: paused !important;
+}
+
 .cinematic-hero__header {
   display: grid;
   grid-template-columns: 1fr 1.25fr 1fr;

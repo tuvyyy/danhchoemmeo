@@ -1,84 +1,49 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+﻿import { useState, type CSSProperties } from "react";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import { useSceneTilt } from "@/components/effects/useSceneDepth";
-import { useScenePreferences } from "@/components/effects/useScenePreferences";
+import "./moments-scene.css";
+import MemoryViewer from "./MemoryViewer";
 
+const notes = ["một cái nắm tay", "một đêm thật dài", "một lời hẹn", "còn viết tiếp…"];
+const drawings = ["M12 21S2 14 2 8c0-6 8-7 10-1 2-6 10-5 10 1 0 6-10 13-10 13Z", "M19 18A9 9 0 0 1 7 4a9 9 0 1 0 12 14ZM19 3v5m-2.5-2.5h5", "M2 18h20M5 15a7 7 0 0 1 14 0M12 2v3M3 6l2 2m14 0 2-2M7 22h10", "M4 16c0-8 16-8 16 0S4 24 4 16Zm8-13v6m-3-3h6"];
 export default function MomentsSection({ onComplete }: { onComplete: () => void }) {
-  const tilt = useSceneTilt(12);
-  const { reducedMotion } = useScenePreferences();
-  const [flipped, setFlipped] = useState<Set<number>>(new Set());
+  const tilt = useSceneTilt(5);
+  const [revealed, setRevealed] = useState<Set<number>>(new Set());
+  const [seen, setSeen] = useState<Set<number>>(new Set());
+  const [failed, setFailed] = useState<Set<number>>(new Set());
+  const [viewer, setViewer] = useState<number | null>(null);
   const { moments } = BIRTHDAY_DATA;
-  const allFlipped = flipped.size === moments.items.length;
+  const flip = (index: number) => {
+    setRevealed(previous => { const next = new Set(previous); if (next.has(index)) next.delete(index); else next.add(index); return next; });
+    setSeen(previous => new Set([...previous, index]));
+  };
+  return <section className="scrapbook-scene memory-table" aria-label={moments.chapter} data-seen={seen.size}>
+    <svg className="memory-table__thread" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M-30 430C210 400 190 705 435 690S734 371 1001 451S1255 680 1480 580"/></svg>
+    <header className="memory-table__header"><span>CHƯƠNG 04 / KHOẢNH KHẮC</span></header>
+    <div className="memory-table__intro"><h2>Xa một chút,<br/><em>kỷ niệm vẫn gần.</em></h2><div><button className="memory-album-open" onClick={() => setViewer(0)}>Mở album ảnh <span aria-hidden="true">↗</span></button></div></div>
+    <div className="memory-board" aria-label="Bốn tấm hình kỷ niệm">
+      {moments.items.map((moment, index) => <button key={moment.src} className="memory-print" data-index={index} data-revealed={revealed.has(index)}
+        style={{ "--print-angle": `${moment.rot}deg` } as CSSProperties} onClick={() => flip(index)}
+        aria-label={`${revealed.has(index) ? "Xem ảnh" : "Đọc lời nhắn"} kỷ niệm ${index + 1}: ${moment.caption}`} aria-pressed={revealed.has(index)} {...tilt}>
+        <span className="memory-print__motion"><span className="memory-print__turn">
+          <span className="memory-print__front" aria-hidden={!revealed.has(index)}>
+            <span className="memory-print__edition">DÀNH CHO TỤI MÌNH <i>0{index + 1}</i></span>
+            <svg viewBox="0 0 24 26" fill="none" stroke="currentColor" strokeWidth=".65" aria-hidden="true"><path d={drawings[index]}/></svg>
+            <span className="memory-print__note">{notes[index]}</span>
+            <span className="memory-print__tap">CHẠM ĐỂ XEM ẢNH <i aria-hidden="true">↗</i></span>
+          </span>
+          <span className="memory-print__back" aria-hidden={revealed.has(index)}>
+            <span className="memory-print__photo">{failed.has(index) ? <span className="memory-print__unavailable">Ảnh chưa tải được<br/><small>{moment.caption}</small></span> : <img src={moment.src} alt={moment.caption} loading="eager" onError={() => setFailed(previous => new Set([...previous, index]))}/>}</span>
+            <span className="memory-print__caption">{moment.caption}</span>
+            <span className="memory-print__number">0{index + 1}</span>
+          </span>
+        </span></span>
+      </button>)}
 
-  const flip = (i: number) =>
-    setFlipped((prev) => {
-      const next = new Set(prev);
-      next.add(i);
-      return next;
-    });
-
-  return (
-    <section
-      className="scrapbook-scene relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-24 transition-colors duration-700"
-      style={{
-        background:
-          "radial-gradient(125% 100% at 50% 30%, #091a27 0%, #05111a 55%, #02080e 100%)",
-      }}
-    >
-      <div className="mb-3 font-body text-xs uppercase tracking-[0.4em] text-gold">
-        {moments.chapter}
-      </div>
-      <h2 className="mb-12 max-w-xl text-center font-display text-4xl font-light leading-tight sm:text-5xl">
-        {moments.heading}
-        <span className="mt-3 block font-hand text-2xl text-rose">{moments.subtitle}</span>
-      </h2>
-
-      <div className="scrapbook-grid grid grid-cols-2 gap-6 sm:gap-10 md:grid-cols-4">
-        {moments.items.map((m, i) => (
-          <motion.button
-            key={i}
-            onClick={() => flip(i)}
-            initial={{ opacity: 0, y: reducedMotion ? 0 : 40, x: reducedMotion ? 0 : (i % 2 ? 22 : -22), rotate: m.rot }}
-            whileInView={{ opacity: 1, y: 0, x: 0, rotate: m.rot }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ delay: i * 0.12, duration: 0.7 }}
-            whileHover={{ scale: 1.06, rotate: 0, zIndex: 20 }}
-            className="scrapbook-card relative rounded-sm cursor-pointer"
-            aria-label={`${flipped.has(i) ? "Kỷ niệm" : "Mở kỷ niệm"} ${i + 1}`}
-            aria-pressed={flipped.has(i)}
-            {...tilt}
-          >
-            <div className="scrapbook-card__surface">
-            <div className="scrapbook-card__image relative aspect-square w-32 overflow-hidden bg-ink-soft sm:w-40">
-              <img src={m.src} alt={m.caption} className="h-full w-full object-cover" />
-              {!flipped.has(i) && (
-                <div className="absolute inset-0 flex items-center justify-center bg-ink/70 font-hand text-lg text-gold">
-                  {moments.tapPrompt}
-                </div>
-              )}
-            </div>
-            <p className="scrapbook-card__caption">
-              {flipped.has(i) ? m.caption : "· · ·"}
-            </p>
-            </div>
-          </motion.button>
-        ))}
-      </div>
-
-      {allFlipped && (
-        <motion.button
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={onComplete}
-          className="group mt-12 flex items-center gap-3 rounded-full border border-gold/40 bg-gold/5 px-8 py-4 font-body text-sm uppercase tracking-[0.25em] text-gold transition-colors hover:bg-gold/15 cursor-pointer"
-        >
-          {moments.cta}
-          <span className="transition-transform group-hover:translate-y-1">↓</span>
-        </motion.button>
-      )}
-    </section>
-  );
+    </div>
+    <footer className="memory-table__footer"><div className="memory-table__count" aria-live="polite"><strong>0{seen.size}</strong><span>/ 04 ĐIỀU ĐÃ MỞ</span><i aria-hidden="true" style={{ "--seen": seen.size / 4 } as CSSProperties}/></div>
+      {seen.size === moments.items.length ? <button className="moments-next" onClick={onComplete}>{moments.cta}<span aria-hidden="true">↗</span></button> : <p>Chạm ảnh để đọc lời nhắn.</p>}
+    </footer>
+    {viewer !== null && <MemoryViewer items={moments.items} initial={viewer} onClose={() => setViewer(null)} onVisit={index => setSeen(previous => new Set([...previous, index]))}/>}
+  </section>;
 }

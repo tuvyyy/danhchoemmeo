@@ -12,10 +12,20 @@ export default function FlowersSection({ onComplete }: { onComplete: () => void 
   const { flowers } = BIRTHDAY_DATA;
   const videoRef = useRef<HTMLVideoElement>(null);
   const [visible, setVisible] = useState(!document.hidden);
+  const [inViewport, setInViewport] = useState(false);
   const [userPaused, setUserPaused] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [failed, setFailed] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const observer = new IntersectionObserver(([entry]) => setInViewport(entry.isIntersecting), { threshold: .01 });
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => { if (!isActive) setUserPaused(false); }, [isActive]);
 
   useEffect(() => {
     const update = () => setVisible(!document.hidden);
@@ -27,12 +37,12 @@ export default function FlowersSection({ onComplete }: { onComplete: () => void 
     const video = videoRef.current;
     if (!video) return;
     let cancelled = false;
-    if (isActive && visible && !userPaused) {
+    if ((isActive || inViewport) && visible && !userPaused) {
       video.muted = true;
       void video.play().catch(() => { if (!cancelled) setPlaying(false); });
     } else video.pause();
     return () => { cancelled = true; video.pause(); };
-  }, [isActive, visible, userPaused]);
+  }, [isActive, inViewport, visible, userPaused]);
 
   const togglePlayback = () => {
     const video = videoRef.current;
@@ -52,7 +62,10 @@ export default function FlowersSection({ onComplete }: { onComplete: () => void 
   return (
     <section className="nature-bloom nature-bloom--video">
       <div className="garden-video-stage">
-        <GardenReel running={isActive && visible && playing} />
+        <GardenReel running={(isActive || inViewport) && visible && !userPaused} />
+        <div className="garden-keepsake" aria-hidden="true">
+          <span>Một khoảng trời của tụi mình.</span><span>01 / ∞</span>
+        </div>
         <div className="garden-video-frame">
         <video ref={videoRef} className="garden-video" src={gardenVideo} poster={gardenPoster}
           autoPlay muted loop playsInline preload="auto" disablePictureInPicture
@@ -75,7 +88,7 @@ export default function FlowersSection({ onComplete }: { onComplete: () => void 
       </div>
 
       <header className="nature-bloom__header">
-        <span>{flowers.chapter}</span><span>một khoảng trời cho em</span>
+        <span>{flowers.chapter}</span>
       </header>
 
       <div className="nature-bloom__intro">
@@ -86,13 +99,14 @@ export default function FlowersSection({ onComplete }: { onComplete: () => void 
         <AnimatePresence mode="wait">
           <motion.div key={message.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }} transition={{ duration: .35 }}>
-            <span className="garden-message-count">{message.tag}<i aria-hidden="true" />04</span>
+
             <p>{message.line1}<br /><em>{message.line2}</em></p>
           </motion.div>
         </AnimatePresence>
       </div>
 
       <div className="nature-bloom__footer">
+
         <button type="button" onClick={onComplete}><span>{flowers.cta}</span><i aria-hidden="true">↗</i></button>
       </div>
     </section>

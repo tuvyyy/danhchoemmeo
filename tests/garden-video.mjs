@@ -8,7 +8,7 @@ await fs.mkdir(out, { recursive: true });
 const browser = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 try {
-  for (const [name, width, height] of [['desktop', 1440, 900], ['mobile', 390, 844], ['tablet', 820, 1180]]) {
+  for (const [name, width, height] of [['desktop', 1440, 900], ['mobile', 390, 844], ['tablet', 820, 1180]].filter(c => !process.argv[2] || c[0] === process.argv[2])) {
     const page = await browser.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -42,6 +42,8 @@ try {
       return { exposed: reel.right - frame.right, overlaps: reel.left < frame.right, contained: reel.right <= innerWidth };
     });
     assert(reelPosition.exposed > 10 && reelPosition.overlaps && reelPosition.contained, 'Reel peeks from behind the right edge and stays on screen');
+    assert.equal(await page.$eval('.garden-reel', el => getComputedStyle(el).position), 'absolute', 'Reel stays anchored behind the film');
+    assert(await page.evaluate(() => Number(getComputedStyle(document.querySelector('.garden-reel')).zIndex) < Number(getComputedStyle(document.querySelector('.garden-video-frame')).zIndex)), 'Film occludes the reel');
     assert.equal(videoState.fit, width < height ? 'cover' : 'contain', 'Film frame adapts to the screen shape');
     const layout = await page.evaluate(() => {
       const video = document.querySelector('.garden-video-stage').getBoundingClientRect();
@@ -51,7 +53,8 @@ try {
     });
     assert(layout.titleClear && layout.captionClear, 'Typography stays outside the video');
     assert.equal(await page.$('.nature-bloom__flower-cluster'), null, 'Old flower layers do not cover the video');
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false,
+      JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('#chapter-flowers *')].map(e=>({class:e.className,right:e.getBoundingClientRect().right})).filter(e=>e.right>innerWidth+1).slice(0,10))));
     const t = await page.$eval('.garden-video', el => el.currentTime);
     await pause(500);
     assert(await page.$eval('.garden-video', el => el.currentTime) > t, 'Autoplay advances decoded frames');
@@ -66,6 +69,7 @@ try {
     assert.equal(await page.$eval('.garden-video', el => el.ended), false, 'Video loops');
     await page.click('.nature-bloom__footer button');
     await page.waitForSelector('.chapter-envelope-scene[data-state="closed"][data-entered="true"]');
+    await page.waitForSelector('.chapter-envelope-scene[data-running="true"]');
     assert(await page.$eval('.garden-video', el => el.paused), 'Video pauses off-chapter');
     await page.$eval('#chapter-flowers', el => el.scrollIntoView({ behavior: 'instant', block: 'start' }));
     await page.waitForFunction(() => !document.querySelector('.garden-video').paused);

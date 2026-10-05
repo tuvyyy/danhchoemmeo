@@ -1,275 +1,117 @@
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import { useSceneOverlay } from "@/components/effects/SceneExperience";
 import { useDialogFocus } from "@/components/effects/useDialogFocus";
+import { useChapterLifecycle } from "@/chapters/useChapterLifecycle";
+import { useChapterFlowContext } from "@/chapters/ChapterFlowContext";
+import { ENVELOPE_ASSETS } from "./voucher/voucherConfig";
+import LetterBloomGarden from "./flowers/LetterBloomGarden";
+import { prepareLetterFragments } from "@/chapters/letterFragments";
+import "./letter-scene.css";
 
-const PAPER = "linear-gradient(135deg, #efe6d3 0%, #e7dcc4 45%, #ddd0b4 100%)";
-const DUST = Array.from({ length: 7 }, (_, i) => i);
-
-function Page({ src, side }: { src: string; side: "left" | "right" }) {
+function LetterPage({ index }: { index: number }) {
+  if (index === 0) {
+    return (
+      <article className="letter-page letter-page--note" data-page="0">
+        <div className="letter-page__meta"><span>GỬI RIÊNG EM · LÁ THƯ TAY</span><span>10 / 11</span></div>
+        <div className="letter-page__note-container">
+          <img
+            src={ENVELOPE_ASSETS.letter.src}
+            alt="Lá thư tay: Tui không ở cạnh để dẫn em đi ăn, nên gửi em một chút để tiêu nè. Tuỳ em thích gì thì dùng nhé, chỉ cần em vui là được. Luôn thương em ♡"
+            className="letter-page__note-img"
+          />
+        </div>
+        <div className="sr-only">
+          <h3>Gửi em mèo,</h3>
+          <p>Tui không ở cạnh để dẫn em đi ăn, nên gửi em một chút để tiêu nè. Tuỳ em thích gì thì dùng nhé, chỉ cần em vui là được.</p>
+          <p className="letter-page__signature">Luôn thương em ♡</p>
+        </div>
+        <span className="letter-page__number">01 / 02</span>
+      </article>
+    );
+  }
+  const page = BIRTHDAY_DATA.letter.pages[1];
   return (
-    <div className="relative h-full w-full overflow-hidden" style={{ background: PAPER }}>
-      <img src={src} alt={`Trang thư ${side === "left" ? "1" : "2"}`} className="h-full w-full object-cover" />
-      {/* fold shading toward the spine */}
-      <div
-        className="pointer-events-none absolute inset-y-0 w-16"
-        style={{
-          [side === "left" ? "right" : "left"]: 0,
-          background:
-            side === "left"
-              ? "linear-gradient(to right, transparent, rgba(0,0,0,0.22))"
-              : "linear-gradient(to left, transparent, rgba(0,0,0,0.22))",
-        }}
-      />
-      {/* placeholder filename slot hint */}
-      <span className="absolute bottom-2 left-2 font-body text-[9px] uppercase tracking-widest text-black/25">
-        {side}-page-scan.jpg
-      </span>
-    </div>
+    <article className="letter-page" data-page="1">
+      <div className="letter-page__meta"><span>GỬI RIÊNG EM</span><span>10 / 11</span></div>
+      <h3>{page.title}</h3>
+      {page.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+      <p className="letter-page__signature">{page.closing}</p>
+      <span className="letter-page__number">02 / 02</span>
+    </article>
   );
 }
 
 export default function LetterSection({ onComplete }: { onComplete: () => void }) {
   const [open, setOpen] = useState(false);
-  const [zoom, setZoom] = useState<null | 0 | 1>(null);
-  useSceneOverlay(zoom !== null);
-  const dialogRef = useDialogFocus(zoom !== null);
-  const { letter } = BIRTHDAY_DATA;
-  const { leftScan, rightScan, faintFlower } = letter.placeholders;
-
+  const [page, setPage] = useState(0);
+  const [reading, setReading] = useState(false);
+  const atelier = useRef<HTMLElement>(null);
+  const { isActive, isTransitioning } = useChapterLifecycle(3);
+  const { currentChapter } = useChapterFlowContext();
+  useSceneOverlay(reading);
+  const dialogRef = useDialogFocus(reading);
+  useEffect(() => { if (!isActive) { setReading(false); if (currentChapter < 3) { setOpen(false); setPage(0); } } }, [isActive, currentChapter]);
   useEffect(() => {
-    if (zoom === null) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setZoom(null);
+    if (!isActive || isTransitioning || !open || reading || !atelier.current) return;
+    let stop: (() => void) | undefined;
+    let timer = 0;
+    const prepare = () => { clearTimeout(timer); timer=window.setTimeout(()=>{stop?.();stop=prepareLetterFragments(atelier.current!);},1250); };
+    prepare();
+    const garden=atelier.current.querySelector('.letter-bloom-garden');
+    const observer=new MutationObserver(prepare);
+    if(garden)observer.observe(garden,{attributes:true,attributeFilter:['data-bloomed']});
+    return()=>{clearTimeout(timer);stop?.();observer.disconnect();};
+  }, [isActive, isTransitioning, open, page, reading]);
+  useEffect(() => {
+    if (!reading) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const key = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setReading(false);
+      if (event.key === "ArrowRight") setPage(1);
+      if (event.key === "ArrowLeft") setPage(0);
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [zoom]);
-
-  return (
-    <section
-      data-reading={zoom !== null}
-      className="letter-scene relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-24 transition-colors duration-700"
-      style={{
-        background:
-          "radial-gradient(125% 100% at 50% 35%, #22150f 0%, #150d09 55%, #090503 100%)",
-      }}
-    >
-      {/* one extremely faint blurred flower near an edge */}
-      <img
-        src={faintFlower}
-        alt=""
-        aria-hidden
-        className="pointer-events-none absolute -bottom-24 -left-24 h-96 w-96 rounded-full object-cover opacity-[0.06] blur-2xl"
-      />
-
-      {/* drifting dust motes */}
-      {DUST.map((i) => (
-        <span
-          key={i}
-          aria-hidden
-          className="pointer-events-none absolute rounded-full bg-cream/40"
-          style={{
-            width: 2 + (i % 3),
-            height: 2 + (i % 3),
-            left: `${10 + i * 12}%`,
-            top: 0,
-            animation: `fall ${16 + i * 2}s linear ${-i * 3}s infinite`,
-            // @ts-expect-error custom property consumed by fall keyframe
-            "--drift": `${(i % 2 ? 1 : -1) * 60}px`,
-          }}
-        />
-      ))}
-
-      <div className="mb-10 font-body text-[10px] uppercase tracking-[0.5em] text-cream-dim/50">
-        {letter.chapter}
+    window.addEventListener("keydown", key);
+    return () => { document.body.style.overflow = previous; window.removeEventListener("keydown", key); };
+  }, [reading]);
+  return <section ref={atelier} className="letter-scene letter-atelier" data-open={open} data-reading={reading} aria-label="Chương 03 — Một lá thư dành riêng em">
+    <div className="letter-atelier__light" aria-hidden="true"/>
+    <div className="letter-atelier__landscape" aria-hidden="true"/>
+    <LetterBloomGarden active={isActive && !isTransitioning && !reading}/>
+    <svg className="letter-atelier__thread" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M-40 710C220 720 280 500 520 535S1100 790 1210 440S1440 180 1500 170"/></svg>
+    <header className="letter-atelier__header"><span>CHƯƠNG 03 / LÁ THƯ</span></header>
+    <div className="letter-atelier__intro">
+      <h2>Có những điều,<br/>chỉ muốn<br/><em> nói với em.</em></h2>
+      <button className="letter-open-action" onClick={() => { setOpen(true); if (open) setReading(true); }}><span>{open ? "Đọc chậm lại cùng tui" : "Mở lá thư của em"}</span><span aria-hidden="true">↗</span></button>
+    </div>
+    <div className="letter-desk">
+      <div className="letter-keepsake">
+        <div className="letter-keepsake__back" aria-hidden="true"/>
+        <div className="letter-keepsake__pages" inert={!open}>
+          <LetterPage index={page}/>
+          <button className="letter-page__read" onClick={() => setReading(true)} aria-label="Phóng to đọc thư">⤢</button>
+        </div>
+        <button className="letter-cover" onClick={() => setOpen(true)} disabled={open} aria-label="Mở lá thư dành riêng em">
+          <span className="letter-cover__border" aria-hidden="true"/>
+          <svg className="letter-cover__flower" viewBox="0 0 120 150" fill="none" stroke="currentColor" strokeWidth=".8" aria-hidden="true"><path d="M58 132c-7-25 14-55 1-80M59 91C38 98 26 77 31 68c15 0 28 10 28 23Zm0-20c14 4 29-5 30-22-18-1-30 9-30 22ZM59 53C15 45 35 14 59 41c-14-47 29-39 10 2 37-31 48 8 1 15M56 130c18 2 31-5 35-16-19-4-30 2-35 16Z"/></svg>
+          <span className="letter-cover__to">Gửi em mèo,</span><span className="letter-cover__subtitle">với tất cả dịu dàng.</span>
+          <img className="letter-cover__seal" src={ENVELOPE_ASSETS.seal.src} alt=""/>
+          <span className="letter-cover__date">10.11 <i/> for you, always</span>
+        </button>
       </div>
-
-      {/* stage */}
-      <div
-        className="relative flex items-center justify-center"
-        style={{ perspective: 2000, height: "72vh", width: "100%" }}
-      >
-        {/* open two-page spread (revealed behind the cover) */}
-        <motion.button
-          initial={false}
-          animate={open ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.94 }}
-          transition={{ delay: open ? 0.45 : 0, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          onClick={() => open && setZoom(0)}
-          className="relative flex overflow-hidden rounded-[6px] shadow-[0_40px_90px_rgba(0,0,0,0.7)]"
-          style={{ height: "70vh", width: "min(94vw, 96vh)", cursor: open ? "zoom-in" : "default" }}
-          aria-label="Phóng to đọc thư"
-          disabled={!open}
-        >
-          <div className="h-full w-1/2">
-            <Page src={leftScan} side="left" />
-          </div>
-          <div className="h-full w-1/2">
-            <Page src={rightScan} side="right" />
-          </div>
-          {/* central fold seam */}
-          <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-black/30" />
-        </motion.button>
-
-        {/* folded cover — two halves that swing outward like doors */}
-        <motion.div
-          className="absolute"
-          initial={false}
-          animate={{ rotate: open ? 0 : 3 }}
-          transition={{ duration: 0.6 }}
-          style={{
-            height: "64vh",
-            width: "min(46vh, 82vw)",
-            transformStyle: "preserve-3d",
-            pointerEvents: open ? "none" : "auto",
-          }}
-        >
-          {/* left half */}
-          <motion.div
-            className="absolute left-0 top-0 h-full w-1/2 rounded-l-[6px]"
-            initial={false}
-            animate={{ rotateY: open ? -172 : 0, opacity: open ? 0 : 1 }}
-            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], opacity: { delay: open ? 0.5 : 0, duration: 0.5 } }}
-            style={{
-              transformOrigin: "left center",
-              backfaceVisibility: "hidden",
-              background: PAPER,
-              boxShadow: "inset -18px 0 34px rgba(0,0,0,0.22), 0 30px 60px rgba(0,0,0,0.6)",
-            }}
-          />
-          {/* right half */}
-          <motion.div
-            className="absolute right-0 top-0 h-full w-1/2 rounded-r-[6px]"
-            initial={false}
-            animate={{ rotateY: open ? 172 : 0, opacity: open ? 0 : 1 }}
-            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], opacity: { delay: open ? 0.5 : 0, duration: 0.5 } }}
-            style={{
-              transformOrigin: "right center",
-              backfaceVisibility: "hidden",
-              background: PAPER,
-              boxShadow: "inset 18px 0 34px rgba(0,0,0,0.22), 0 30px 60px rgba(0,0,0,0.6)",
-            }}
-          />
-
-          {/* front label + hint, fades as it opens */}
-          <motion.button
-            onClick={() => setOpen(true)}
-            initial={false}
-            animate={{ opacity: open ? 0 : 1 }}
-            transition={{ duration: 0.35 }}
-            whileHover={!open ? { scale: 1.015 } : {}}
-            className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer"
-            style={{ pointerEvents: open ? "none" : "auto" }}
-            aria-label="Mở thư"
-          >
-            <span className="font-hand text-3xl text-[#5a4a3a]">{letter.coverTitle}</span>
-            <span className="mt-1 font-hand text-lg text-[#8a7659]">{letter.coverDate}</span>
-            <span className="absolute bottom-8 font-body text-[10px] uppercase tracking-[0.35em] text-[#8a7659]/80">
-              {letter.openPrompt}
-            </span>
-          </motion.button>
-        </motion.div>
+      <div className="letter-desk__controls" aria-label="Điều khiển lá thư">
+        {open ? <><button onClick={() => setPage(value => 1 - value)} aria-label={page ? "Đọc trang thứ nhất" : "Đọc trang thứ hai"}>{page ? "← Trang trước" : "Trang tiếp theo →"}</button><span>0{page + 1} / 02</span><button onClick={() => setOpen(false)}>Gấp thư lại</button></> : null}
       </div>
-
-      {/* controls */}
-      <div className="mt-10 flex h-8 items-center gap-6">
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              key="ctrl"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex items-center gap-6 font-body text-[11px] uppercase tracking-[0.3em] text-cream-dim"
-            >
-              <button onClick={() => setZoom(0)} className="hover:text-gold cursor-pointer">
-                {letter.zoomBtn}
-              </button>
-              <button onClick={() => setOpen(false)} className="hover:text-gold cursor-pointer">
-                {letter.closeBtn}
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+    </div>
+    <footer className="letter-atelier__footer">{open && <button className="letter-next" onClick={onComplete}>{BIRTHDAY_DATA.letter.cta} <span aria-hidden="true">↗</span></button>}</footer>
+    {reading && createPortal(<div className="letter-reader" role="dialog" aria-modal="true" aria-label="Đọc thư dành riêng em" ref={dialogRef} tabIndex={-1} onClick={() => setReading(false)}>
+      <div className="letter-reader__body" onClick={event => event.stopPropagation()}>
+        <div className="letter-reader__toolbar"><span>LÁ THƯ DÀNH RIÊNG EM</span><button data-dialog-close onClick={() => setReading(false)} aria-label="Đóng chế độ đọc">Đóng ✕</button></div>
+        <LetterPage index={page}/>
+        <div className="letter-reader__pagination"><button disabled={page === 0} onClick={() => setPage(0)}>← Trang 01</button><span>0{page + 1} / 02</span><button disabled={page === 1} onClick={() => setPage(1)}>Trang 02 →</button></div>
       </div>
-
-      <AnimatePresence>
-        {open && (
-          <motion.button
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ delay: 0.4 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={onComplete}
-            className="group mt-8 flex items-center gap-3 rounded-full border border-gold/40 bg-gold/5 px-8 py-4 font-body text-sm uppercase tracking-[0.25em] text-gold transition-colors hover:bg-gold/15 cursor-pointer"
-          >
-            {letter.cta}
-            <span className="transition-transform group-hover:translate-y-1">↓</span>
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* zoomed reading state */}
-      <AnimatePresence>
-        {zoom !== null && (
-          <motion.div
-            role="dialog"
-            ref={dialogRef}
-            tabIndex={-1}
-            aria-modal="true"
-            aria-label="Đọc thư tình"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/92 px-4 py-10"
-            onClick={() => setZoom(null)}
-          >
-            <motion.div
-              key={zoom}
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4 }}
-              onClick={(e) => e.stopPropagation()}
-              className="overflow-hidden rounded-[6px] shadow-2xl"
-              style={{ height: "84vh", maxWidth: "94vw", background: PAPER }}
-            >
-              <img
-                src={zoom === 0 ? leftScan : rightScan}
-                alt={`Trang thư ${zoom + 1}`}
-                className="h-full w-auto max-w-full object-contain"
-              />
-            </motion.div>
-
-            <div className="mt-6 flex items-center gap-8 font-body text-[11px] uppercase tracking-[0.3em] text-cream-dim">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setZoom(0);
-                }}
-                className={`cursor-pointer ${zoom === 0 ? "text-gold" : "hover:text-cream"}`}
-              >
-                ← 01
-              </button>
-              <span className="text-cream-dim/50">/</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setZoom(1);
-                }}
-                className={`cursor-pointer ${zoom === 1 ? "text-gold" : "hover:text-cream"}`}
-              >
-                02 →
-              </button>
-              <button data-dialog-close onClick={() => setZoom(null)} className="ml-4 hover:text-gold cursor-pointer">
-                {letter.shrinkBtn}
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </section>
-  );
+    </div>, document.body)}
+  </section>;
 }

@@ -72,6 +72,7 @@ interface TulipBloomProps {
   scale: number;
   rotate: number;
   delay: number;
+  durationMs?: number;
   depth: "foreground" | "midground" | "background";
   color?: TulipColor;
   isActive: boolean;
@@ -79,7 +80,7 @@ interface TulipBloomProps {
   onBloomComplete: () => void;
 }
 
-export default function TulipBloom({ id, x, y, scale, rotate, delay, depth, color = "ivory", isActive, hasBloomed, onBloomComplete }: TulipBloomProps) {
+export default function TulipBloom({ id, x, y, scale, rotate, delay, durationMs = STAGES.length * STAGE_MS, depth, color = "ivory", isActive, hasBloomed, onBloomComplete }: TulipBloomProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const elapsedRef = useRef(0);
   const completedRef = useRef(false);
@@ -120,20 +121,21 @@ export default function TulipBloom({ id, x, y, scale, rotate, delay, depth, colo
       complete();
       return;
     }
-    draw(Math.min(FINAL_STAGE, Math.floor(Math.max(0, elapsedRef.current - delay) / STAGE_MS)));
+    const stageMs = Math.max(1, durationMs / STAGES.length);
+    draw(Math.min(FINAL_STAGE, Math.floor(Math.max(0, elapsedRef.current - delay) / stageMs)));
     if (!isActive) return;
     const start = performance.now() - elapsedRef.current;
     let raf = 0;
     const tick = (now: number) => {
       elapsedRef.current = now - start;
       const bloomTime = Math.max(0, elapsedRef.current - delay);
-      draw(Math.min(FINAL_STAGE, Math.floor(bloomTime / STAGE_MS)));
-      if (bloomTime >= STAGES.length * STAGE_MS) complete();
+      draw(Math.min(FINAL_STAGE, Math.floor(bloomTime / stageMs)));
+      if (bloomTime >= durationMs) complete();
       else raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [frames, isActive, delay, hasBloomed]);
+  }, [frames, isActive, delay, durationMs, hasBloomed]);
 
   return (
     <div className="nature-bloom__tulip" data-tulip={id} data-depth={depth} data-color={color}

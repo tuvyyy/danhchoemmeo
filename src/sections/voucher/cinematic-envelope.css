@@ -33,6 +33,12 @@
 .envelope__contents { position: absolute; inset: 0; z-index: 3; clip-path: inset(-4% 2% 8%); }
 .envelope__paper { position: absolute; transform: translateY(0); }
 .envelope__letter { left: 12%; top: 0; width: 26.5%; transform: rotate(-3deg); filter: drop-shadow(0 8px 12px #13060735); }
+.envelope__letter-paper { transition: transform .35s cubic-bezier(.2,.8,.2,1), filter .35s; filter: drop-shadow(0 6px 10px #10030735); }
+.envelope__letter[data-hovered="true"] { z-index: 12 !important; }
+.envelope__letter[data-hovered="true"] .envelope__letter-paper { transform: translateY(-18px) rotate(1deg) scale(1.025); filter: brightness(1.05) drop-shadow(0 14px 18px #16070765) drop-shadow(0 0 1px #ead3a6); }
+.envelope__letter[data-inspected="true"] .envelope__letter-paper { visibility: hidden; }
+.envelope[data-hovering="true"] .envelope__letter:not([data-hovered="true"]) .envelope__letter-paper { transform: translateY(6px); filter: brightness(.88); }
+.envelope[data-inspecting="true"] .envelope__letter:not([data-inspected="true"]) .envelope__letter-paper { filter: brightness(.84); }
 .envelope__ticket { transform: rotate(var(--ticket-angle)); }
 .envelope__ticket-paper { transition: transform .35s cubic-bezier(.2,.8,.2,1), filter .35s; filter: drop-shadow(0 5px 8px #10030735); }
 .envelope__ticket[data-hovered="true"] { z-index: 12 !important; }

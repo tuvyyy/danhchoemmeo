@@ -1,10 +1,9 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, MotionConfig } from "framer-motion";
 import { SceneExperienceProvider } from "@/components/effects/SceneExperience";
 import LoadingScreen from "@/components/loading/LoadingScreen";
 import AmbientGlow from "@/components/layout/AmbientGlow";
 import ProgressRail from "@/components/navigation/ProgressRail";
-import Petals from "@/components/effects/Petals";
 import ScrollCompanion from "@/components/effects/ScrollCompanion";
 import CustomCursor from "@/components/effects/CustomCursor";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
@@ -15,7 +14,7 @@ import ChapterStage from "@/chapters/ChapterStage";
 
 function BirthdayJourney() {
   const [isLoading, setIsLoading] = useState(true);
-  const { currentChapter, unlockedThrough, advance, goTo, isUnlocked } = useChapterFlow();
+  const { currentChapter, unlockedThrough, isTransitioning, advance, goTo, isUnlocked } = useChapterFlow();
 
   return (
     <div className="relative min-h-screen min-h-[100svh] w-full bg-ink text-cream">
@@ -32,13 +31,13 @@ function BirthdayJourney() {
           <AmbientGlow />
 
           {/* Floating petals and journey companion */}
-          {currentChapter > 2 && <Petals />}
-          <ScrollCompanion />
-          {currentChapter !== 2 && <CustomCursor />}
+          {currentChapter > 0 && <ScrollCompanion />}
+          <div data-journey-ui className="contents">{currentChapter > 0 && currentChapter !== 2 && <CustomCursor />}</div>
 
           {/* Chapter navigation rail */}
           {currentChapter > 2 && (
             <ProgressRail
+              compact={currentChapter >= 3 && currentChapter <= 5}
               steps={BIRTHDAY_DATA.steps}
               current={currentChapter}
               unlocked={unlockedThrough + 1}
@@ -46,16 +45,17 @@ function BirthdayJourney() {
             />
           )}
 
-          {/* Sequential chapter stages */}
+          {/* Pre-mount upcoming chapter so geometry and assets are ready for seamless handoff */}
           <main className="relative z-10 w-full">
             {CHAPTER_REGISTRY.map((meta) =>
-              isUnlocked(meta.index) ? (
+              meta.index <= unlockedThrough + 1 ? (
                 <ChapterStage key={meta.id} meta={meta}>
                   <meta.Component onComplete={(opts) => advance(meta.index, opts)} />
                 </ChapterStage>
               ) : null,
             )}
           </main>
+
         </>
       )}
     </div>
@@ -65,11 +65,12 @@ function BirthdayJourney() {
 export default function App() {
   return (
     <MotionConfig reducedMotion="user">
-    <ChapterFlowProvider>
-      <SceneExperienceProvider>
-      <BirthdayJourney />
-      </SceneExperienceProvider>
-    </ChapterFlowProvider>
+      <ChapterFlowProvider>
+        <SceneExperienceProvider>
+          <BirthdayJourney />
+        </SceneExperienceProvider>
+      </ChapterFlowProvider>
     </MotionConfig>
   );
 }
+

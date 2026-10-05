@@ -64,6 +64,15 @@ export const VOUCHERS: readonly Voucher[] = [
   },
 ];
 
+export const LETTER_NOTE_ITEM: Voucher = {
+  id: "letter", number: "00", title: "Lá thư tay dành cho em", shortTitle: "Thư tay",
+  description: "Tui không ở cạnh để dẫn em đi ăn, nên gửi em một chút để tiêu nè. Tuỳ em thích gì thì dùng nhé, chỉ cần em vui là được. Luôn thương em ♡",
+  image: ENVELOPE_ASSETS.letter,
+};
+
+export const ALL_INSPECTABLES: readonly Voucher[] = [LETTER_NOTE_ITEM, ...VOUCHERS];
+
+
 let pendingAssets: Promise<void> | undefined;
 export function preloadEnvelopeAssets() {
   return pendingAssets ??= Promise.all([

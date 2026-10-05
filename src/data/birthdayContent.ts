@@ -123,11 +123,26 @@ export const BIRTHDAY_DATA = {
     closeBtn: "đóng thư",
     shrinkBtn: "thu nhỏ ✕",
     cta: "Nhớ lại tụi mình",
-    placeholders: {
-      leftScan: "https://images.unsplash.com/photo-1561812938-f6e60cbf95e3?w=900&h=1200&fit=crop&auto=format",
-      rightScan: "https://images.unsplash.com/photo-1730342754571-93f5462e6d2f?w=900&h=1200&fit=crop&auto=format",
-      faintFlower: "https://images.unsplash.com/photo-1623183074617-90611646e4ca?w=700&h=900&fit=crop&auto=format",
-    },
+    pages: [
+      {
+        title: "Gửi em mèo,",
+        paragraphs: [
+          "Có những điều tui muốn nói thật chậm, để em có thể đọc lại bất cứ khi nào em cần một chút dịu dàng.",
+          "Tui không ở cạnh để dẫn em đi ăn, nên gửi em một chút để tiêu nè. Tuỳ em thích gì thì dùng nhé, chỉ cần em vui là được.",
+          "Còn lá thư này, tui muốn dành riêng cho em. Không cần vội đọc hết đâu. Cứ ở đây một chút, như thể tụi mình đang ngồi cạnh nhau.",
+        ],
+        closing: "Một chút lòng mình, gửi em.",
+      },
+      {
+        title: "Mong em luôn vui,",
+        paragraphs: [
+          "Mong tuổi mới của em có thật nhiều ngày nhẹ tênh, nhiều món ngon và nhiều điều nhỏ xíu khiến em mỉm cười.",
+          "Nếu có một ngày hơi mệt, em cứ cho mình nghỉ một chút nha. Em không cần lúc nào cũng phải mạnh mẽ; em xứng đáng được yêu thương cả những lúc bình thường nhất.",
+          "Chúc mừng sinh nhật em mèo. Những món quà có thể nhỏ thôi, nhưng tình cảm gửi cùng thì luôn thật nhiều.",
+        ],
+        closing: "Luôn thương em. ♡",
+      },
+    ],
   },
   moments: {
     chapter: "Chương 04 — Khoảnh khắc của mình",

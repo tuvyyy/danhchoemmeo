@@ -27,6 +27,7 @@ export default function ChapterStage({ meta, children, className = "" }: Chapter
     >
       <div
         data-chapter-content={meta.id}
+        inert={state !== 'active' && state !== 'completing'}
         ref={(el) => registerContentRef(meta.index, el)}
         className="relative h-full min-h-[100svh] w-full"
       >

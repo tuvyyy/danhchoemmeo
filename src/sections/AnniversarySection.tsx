@@ -1,114 +1,36 @@
-import { motion } from "framer-motion";
+﻿import { useState } from "react";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
+import "./anniversary-scene.css";
 
 const DAY_MS = 86_400_000;
-
 function daysSinceAnniversary() {
   const now = new Date();
-  const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-  const startUtc = Date.UTC(2025, 0, 11);
-  return Math.max(0, Math.floor((todayUtc - startUtc) / DAY_MS));
+  return Math.max(0, Math.floor((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(2025, 0, 11)) / DAY_MS));
 }
-
+const messages = ["Một ngày bình thường, bỗng thành ngày mình muốn nhớ mãi.", "Hai thành phố. Một người luôn ở trong lòng.", "Cảm ơn em, vì hôm nay vẫn cùng tui viết tiếp."];
 export default function AnniversarySection({ onComplete }: { onComplete: () => void }) {
-  const { anniversary } = BIRTHDAY_DATA;
-  const daysTogether = daysSinceAnniversary();
+  const { anniversary, moments } = BIRTHDAY_DATA;
+  const [selected, setSelected] = useState(0);
+  return <section className="anniversary-scene together-scene" data-milestone={selected} aria-label={anniversary.chapter}>
+    <svg className="together-thread" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M-40 660C180 530 300 810 555 723S760 320 1060 370S1290 570 1480 440"/></svg>
+    <header className="together-header"><span>CHƯƠNG 05 / NGÀY CỦA TỤI MÌNH</span></header>
+    <div className="together-main">
+      <div className="together-copy"><h2>Từ hôm đó,<br/>ngày nào cũng<br/><em>có tụi mình.</em></h2><p className="together-body">{anniversary.body}</p></div>
+      <div className="together-keepsake">
+        <figure className="together-photo"><img src={moments.items[3].src} alt={moments.items[3].caption}/></figure>
+        <article className="together-ticket" data-mascot-obstacle aria-label="Tấm vé đi cùng nhau">
+          <div className="together-ticket__top"><span>VÉ ĐI CÙNG NHAU</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 20S3 14 3 8c0-5 7-6 9-1 2-5 9-4 9 1 0 6-9 12-9 12Z"/></svg></div>
+          <div className="together-ticket__route"><span>SGN<small>SÀI GÒN</small></span><i aria-hidden="true">↔</i><span>HAN<small>HÀ NỘI</small></span></div>
+          <div className="together-ticket__count"><span>TỤI MÌNH ĐÃ BÊN NHAU</span><strong>{daysSinceAnniversary()}<em>ngày</em></strong><small>VÀ CÒN NHIỀU NGÀY NỮA…</small></div>
+          <div className="together-ticket__message" aria-live="polite"><span>0{selected + 1} / {anniversary.beats[selected].label}</span><p key={selected}>{messages[selected]}</p></div>
+          <div className="together-ticket__stub"><span>KHỞI HÀNH<strong>11 · 01 · 2025</strong></span><span>ĐIỂM ĐẾN<strong>có em là được ♡</strong></span></div>
+        </article>
 
-  return (
-    <section className="anniversary-scene relative flex min-h-screen min-h-[100svh] items-center overflow-hidden px-5 py-20 sm:px-10 lg:px-16">
-      <div aria-hidden className="anniversary-scene__sun" />
-      <div aria-hidden className="anniversary-scene__grain" />
-
-      <div className="relative z-10 mx-auto w-full max-w-6xl">
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.8 }}
-          className="font-body text-[10px] font-semibold uppercase tracking-[0.24em] text-[#e4a077] sm:text-xs"
-        >
-          {anniversary.chapter}
-        </motion.p>
-
-        <div className="mt-7 grid items-end gap-7 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.45 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <p className="font-body text-[clamp(3.8rem,9vw,7.8rem)] font-light leading-[0.78] tracking-[-0.08em] text-[#f5e7ce]">
-              11.01
-              <span className="ml-3 align-top font-body text-sm font-medium tracking-[0.16em] text-[#e4a077] sm:text-base">2025</span>
-            </p>
-            <h2 className="mt-8 max-w-2xl font-film text-3xl font-medium leading-[1.05] text-[#f5e7ce] sm:text-5xl lg:text-6xl">
-              {anniversary.heading}
-            </h2>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.45 }}
-            transition={{ delay: 0.18, duration: 0.75 }}
-            className="anniversary-counter"
-          >
-            <span className="font-body text-[10px] font-semibold uppercase tracking-[0.22em] text-[#4b332d]/65">Tụi mình đã bên nhau</span>
-            <div className="mt-2 flex items-end gap-3 text-[#37241f]">
-              <motion.strong
-                initial={{ opacity: 0, scale: 0.82 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.35, type: "spring", stiffness: 150 }}
-                className="font-film text-7xl font-semibold leading-none sm:text-8xl"
-              >
-                {daysTogether}
-              </motion.strong>
-              <span className="pb-2 font-film text-2xl italic">ngày</span>
-            </div>
-            <p className="mt-4 font-body text-sm leading-7 text-[#4b332d]/80">{anniversary.body}</p>
-          </motion.div>
-        </div>
-
-        <div className="anniversary-timeline relative mt-14 grid gap-7 md:grid-cols-3 md:gap-5">
-          <motion.div
-            aria-hidden
-            className="anniversary-timeline__line"
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 1.15, ease: [0.22, 1, 0.36, 1] }}
-          />
-          {anniversary.beats.map((beat, index) => (
-            <motion.article
-              key={beat.label}
-              initial={{ opacity: 0, y: 22 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ delay: 0.25 + index * 0.16, duration: 0.55 }}
-              className="anniversary-beat relative"
-            >
-              <span className="anniversary-beat__dot">
-                {index === 0 ? "🐈" : index === 1 ? "♡" : "🐈‍⬛"}
-              </span>
-              <p className="mt-5 font-body text-[10px] font-semibold uppercase tracking-[0.18em] text-[#df8a5d]">{beat.label}</p>
-              <p className="mt-1 font-film text-2xl italic text-[#f5e7ce] sm:text-3xl">{beat.copy}</p>
-            </motion.article>
-          ))}
-        </div>
-
-        <motion.button
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.7 }}
-          transition={{ delay: 0.65, duration: 0.55 }}
-          whileHover={{ y: -3 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={onComplete}
-          className="anniversary-cta mt-12 flex cursor-pointer items-center gap-4 px-6 py-3.5 font-body text-xs font-semibold uppercase tracking-[0.14em] text-[#f5e7ce]"
-        >
-          {anniversary.cta}<span className="text-lg">→</span>
-        </motion.button>
       </div>
-    </section>
-  );
+    </div>
+    <div className="together-stations" aria-label="Những mốc của tụi mình" style={{"--station":selected} as React.CSSProperties}>
+      {anniversary.beats.map((beat,index)=><button key={beat.label} className="together-station" aria-pressed={selected===index} onClick={()=>setSelected(index)}><span className="together-station__dot">0{index+1}</span><span><small>{beat.label}</small><strong>{beat.copy}</strong></span><i aria-hidden="true">↗</i></button>)}
+    </div>
+    <footer className="together-footer"><button className="together-next" onClick={onComplete}>{anniversary.cta}<i aria-hidden="true">↗</i></button></footer>
+  </section>;
 }

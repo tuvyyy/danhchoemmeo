@@ -5,7 +5,7 @@ import { useDialogFocus } from "@/components/effects/useDialogFocus";
 import { useSceneOverlay } from "@/components/effects/SceneExperience";
 import { useScenePreferences } from "@/components/effects/useScenePreferences";
 import VoucherAsset from "./VoucherAsset";
-import { VOUCHERS, type Voucher } from "./voucherConfig";
+import { ALL_INSPECTABLES, type Voucher } from "./voucherConfig";
 
 export type VoucherSelection = {
   voucher: Voucher;
@@ -20,7 +20,8 @@ export default function VoucherDetail({ selection, onClose, onInspect }: {
   useSceneOverlay(true);
   const { reducedMotion } = useScenePreferences();
   const [voucher, setVoucher] = useState(selection.voucher);
-  const index = VOUCHERS.findIndex(item => item.id === voucher.id);
+  const items = ALL_INSPECTABLES;
+  const index = items.findIndex(item => item.id === voucher.id);
   const origin = selection.origin;
   const paperWidth = Math.min(window.innerWidth * .62, window.innerHeight * .4, 360);
   useEffect(() => { onInspect(voucher.id); }, [voucher.id, onInspect]);
@@ -55,10 +56,10 @@ export default function VoucherDetail({ selection, onClose, onInspect }: {
           transition={{ duration: reducedMotion ? 0 : .45, ease: [.2, .8, .2, 1] }}>
           <VoucherAsset asset={voucher.image} alt={`Voucher ${voucher.number}: ${voucher.title}. For: Em mèo. Valid forever.`} />
         </motion.div>
-        <button type="button" className="ticket-inspection__previous" aria-label="Voucher trước"
-          onClick={() => setVoucher(VOUCHERS[(index + VOUCHERS.length - 1) % VOUCHERS.length])}>←</button>
-        <button type="button" className="ticket-inspection__next" aria-label="Voucher tiếp"
-          onClick={() => setVoucher(VOUCHERS[(index + 1) % VOUCHERS.length])}>→</button>
+        <button type="button" className="ticket-inspection__previous" aria-label="Mục trước"
+          onClick={() => setVoucher(items[(index + items.length - 1) % items.length])}>←</button>
+        <button type="button" className="ticket-inspection__next" aria-label="Mục tiếp"
+          onClick={() => setVoucher(items[(index + 1) % items.length])}>→</button>
         <p id={`${id}-description`} className="ticket-inspection__description">{voucher.description}</p>
       </div>
     </div>, document.body,

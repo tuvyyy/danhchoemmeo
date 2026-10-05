@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useChapterFlow } from "@/chapters/useChapterFlow";
 import { CHAPTER_REGISTRY } from "@/chapters/chapterRegistry";
 import { useSceneExperience } from "./SceneExperience";
@@ -8,7 +8,7 @@ import { MASCOT_SCENES } from "./mascot/mascotConfig";
 import "./mascot/mascot.css";
 
 export default function ScrollCompanion() {
-  const { currentChapter } = useChapterFlow();
+  const { currentChapter, isTransitioning } = useChapterFlow();
   const chapter = CHAPTER_REGISTRY[currentChapter].id;
   const config = MASCOT_SCENES[chapter];
   const { overlayOpen, celebration } = useSceneExperience();
@@ -25,7 +25,7 @@ export default function ScrollCompanion() {
 
   // Pick a nearby clear corner rather than covering a caption or a chapter CTA.
   useEffect(() => {
-    if (overlayOpen) return;
+    if (overlayOpen || isTransitioning) return;
     let frame = 0;
     const place = () => {
       frame = 0;
@@ -35,7 +35,7 @@ export default function ScrollCompanion() {
       // Leave the stationery corners clear in the envelope chapter.
       const lowest = chapter === "wallet" ? (mobile ? 112 : 164) : edge;
       const bubbleHeight = host.current?.querySelector('.journey-mascot__speech')?.getBoundingClientRect().height ?? 0;
-      const obstacles = [...document.querySelectorAll(`#chapter-${chapter} h1, #chapter-${chapter} h2, #chapter-${chapter} p, #chapter-${chapter} button, nav`)]
+      const obstacles = [...document.querySelectorAll(`#chapter-${chapter} h1, #chapter-${chapter} h2, #chapter-${chapter} p, #chapter-${chapter} button, #chapter-${chapter} [data-mascot-obstacle], nav`)]
         .map(node => node.getBoundingClientRect()).filter(rect => rect.width && rect.height && rect.bottom > 0 && rect.top < innerHeight);
       let best = { side: config.side, bottom: edge, score: Infinity };
       for (const side of [config.side, config.side === "left" ? "right" as const : "left" as const]) {
@@ -53,17 +53,19 @@ export default function ScrollCompanion() {
       }
       setPlacement(previous => previous.side === best.side && previous.bottom === best.bottom ? previous : { side: best.side, bottom: best.bottom });
     };
+    let scrollTimer=0;
     const schedule = () => { if (!frame) frame = requestAnimationFrame(place); };
+    const afterScroll = () => { clearTimeout(scrollTimer); scrollTimer=window.setTimeout(schedule,120); };
     schedule();
     const settle = window.setTimeout(schedule, 1100);
-    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("scroll", afterScroll, { passive: true });
     window.addEventListener("resize", schedule);
-    return () => { cancelAnimationFrame(frame); clearTimeout(settle); window.removeEventListener("scroll", schedule); window.removeEventListener("resize", schedule); };
-  }, [chapter, config.side, mobile, speech, collapsed, overlayOpen]);
+    return () => { cancelAnimationFrame(frame); clearTimeout(settle);clearTimeout(scrollTimer); window.removeEventListener("scroll", afterScroll); window.removeEventListener("resize", schedule); };
+  }, [chapter, config.side, mobile, speech, collapsed, overlayOpen, isTransitioning]);
 
   useEffect(() => {
     setMessageIndex(0);
-    setSpeech(!mobile);
+    setSpeech(false);
     setReacting(false);
   }, [chapter, mobile]);
   useEffect(() => {
@@ -106,7 +108,7 @@ export default function ScrollCompanion() {
   }, [finePointer, reducedMotion, overlayOpen, collapsed, documentVisible]);
 
   return (
-    <div ref={host} className="journey-mascot" data-side={placement.side} data-chapter={chapter}
+    <div ref={host} data-journey-ui className="journey-mascot" data-side={placement.side} data-chapter={chapter}
       style={{ "--mascot-bottom": `${placement.bottom}px` } as CSSProperties}
       data-resting={overlayOpen || !documentVisible || reducedMotion} hidden={overlayOpen}>
       {collapsed ? (

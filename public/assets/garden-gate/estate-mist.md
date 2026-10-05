@@ -1,0 +1,13 @@
+# Estate entrance — 2 October 2026
+
+`estate-mist.webp` is the active entrance background: 1774 × 887, opaque RGB, WebP quality 91. The stone wall and haze were generated with the built-in ImageGen tool, using the user's recording as a visual reference. The old floral `limestone-arch.webp` is retained as an unused earlier iteration.
+
+Source image: `C:/Users/Thang/.codex/generated_images/01a0fac9-6463-77d2-bb93-10ef576930f7/exec-4a0f3be9-43eb-48b4-b773-a1548acf5fcf.png`.
+
+Reference: `docs/captures/door-reference-oct01/entrance-full.png`, extracted at 3.5 seconds from the user's `Quay màn hình 2026-10-01 213043.mp4`. Live reference: https://symphonyofvines.unseen.co/ . No font files, models, textures or code from the reference site are bundled in this implementation.
+
+The plate contains no gate, lettering or garden video. Ironwork is native SVG with independently hinged CSS perspective panels; Vietnamese text is live HTML using the project's existing Cormorant Garamond. An SVG displacement filter, soft bloom and animated blur supply the veiled lettering.
+
+## Full generation prompt
+
+Use case: precise-object-edit. Create a production background plate for an interactive website, matching this reference composition exactly. Input is a reference screenshot of a dark French estate entrance at golden hour. Remove ALL text, logos, buttons, cursor and UI. Remove ALL the wrought iron bars and gate panels from the arched opening, leaving only featureless warm luminous fog inside the opening, no landscape visible through it. Preserve the simple large dark weathered limestone wall, its shallow curved pediment silhouette, subtle horizontal stone joints, rounded finials, the leafy tree silhouette on the lower left, golden gray atmospheric sky, muted nearly monochrome sepia olive palette, diagonal dusty sun shafts, softly veiled photographic bloom, deep foreground shadows. Preserve the image composition: wall spans x40%-94%, arched doorway centered at x65%, aperture left x50%, right x79%, arch apex y41%, springline y61%, doorway extends below bottom edge. No roses, no flowers, no lamps, no gold decorative architecture, no bright beige arch border. The empty doorway must be a clean simple semicircular arch with narrow dark stone reveal, featureless luminous beige gray mist all the way down. Cinematic real-time 3D rendered material and very subtle optical softness; not a flat vector illustration. Full bleed landscape image aspect ratio 2:1, 2048 x1024 or high resolution. Exact layout matters for compositing animated ironwork over this image. No text anywhere. This is an opaque background plate, not a transparent cutout.

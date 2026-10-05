@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useChapterLifecycle } from "@/chapters/useChapterLifecycle";
+import { useChapterFlow } from "@/chapters/useChapterFlow";
 import { useScenePreferences } from "@/components/effects/useScenePreferences";
 import VoucherEnvelopeScene from "./VoucherEnvelopeScene";
 import VoucherDetail, { type VoucherSelection } from "./VoucherDetail";
@@ -11,6 +12,7 @@ import "./cinematic-envelope.css";
 
 export default function CinematicVoucherSection({ onComplete }: { onComplete: () => void }) {
   const root = useRef<HTMLElement>(null);
+  const { currentChapter } = useChapterFlow();
   const { isActive, isTransitioning } = useChapterLifecycle(2);
   const { reducedMotion } = useScenePreferences();
   const [assets, setAssets] = useState<"loading" | "ready" | "error">("loading");
@@ -52,8 +54,14 @@ export default function CinematicVoucherSection({ onComplete }: { onComplete: ()
     return () => document.removeEventListener("visibilitychange", update);
   }, []);
   useEffect(() => {
-    if (!isActive) { closeDetail(); setHovered(null); setState("closed"); }
-  }, [isActive, closeDetail]);
+    if (!isActive) {
+      closeDetail();
+      setHovered(null);
+      if (currentChapter < 2) {
+        setState("closed");
+      }
+    }
+  }, [isActive, currentChapter, closeDetail]);
 
   return <section ref={root} className="chapter-envelope-scene" data-state={state}
     data-running={running} data-ready={assets === "ready"} aria-label="Chương 02 — Lì xì sinh nhật">

@@ -19,7 +19,8 @@ export function useEnvelopeMotion({ root, ready, running, state, reducedMotion, 
     const ctx = gsap.context(() => {
       timeline.current = gsap.timeline({ id: "chapter02-envelope", paused: true, defaults: { ease: "power2.inOut" } });
       if (!entered.current && !reducedMotion) {
-        gsap.set(".envelope", { autoAlpha: 0, y: 42 });
+        // The chapter handoff owns the envelope's entrance position.
+        gsap.set(".envelope", { autoAlpha: 1, y: 0 });
         gsap.set(".royal-corner", { autoAlpha: 0, scale: .92, filter: "blur(3px)" });
         gsap.set(".corner-line--h", { scaleX: 0 });
         gsap.set(".corner-line--v", { scaleY: 0 });

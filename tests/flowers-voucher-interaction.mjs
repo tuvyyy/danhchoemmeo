@@ -47,7 +47,7 @@ try {
    await cdp.detach();
   } else await page.mouse.wheel({deltaY:-120});
   if(!reduced) {
-   await wait(350);const reverse=await page.$eval('.memory-flow',e=>+e.dataset.progress);assert(reverse>.7&&reverse<1,'Reverse gesture scrubs, rather than autoplaying');
+   await wait(350);const reverse=await page.$eval('.nature-bloom',e=>+e.dataset.handoffProgress);assert(reverse>.7&&reverse<1,'Reverse gesture scrubs, rather than autoplaying');
    await page.mouse.wheel({deltaY:-height});
   }
   await wait(900);

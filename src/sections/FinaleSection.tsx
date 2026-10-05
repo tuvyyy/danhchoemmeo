@@ -1,288 +1,102 @@
-import { useState, useCallback, useLayoutEffect, useRef, type MouseEvent } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import { useSceneExperience } from "@/components/effects/SceneExperience";
 import { useScenePreferences } from "@/components/effects/useScenePreferences";
 import { useChapterFlow } from "@/chapters/useChapterFlow";
+import { useChapterLifecycle } from "@/chapters/useChapterLifecycle";
+import { candleWind, type WindPoint } from './candleWind';
 import "./finale-scene.css";
 
-const CONFETTI_COLORS = ["#e7b96a", "#e18aa0", "#dfb77d", "#f4ece4", "#f0c04a", "#c97086"];
-
-const CONFETTI_PIECES = Array.from({ length: 50 }, (_, i) => {
-  const angle = (i / 50) * Math.PI * 2;
-  const velocity = 180 + (i % 7) * 45;
-  const pseudoX = Math.cos(angle) * velocity;
-  const pseudoY = -120 + Math.sin(angle) * velocity * 0.7;
-  const pseudoRot = ((i * 47) % 720) - 360;
-
-  return {
-    id: i,
-    x: pseudoX,
-    y: pseudoY + 220,
-    rotate: pseudoRot,
-    duration: 1.8 + (i % 5) * 0.3,
-    delay: (i % 6) * 0.04,
-    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-  };
-});
-
 export default function FinaleSection({ onComplete }: { onComplete?: () => void } = {}) {
-  const { celebrate } = useSceneExperience();
+  const { celebrate, overlayOpen } = useSceneExperience();
   const { mobile, reducedMotion } = useScenePreferences();
   const { goTo } = useChapterFlow();
+  const { isActive, isTransitioning } = useChapterLifecycle(6);
   const [blown, setBlown] = useState(false);
-  const [cakeFailed, setCakeFailed] = useState(false);
-  const blowButton = useRef<HTMLButtonElement>(null);
-  const reigniteButton = useRef<HTMLButtonElement>(null);
-  const transferFocus = useRef(false);
-  const { finale } = BIRTHDAY_DATA;
+  const [gusting, setGusting] = useState(false);
+  const [celebration, setCelebration] = useState(0);
+  const root=useRef<HTMLElement>(null), flame=useRef<HTMLDivElement>(null);
+  const blowButton=useRef<HTMLButtonElement>(null), reigniteButton=useRef<HTMLButtonElement>(null);
+  const transferFocus=useRef(false), lit=useRef(true), gustTimer=useRef(0);
+  const { finale }=BIRTHDAY_DATA;
+  useEffect(()=>{if(!isActive||isTransitioning)setGusting(false);},[isActive,isTransitioning]);
 
-  useLayoutEffect(() => {
-    if (!transferFocus.current) return;
-    transferFocus.current = false;
-    (blown ? reigniteButton : blowButton).current?.focus({ preventScroll: true });
-  }, [blown]);
+  const extinguish=useCallback(()=>{
+    if(!lit.current)return;
+    lit.current=false;setBlown(true);setCelebration(value=>value+1);celebrate();onComplete?.();
+  },[celebrate,onComplete]);
+  const blow=useCallback((event:MouseEvent<HTMLButtonElement>)=>{
+    transferFocus.current=document.activeElement===event.currentTarget;extinguish();
+  },[extinguish]);
+  const reignite=()=>{transferFocus.current=document.activeElement===reigniteButton.current;lit.current=true;setBlown(false);setGusting(false);};
+  useLayoutEffect(()=>{
+    if(!transferFocus.current)return;transferFocus.current=false;
+    (blown?reigniteButton:blowButton).current?.focus({preventScroll:true});
+  },[blown]);
 
-  const handleBlow = useCallback((event: MouseEvent<HTMLButtonElement>) => {
-    if (blown) return;
-    // Only move focus when the control that owns it is about to disappear.
-    transferFocus.current = event.currentTarget === blowButton.current && document.activeElement === event.currentTarget;
-    setBlown(true);
-    celebrate();
-    onComplete?.();
-  }, [blown, celebrate, onComplete]);
+  useEffect(()=>{
+    if(!isActive||isTransitioning||overlayOpen||blown)return;
+    let previous:WindPoint|null=null,touchDown=false,frame=0,wind=0,shown=0,lastTime=0;
+    const paint=(time:number)=>{
+      frame=0;const dt=Math.min(.05,(time-lastTime)/1000||.016);lastTime=time;
+      wind*=Math.exp(-7*dt);shown+=(wind-shown)*(1-Math.exp(-20*dt));
+      root.current?.style.setProperty('--wind',shown.toFixed(3));
+      if(Math.abs(shown)>.002||Math.abs(wind)>.002)frame=requestAnimationFrame(paint);
+    };
+    const move=(event:PointerEvent)=>{
+      if(document.hidden||event.pointerType==='touch'&&!touchDown)return;
+      const point={x:event.clientX,y:event.clientY,time:performance.now()};
+      if(previous&&flame.current){
+        const bounds=flame.current.getBoundingClientRect();
+        const gust=candleWind(previous,point,bounds);
+        const near=Math.abs(point.x-(bounds.left+bounds.right)/2)<100&&Math.abs(point.y-(bounds.top+bounds.bottom)/2)<75;
+        if(near){wind=Math.max(-1,Math.min(1,(point.x-previous.x)/Math.max(12,point.time-previous.time)));if(!frame){lastTime=point.time;frame=requestAnimationFrame(paint);}}
+        if(gust&&lit.current){
+          wind=gust;root.current?.style.setProperty('--gust-direction',String(Math.sign(gust)));
+          setGusting(true);lit.current=false;
+          gustTimer.current=window.setTimeout(()=>{lit.current=true;extinguish();},reducedMotion?0:220);
+        }
+      }
+      if(!previous||point.time-previous.time>32||Math.abs(point.x-previous.x)>=12||Math.abs(point.y-previous.y)>24)previous=point;
+    };
+    const down=(event:PointerEvent)=>{touchDown=true;previous={x:event.clientX,y:event.clientY,time:performance.now()};};
+    const reset=()=>{touchDown=false;previous=null;};
+    window.addEventListener('pointermove',move,{passive:true});window.addEventListener('pointerdown',down,{passive:true});
+    window.addEventListener('pointerup',reset);window.addEventListener('pointercancel',reset);window.addEventListener('blur',reset);
+    return()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerdown',down);window.removeEventListener('pointerup',reset);window.removeEventListener('pointercancel',reset);window.removeEventListener('blur',reset);cancelAnimationFrame(frame);clearTimeout(gustTimer.current);if(!blown)lit.current=true;root.current?.style.setProperty('--wind','0');};
+  },[isActive,isTransitioning,overlayOpen,blown,reducedMotion,extinguish]);
 
-  const handleReignite = useCallback((event: MouseEvent<HTMLButtonElement>) => {
-    transferFocus.current = document.activeElement === event.currentTarget;
-    setBlown(false);
-  }, []);
-
-  return (
-    <section
-      className="finale-scene celebration-scene"
-      data-blown={blown ? "true" : "false"}
-      aria-label={finale.chapter}
-    >
-      <p className="sr-only" role="status" aria-atomic="true">
-        {blown ? "Nến đã tắt. Điều ước đã được gửi đi. Chúc mừng sinh nhật em mèo!" : "Nến đang sáng, nhắm mắt ước một điều nha."}
-      </p>
-      {/* Golden memory thread leading across from previous chapter */}
-      <svg className="finale-thread" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true">
-        <path
-          pathLength="1"
-          d="M-30 420C210 540 380 260 620 480S880 720 1140 560S1360 380 1470 510"
-        />
-      </svg>
-
-      {/* Atmospheric starlight particles */}
-      <div className="celebration-stars" aria-hidden="true">
-        {Array.from({ length: mobile ? 12 : 24 }, (_, i) => (
-          <span
-            key={i}
-            style={{
-              left: `${7 + ((i * 37) % 86)}%`,
-              top: `${12 + ((i * 23) % 76)}%`,
-              animationDelay: `${-i * 0.65}s`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Scene Header */}
-      <header className="finale-header">
-        <span>CHƯƠNG 06 / ƯỚC MỘT ĐIỀU NHA</span>
-      </header>
-
-      {/* Main content grid */}
-      <div className="finale-main">
-        {/* Left Column: Typography & Affectionate Copy */}
-        <div className="finale-copy">
-          {!blown ? (
-            <>
-
-              <h2>
-                Thổi nến<br />và ước đi em,<br />
-                <em>phần còn lại,<br />để tui lo.</em>
-              </h2>
-              <p className="finale-body">
-                Một tuổi mới bình an và thật nhiều niềm vui nha em mèo.
-              </p>
-
-            </>
-          ) : (
-            <>
-
-              <h2>
-                Chúc mừng<br />
-                sinh nhật<br />
-                <em>em mèo ♡</em>
-              </h2>
-              <blockquote className="finale-quote" data-mascot-obstacle>
-                "{finale.quote}"
-              </blockquote>
-              <p className="finale-body">
-                {finale.body}
-              </p>
-
-            </>
-          )}
+  return <section ref={root} className="finale-scene celebration-scene" data-blown={blown} data-gusting={gusting} aria-label={finale.chapter}>
+    <header className="finale-header"><span>CHƯƠNG 06 / MỘT ĐIỀU ƯỚC</span><span>10 NOVEMBER</span></header>
+    <div className="finale-main">
+      <div className="finale-copy" data-mascot-obstacle>
+        <span className="finale-kicker">DÀNH RIÊNG EM MÈO</span>
+        <h2>{blown?<><span>Thêm một tuổi,</span><em>thêm nhiều thương.</em></>:<><span>Ước một điều.</span><em>Để gió gửi đi.</em></>}</h2>
+        <p className="finale-body">{blown?'Chúc em một tuổi mới bình an. Phần còn lại, có tui ở đây.':'Nhắm mắt một chút, giữ trong lòng điều em mong nhất.'}</p>
+        <div className="finale-controls">
+          {!blown?<>
+            <span className="wind-invitation"><svg viewBox="0 0 48 20" fill="none" aria-hidden="true"><path d="M1 5h31c11 0 11-7 4-7M8 11h33c8 0 8 8 1 8M1 17h22"/></svg>{mobile?'Vuốt ngang ngọn nến để gửi điều ước.':'Quơ chuột ngang ngọn nến để gửi điều ước.'}</span>
+            <button ref={blowButton} className="candle-blow-action" onClick={blow}>Thổi nến <span aria-hidden="true">↗</span></button>
+          </>:<div className="blown-actions"><button ref={reigniteButton} className="reignite-btn" onClick={reignite}>Thắp lại nến <span aria-hidden="true">↺</span></button><button className="revisit-btn" onClick={()=>goTo(0)}>Xem lại từ đầu <span aria-hidden="true">↗</span></button></div>}
         </div>
-
-        {/* Right Column: The Birthday Cake Centerpiece */}
-        <div className="finale-centerpiece">
-          <div data-mascot-obstacle className={`cake-altar${cakeFailed ? '' : ' cake-altar--patisserie'}`}>
-            {/* Ambient candlelight illumination */}
-            <div className="candle-aura" aria-hidden="true" />
-
-            {/* Candle with living flame & wisp of smoke */}
-            <button
-              type="button"
-              className="birthday-candle"
-              onClick={handleBlow}
-              aria-disabled={blown}
-              aria-label={blown ? "Nến đã thổi" : "Chạm để thổi nến"}
-            >
-              <div className="candle-flame-wrap">
-                <svg className="candle-flame" viewBox="0 0 24 36" fill="none" aria-hidden="true">
-                  <defs>
-                    <linearGradient id="flame-outer" x1="12" y1="2" x2="12" y2="31" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#fff2a8" />
-                      <stop offset="40%" stopColor="#ff9a3c" />
-                      <stop offset="100%" stopColor="#e5383b" />
-                    </linearGradient>
-                    <linearGradient id="flame-inner" x1="12" y1="12" x2="12" y2="28" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#ffffff" />
-                      <stop offset="60%" stopColor="#ffea79" />
-                      <stop offset="100%" stopColor="#ffb703" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M12 2C12 2 5 13 5 22C5 26.9706 8.13401 31 12 31C15.866 31 19 26.9706 19 22C19 13 12 2 12 2Z"
-                    fill="url(#flame-outer)"
-                  />
-                  <path
-                    d="M12 12C12 12 8 18 8 23C8 26 9.79 28 12 28C14.21 28 16 26 16 23C16 18 12 12 12 12Z"
-                    fill="url(#flame-inner)"
-                  />
-                </svg>
-
-                {/* Delicate smoke wisp after blowing */}
-                <svg className="smoke-wisp" viewBox="0 0 28 48" fill="none" aria-hidden="true">
-                  <defs>
-                    <linearGradient id="smoke-grad" x1="14" y1="46" x2="12" y2="2" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#dfb77d" stopOpacity="0.8" />
-                      <stop offset="60%" stopColor="#f5e4cd" stopOpacity="0.4" />
-                      <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M14 46C14 46 8 36 18 26C28 16 16 8 12 2"
-                    stroke="url(#smoke-grad)"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-
-              <div className="candle-wick" aria-hidden="true" />
-              <div className="candle-stick" aria-hidden="true" />
-            </button>
-
-            {/* Artisanal Birthday Cake */}
-            {!cakeFailed && <div className="birthday-cake birthday-cake--patisserie">
-              <img src="/assets/birthday-cake/ivory-wine-cake.webp" width="1254" height="1254"
-                alt="Bánh sinh nhật hai tầng kem ngà và đỏ rượu, hoa đường trắng trên đế đồng"
-                decoding="async" onError={() => setCakeFailed(true)} />
-            </div>}
-            {cakeFailed && <div className="birthday-cake" aria-hidden="true">
-              {/* Top Tier */}
-              <div className="cake-tier--top">
-                <div className="cake-drips">
-                  <span /><span /><span /><span /><span />
-                </div>
-              </div>
-
-              {/* Bottom Tier */}
-              <div className="cake-tier--bottom">
-                <div className="cake-decorations">
-                  <span>✨</span>
-                  <span>🤍</span>
-                  <span>✨</span>
-                </div>
-              </div>
-
-              {/* Porcelain / Gold rim Pedestal */}
-              <div className="cake-pedestal" />
-            </div>}
-
-            {/* Confetti burst celebration */}
-            <AnimatePresence>
-              {blown && !reducedMotion && (
-                <div className="finale-confetti-container" aria-hidden="true">
-                  {CONFETTI_PIECES.map((c) => (
-                    <motion.div
-                      key={c.id}
-                      initial={{ x: 0, y: 0, opacity: 1, scale: 0.2 }}
-                      animate={{
-                        x: c.x,
-                        y: c.y,
-                        rotate: c.rotate,
-                        scale: 1,
-                        opacity: [1, 1, 0],
-                      }}
-                      transition={{ duration: c.duration, delay: c.delay, ease: "easeOut" }}
-                      className="confetti-piece"
-                      style={{ background: c.color }}
-                    />
-                  ))}
-                </div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Interactive Action Controls */}
-          <div className="finale-controls">
-          {!blown ? (
-            <>
-              <button
-                ref={blowButton}
-                className="candle-blow-action"
-                onClick={handleBlow}
-                aria-label="Thổi nến sinh nhật"
-              >
-                <span className="blow-pulse" aria-hidden="true" />
-                <span>CHẠM ĐỂ THỔI NẾN ✨</span>
-              </button>
-
-            </>
-          ) : (
-            <div className="blown-actions">
-              <button
-                ref={reigniteButton}
-                className="reignite-btn"
-                onClick={handleReignite}
-                aria-label="Thắp lại nến"
-              >
-                <i aria-hidden="true">🔥</i> Thắp nến lại
-              </button>
-              <button
-                className="revisit-btn"
-                onClick={() => goTo(0)}
-                aria-label="Xem lại từ đầu"
-              >
-                <i aria-hidden="true">↺</i> Xem lại từ đầu
-              </button>
+      </div>
+      <div className="finale-centerpiece">
+        <div className="cake-altar" data-mascot-obstacle>
+          <div className="candle-aura" aria-hidden="true"/>
+          <div className="birthday-cake"><img src="/assets/birthday-cake/ivory-noir-cake.webp" alt="Bánh sinh nhật kem ngà, hoa hồng đen trắng và bướm bạc" width="1087" height="1446" decoding="async" draggable={false}/></div>
+          <div className="birthday-candle" aria-hidden="true">
+            <div ref={flame} className="candle-flame-wrap">
+              <svg className="candle-flame" viewBox="0 0 30 52"><defs><radialGradient id="wish-flame"><stop stopColor="#fffef0"/><stop offset=".45" stopColor="#fff2b4"/><stop offset=".75" stopColor="#f1a555"/><stop offset="1" stopColor="#c66b3a"/></radialGradient></defs><path d="M15 2C12 15 4 22 4 34c0 20 22 20 22 0 0-12-8-19-11-32Z" fill="url(#wish-flame)"/><path d="M15 26c-3 5-5 8-5 12 0 9 10 9 10 0 0-4-2-7-5-12Z" fill="#fffcec"/></svg>
+              <svg className="smoke-wisp" viewBox="0 0 70 140" fill="none"><path d="M35 138c-26-24 24-35 4-61S15 46 40 15"/><path d="M36 130c16-25-18-39-3-61S53 33 32 4"/></svg>
+              <span className="wind-streak wind-streak--one"/><span className="wind-streak wind-streak--two"/>
             </div>
-          )}
+            <span className="candle-wick"/><span className="candle-stick"/>
           </div>
         </div>
       </div>
-
-      {/* Scene Footer */}
-      <footer className="finale-footer">
-        <span>{finale.footerBadge}</span>
-
-      </footer>
-    </section>
-  );
+      <div key={celebration} className="wish-release" aria-hidden="true">{Array.from({length:12},(_,i)=><span key={i} style={{'--wish-x':`${20+i*6}%`,'--wish-delay':`${i*.08}s`,'--wish-drift':`${(i%2?1:-1)*(35+i*9)}px`} as CSSProperties}>✧</span>)}</div>
+    </div>
+    <footer className="finale-footer"><span>for you, always.</span><span>{blown?'ĐIỀU ƯỚC ĐÃ ĐƯỢC GỬI ĐI':'MỘT TUỔI MỚI · MỘT CHÚT DỊU DÀNG'}</span></footer>
+    <p className="sr-only" role="status" aria-live="polite">{blown?'Nến đã tắt. Chúc mừng sinh nhật em mèo!':'Nến đang sáng. Quơ chuột hoặc vuốt ngang nến để thổi. Bạn cũng có thể dùng nút Thổi nến.'}</p>
+  </section>;
 }

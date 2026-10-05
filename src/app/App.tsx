@@ -32,7 +32,7 @@ function BirthdayJourney() {
 
           {/* Floating petals and journey companion */}
           {currentChapter > 0 && <ScrollCompanion />}
-          <div data-journey-ui className="contents">{currentChapter > 0 && currentChapter !== 2 && <CustomCursor />}</div>
+          <div data-journey-ui className="contents">{currentChapter > 0 && currentChapter !== 2 && currentChapter !== 6 && <CustomCursor />}</div>
 
           {/* Chapter navigation rail */}
           {currentChapter > 2 && (
@@ -73,4 +73,3 @@ export default function App() {
     </MotionConfig>
   );
 }
-

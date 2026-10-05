@@ -8,7 +8,7 @@ const out = `docs/captures/scroll-${label}${mobile ? '-mobile' : ''}`;
 const height = mobile ? 844 : 900;
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 const ids = ['hero','flowers','wallet','letter','moments','anniversary','finale'];
-const subjects = ['#chapter-hero','.memory-flow','.letter-atelier','.memory-table','.together-scene','.celebration-scene'];
+const subjects = ['#chapter-hero','.nature-bloom','.letter-atelier','.memory-table','.together-scene','.celebration-scene'];
 await fs.mkdir(out,{recursive:true});
 const browser = await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
 try {
@@ -74,7 +74,8 @@ try {
    await p.click('.envelope__seal');await p.waitForSelector('.chapter-envelope-scene[data-state="open"]');
   }
   if(pair===3){
-   await p.click('.letter-open-action');await wait(1500);
+   if(await p.$eval('.letter-atelier',e=>e.dataset.open)!=='true')await p.click('.letter-open-action');
+   await wait(1500);
    await p.click('.letter-open-action');await p.waitForSelector('.letter-reader');
    const outerScroll=await p.evaluate(()=>scrollY);
    await input(180);await p.keyboard.press('PageDown');await wait(350);
@@ -98,7 +99,25 @@ try {
   // Scrub once back into the incoming chapter for the next boundary.
   await input(height);await stable(ids[pair+1]);
  }
- await p.$eval('.candle-blow-action',e=>e.click());await wait(1200);assert.equal(await p.$eval('.celebration-scene',e=>e.dataset.blown),'true');
+ await p.screenshot({path:`${out}/finale-lit.png`});
+ assert.equal(await p.$('.memory-thread'),null,'the removed gold thread must not return');
+ const candle=await p.$eval('.candle-flame-wrap',e=>{const r=e.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};});
+ if(!mobile){
+  await p.mouse.move(candle.x,candle.y-100);await p.mouse.move(candle.x,candle.y+100,{steps:8});await wait(300);
+  assert.equal(await p.$eval('.celebration-scene',e=>e.dataset.blown),'false','vertical movement must not extinguish the candle');
+  await p.mouse.move(candle.x-80,candle.y);await wait(220);
+  await p.mouse.move(candle.x+80,candle.y,{steps:6});
+ }else{
+  const cdp=await p.createCDPSession();
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:candle.x-70,y:candle.y}]});
+  for(let i=1;i<=6;i++){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:candle.x-70+140*i/6,y:candle.y}]});await wait(20);}
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();
+ }
+ await p.waitForSelector('.celebration-scene[data-blown="true"]');
+ await p.screenshot({path:`${out}/finale-smoke.png`});await wait(1500);
+ await p.screenshot({path:`${out}/finale-wish.png`});
+ await p.click('.reignite-btn');assert.equal(await p.$eval('.celebration-scene',e=>e.dataset.blown),'false');
+ await p.click('.candle-blow-action');await p.waitForSelector('.celebration-scene[data-blown="true"]');
  assert.deepEqual(errors,[]);
  const audit=await p.evaluate(()=>window.audit);
  if(!mobile){

@@ -29,25 +29,25 @@ try {
   let previous=0;
   for(const p of (process.argv.includes('--dense')?Array.from({length:20},(_,i)=>(i+1)*5):[20,40,50,60,80,100])) {
    await page.mouse.wheel({deltaY:(p-previous)/100*height*(direction==='forward'?1:-1)});await wait(240);
-   if(p<100)await page.waitForFunction(target=>Math.abs(+document.querySelector('.memory-flow').dataset.progress-target)<.003,{},(direction==='forward'?p:100-p)/100);
+   if(p<100)await page.waitForFunction(target=>Math.abs(+document.querySelector('.nature-bloom').dataset.handoffProgress-target)<.003,{},(direction==='forward'?p:100-p)/100);
    if(p<100) {
     const state=await page.evaluate(()=>{
-     const flow=document.querySelector('.memory-flow'), path=document.querySelector('.memory-thread__line');
+     const flow=document.querySelector('.nature-bloom');
      const garden=document.querySelector('.garden-video-stage');const gr=garden.getBoundingClientRect();
      const er=document.querySelector('.envelope__pocket').getBoundingClientRect();
      const visible=r=>Math.max(0,Math.min(r.bottom,innerHeight)-Math.max(0,r.top));
-     return {progress:+flow.dataset.progress,dash:parseFloat(getComputedStyle(path).strokeDashoffset.replace('calc(','')),gardenHeight:visible(gr),gardenOpacity:+getComputedStyle(garden).opacity,envelopeHeight:visible(er),ui:getComputedStyle(document.querySelector('[data-journey-ui]')).visibility,overflow:document.documentElement.scrollWidth>innerWidth};
+     return {progress:+flow.dataset.handoffProgress,threadPresent:!!document.querySelector('.memory-thread'),gardenHeight:visible(gr),gardenOpacity:+getComputedStyle(garden).opacity,envelopeHeight:visible(er),ui:getComputedStyle(document.querySelector('[data-journey-ui]')).visibility,overflow:document.documentElement.scrollWidth>innerWidth};
     });
     const target=(direction==='forward'?p:100-p)/100;
     assert(Math.abs(state.progress-target)<.003,`input controls progress: ${JSON.stringify(state)}`);
-    assert(Math.abs(state.dash-(1-target))<.003,'Thread length follows scroll');
+    assert.equal(state.threadPresent,false,'Gold thread was removed');
     assert.equal(state.ui,'hidden');assert(!state.overflow,'No horizontal overflow');
     if(target>=.2)assert(state.envelopeHeight>100,'Envelope arriving early');
     if(p===50){assert(state.gardenOpacity>.2&&state.gardenOpacity<.8,'Video fades gradually at midpoint');assert(state.envelopeHeight>100,'Envelope carries focus');if(!fallback)assert(+await page.$eval('.garden-video-fold',e=>e.dataset.fold)>.3,'Video bends into cloth');else assert.equal(await page.$eval('.garden-video-frame',e=>+getComputedStyle(e).opacity),1,'Native video remains visible without WebGL');}
     if(p===40) {
-     await wait(700);assert(Math.abs(await page.$eval('.memory-flow',e=>+e.dataset.progress)-state.progress)<.003,'Hands off holds the scene');
+     await wait(700);assert(Math.abs(await page.$eval('.nature-bloom',e=>+e.dataset.handoffProgress)-state.progress)<.003,'Hands off holds the scene');
      await page.mouse.wheel({deltaY:-height*.05});await wait(220);
-     assert(Math.abs(await page.$eval('.memory-flow',e=>+e.dataset.progress)-(target-.05))<.003,'Immediate reverse');
+     assert(Math.abs(await page.$eval('.nature-bloom',e=>+e.dataset.handoffProgress)-(target-.05))<.003,'Immediate reverse');
      await page.mouse.wheel({deltaY:height*.05});await wait(220);
     }
     evidence.push({direction,p,...state});
@@ -55,5 +55,5 @@ try {
    await page.screenshot({path:`${out}/${direction}-${String(p).padStart(3,'0')}.png`});previous=p;
   }
  }
- assert.equal(await page.$('.garden-video-fold'),null,'Temporary mesh is cleaned up');assert.deepEqual(errors,[]);await fs.writeFile(`${out}/measurements.json`,JSON.stringify(evidence,null,2));console.log(`${out}: PASS real wheel progress, hold, reverse, thread length, layers, no overflow`);
+ assert.equal(await page.$('.garden-video-fold'),null,'Temporary mesh is cleaned up');assert.deepEqual(errors,[]);await fs.writeFile(`${out}/measurements.json`,JSON.stringify(evidence,null,2));console.log(`${out}: PASS real wheel progress, hold, reverse, no thread, layers, no overflow`);
 } finally {await browser.close();}

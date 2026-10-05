@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {candleWind} from '../src/sections/candleWind.ts';
+const flame={left:190,right:210,top:280,bottom:330};
+const point=(x,y,time)=>({x,y,time});
+assert(candleWind(point(100,305,0),point(300,305,100),flame)>0,'a rightward sweep across the flame blows');
+assert(candleWind(point(300,305,0),point(100,305,100),flame)<0,'a leftward sweep across the flame blows');
+assert.equal(candleWind(point(200,200,0),point(200,400,100),flame),0,'vertical scrolling is harmless');
+assert.equal(candleWind(point(100,100,0),point(300,100,100),flame),0,'wind outside the flame is harmless');
+assert.equal(candleWind(point(180,300,0),point(181,300,16),flame),0,'hover jitter is harmless');
+assert.equal(candleWind(point(180,300,0),point(205,300,179),flame),0,'a slow approach is harmless');
+assert.equal(candleWind(point(100,305,0),point(300,305,1000),flame),0,'old cursor positions must not create phantom wind');
+assert.equal(candleWind(point(100,305,0),point(300,305,0),flame),0);
+console.log('PASS: flame crossing in both directions; vertical, distant, slow, tiny and stale movement rejected');

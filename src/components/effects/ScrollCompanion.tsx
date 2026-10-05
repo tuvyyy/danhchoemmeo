@@ -78,7 +78,7 @@ export default function ScrollCompanion() {
     lastCelebration.current = celebration;
     setReaction(value => value + 1);
     setReacting(true);
-    setSpeech(!mobile);
+    setSpeech(false);
     setMessageIndex(1);
   }, [celebration, mobile]);
   useEffect(() => {

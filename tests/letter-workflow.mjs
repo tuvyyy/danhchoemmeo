@@ -18,9 +18,7 @@ try {
  await page.mouse.wheel({deltaY:height*.5});await wait(400);
  if(!reduced){
   assert.equal(await page.$('.memory-flow__dock'),null,'Requested dock removed');
-  assert(await page.$eval('.memory-flow',e=>e.parentElement.matches('.chapter-envelope-scene')),'Thread belongs behind envelope');
-  const stack=await page.evaluate(()=>({thread:+getComputedStyle(document.querySelector('.memory-flow')).zIndex,paper:+getComputedStyle(document.querySelector('.scene-pan')).zIndex}));assert(stack.thread<stack.paper);
-  assert(await page.$eval('.memory-thread__line',e=>e.getPointAtLength(0).x)<0,'Thread begins outside viewport edge');
+  assert.equal(await page.$('.memory-thread'),null,'Gold thread was removed');
   await page.screenshot({path:`${out}/garden-handoff-050.png`});
   await page.mouse.wheel({deltaY:height*.5});
  }

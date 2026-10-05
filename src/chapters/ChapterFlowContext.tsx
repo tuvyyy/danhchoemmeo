@@ -3,7 +3,6 @@ import { flushSync } from "react-dom";
 import gsap from "gsap";
 import { TOTAL_CHAPTERS } from "./chapterRegistry";
 import type { ChapterFlowContextValue, ChapterLifecycleState } from "./types";
-import FlowersVoucherFlow, { type FlowersVoucherFlowHandle } from "./FlowersVoucherFlow";
 import { flowersVoucherHandoff } from "./flowersVoucherHandoff";
 import { voucherLetterHandoff } from "./voucherLetterHandoff";
 import { letterMomentsHandoff } from "./letterMomentsHandoff";
@@ -23,8 +22,6 @@ export function ChapterFlowProvider({children}:{children:ReactNode}) {
  const driver=useRef<Driver|null>(null);
  const cancelReadingScroll=useRef<(()=>void)|null>(null);
  const stageRefs=useRef<(HTMLElement|null)[]>([]),contentRefs=useRef<(HTMLElement|null)[]>([]);
- const flowView=useRef<FlowersVoucherFlowHandle>(null);
- const [flowHost,setFlowHost]=useState<HTMLElement|null>(null);
  current.current=currentChapter;unlocked.current=unlockedThrough;
  const registerStageRef=useCallback((i:number,el:HTMLElement|null)=>{stageRefs.current[i]=el;},[]);
  const registerContentRef=useCallback((i:number,el:HTMLElement|null)=>{contentRefs.current[i]=el;},[]);
@@ -46,7 +43,7 @@ export function ChapterFlowProvider({children}:{children:ReactNode}) {
   const outgoing=stageRefs.current[from],incoming=stageRefs.current[targetIndex];
   const finish=(atPrevious=reverse)=>{
    const index=adjacent?(atPrevious?pair:pair+1):targetIndex;
-   const stage=stageRefs.current[index];driver.current=null;setFlowHost(null);
+   const stage=stageRefs.current[index];driver.current=null;
    if(stage)window.scrollTo({top:index===pair&&(pair===1||pair>=3)?stage.offsetTop+Math.max(0,stage.offsetHeight-innerHeight):stage.offsetTop,behavior:"instant"});
    current.current=index;setCurrentChapter(index);stage?.focus({preventScroll:true});busy.current=false;destination.current=null;setIsTransitioning(false);
   };
@@ -57,8 +54,7 @@ export function ChapterFlowProvider({children}:{children:ReactNode}) {
   const common={reverse,scrollDelta:options?.scrollDelta,finish};
   if(adjacent&&pair===0){driver.current=heroGardenHandoff({hero:a,garden:b,heroContent:ac,gardenContent:bc,...common});return;}
   if(adjacent&&pair===1){
-   flushSync(()=>setFlowHost(b.querySelector<HTMLElement>('.chapter-envelope-scene')));
-   driver.current=flowersVoucherHandoff({flowers:a,voucher:b,gardenContent:ac,voucherContent:bc,...common,paintThread:p=>flowView.current?.render(p)});return;
+   driver.current=flowersVoucherHandoff({flowers:a,voucher:b,gardenContent:ac,voucherContent:bc,...common});return;
   }
   if(adjacent&&pair===2){driver.current=voucherLetterHandoff({voucher:a,letter:b,voucherContent:ac,letterContent:bc,...common});return;}
   if(adjacent&&pair===3){driver.current=letterMomentsHandoff({letter:a,moments:b,letterContent:ac,momentsContent:bc,...common});return;}
@@ -129,6 +125,6 @@ export function ChapterFlowProvider({children}:{children:ReactNode}) {
   },{threshold:[0,.1,.25,.5,.75,1]});
   stageRefs.current.forEach((stage,i)=>{if(stage&&i<=unlockedThrough)observer.observe(stage);});return()=>observer.disconnect();
  },[unlockedThrough]);
- return <ChapterFlowContext.Provider value={{currentChapter,unlockedThrough,completedChapters,isTransitioning,advance,goTo,isUnlocked,isCompleted,getChapterState,registerStageRef,registerContentRef}}>{children}<FlowersVoucherFlow ref={flowView} host={flowHost}/></ChapterFlowContext.Provider>;
+ return <ChapterFlowContext.Provider value={{currentChapter,unlockedThrough,completedChapters,isTransitioning,advance,goTo,isUnlocked,isCompleted,getChapterState,registerStageRef,registerContentRef}}>{children}</ChapterFlowContext.Provider>;
 }
 export function useChapterFlowContext():ChapterFlowContextValue {const ctx=useContext(ChapterFlowContext);if(!ctx)throw new Error('useChapterFlow must be used within a ChapterFlowProvider');return ctx;}

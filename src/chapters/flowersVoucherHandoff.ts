@@ -1,8 +1,8 @@
 import { scrollMotionDriver } from "./scrollMotionDriver";
 import gsap from "gsap";
 import { videoPaperFold } from "./videoPaperFold";
-export function flowersVoucherHandoff({flowers,voucher,gardenContent,voucherContent,reverse,scrollDelta,finish,paintThread}: {
- flowers:HTMLElement;voucher:HTMLElement;gardenContent:HTMLElement;voucherContent:HTMLElement;reverse:boolean;scrollDelta?:number;finish:(atGarden:boolean)=>void;paintThread:(progress:number)=>void;
+export function flowersVoucherHandoff({flowers,voucher,gardenContent,voucherContent,reverse,scrollDelta,finish}: {
+ flowers:HTMLElement;voucher:HTMLElement;gardenContent:HTMLElement;voucherContent:HTMLElement;reverse:boolean;scrollDelta?:number;finish:(atGarden:boolean)=>void;
 }) {
  const garden=flowers.querySelector<HTMLElement>(".nature-bloom")!;
  const scene=voucher.querySelector<HTMLElement>(".chapter-envelope-scene")!;
@@ -40,7 +40,7 @@ export function flowersVoucherHandoff({flowers,voucher,gardenContent,voucherCont
   return scrollMotionDriver({
     reverse, scrollDelta, finish,
     paint: progress => {
-      choreography.progress(progress); fold?.paint(fabric.amount); paintThread(progress);
+      choreography.progress(progress); fold?.paint(fabric.amount); garden.dataset.handoffProgress=progress.toFixed(4);
       // The pulled tip disappears inside the pocket, never out through its bottom edge.
       const heroY=Number(gsap.getProperty(hero,"y")),heroScale=Number(gsap.getProperty(hero,"scaleY"));
       const envelopeY=Number(gsap.getProperty(envelope,"y")),envelopeScale=Number(gsap.getProperty(envelope,"scaleY"));
@@ -49,6 +49,6 @@ export function flowersVoucherHandoff({flowers,voucher,gardenContent,voucherCont
       const cut=(pocketAt-topAt)/Math.max(.01,heroScale);
       hero.style.clipPath=`inset(-200% -200% ${heroHeight-cut}px -200%)`;
     },
-    cleanup: () => { context.revert(); fold?.dispose(); backdrop.remove(); delete document.documentElement.dataset.flowersVoucherHandoff;  },
+    cleanup: () => { context.revert(); fold?.dispose(); backdrop.remove(); delete garden.dataset.handoffProgress; delete document.documentElement.dataset.flowersVoucherHandoff;  },
   });
 }

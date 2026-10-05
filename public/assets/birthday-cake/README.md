@@ -1,5 +1,15 @@
 # Birthday cake centerpiece
 
+## Current ivory / noir cake — 2026-10-05
+
+`ivory-noir-cake.webp` is the current runtime asset: 1087 × 1446, alpha transparency, 479,018 bytes. Prepared from the user's attached black and white rose / butterfly cake reference using the built-in `image_gen` tool, then encoded as WebP quality 94 with alpha preserved. The original generated PNG remains local under `docs/captures/ivory-noir-cake-source.png` and in the tool's generated-images folder. Candle, flame, wind response and smoke are independent HTML / SVG elements.
+
+Final edit prompt:
+
+> Use case: background-extraction. Edit target: the user's most recent attached image, the single round black-and-ivory birthday cake with black and white roses, silver butterfly decorations, silver pearls and the lettering Happy Birthday / 11.10.2003 / small heart. Produce a faithful transparent-background cutout for a website. Preserve this exact cake, its camera angle, ivory and black frosting, all roses and butterflies, lighting, texture, lettering and date exactly. Remove only the surrounding black/transparent background and any colored fringe on its outline, replace with genuine alpha transparency. Do not redesign the cake. No candles, no stand, no extra objects or graphics. Fit the full cake within the frame with minimal transparent padding. Output asset only.
+
+`wind-cursor.svg` is the small native wind pointer used on desktop. The following asset is retained as the former scene artwork.
+
 Generated with the built-in ImageGen tool for this project's final birthday scene. `ivory-wine-cake.webp` is 1254 × 1254, RGBA, 235,038 bytes, converted to WebP quality 88 with alpha preserved. The runtime asset is stored here in the workspace. The candle, flame, smoke and interactions remain independent native elements.
 
 Original image: `C:/Users/Thang/.codex/generated_images/01a0f76f-54b8-73f0-9c49-3a964b91ada3/exec-d3244240-5b70-4d35-9346-5efce362c08c.png`.

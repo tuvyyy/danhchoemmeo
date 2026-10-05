@@ -83,8 +83,8 @@ export function anniversaryFinaleHandoff({
       )
       .fromTo(
         cake,
-        { y: 100, scale: 0.84, opacity: 0 },
-        { y: 0, scale: 1, opacity: 1, duration: 0.58, ease: "power2.out" },
+        { x: -80, y: 45, scale: 0.9, opacity: 0 },
+        { x: 0, y: 0, scale: 1, opacity: 1, duration: 0.58, ease: "power2.out" },
         0.32,
       )
       .fromTo(
@@ -101,17 +101,11 @@ export function anniversaryFinaleHandoff({
       )
       .fromTo(
         finale.querySelectorAll(
-          ".finale-header, .finale-copy > *, .candle-blow-action, .candle-annotation, .blown-actions, .finale-footer",
+          ".finale-header, .finale-copy > *, .finale-footer",
         ),
         { opacity: 0, y: 24 },
         { opacity: 1, y: 0, duration: 0.32, stagger: 0.025, ease: "power2.out" },
         0.46,
-      )
-      .fromTo(
-        finale.querySelector(".finale-thread path"),
-        { strokeDasharray: 1, strokeDashoffset: 1 },
-        { strokeDashoffset: 0, duration: 0.75, ease: "none" },
-        0.28,
       );
   });
 

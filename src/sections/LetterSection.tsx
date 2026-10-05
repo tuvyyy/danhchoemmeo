@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import { useSceneOverlay } from "@/components/effects/SceneExperience";
@@ -50,6 +50,11 @@ export default function LetterSection({ onComplete }: { onComplete: () => void }
   const atelier = useRef<HTMLElement>(null);
   const { isActive, isTransitioning } = useChapterLifecycle(3);
   const { currentChapter } = useChapterFlowContext();
+  const previousChapter = useRef(currentChapter);
+  useLayoutEffect(() => {
+    if (currentChapter === 3 && previousChapter.current < 3) setOpen(true);
+    previousChapter.current = currentChapter;
+  }, [currentChapter]);
   useSceneOverlay(reading);
   const dialogRef = useDialogFocus(reading);
   useEffect(() => { if (!isActive) { setReading(false); if (currentChapter < 3) { setOpen(false); setPage(0); } } }, [isActive, currentChapter]);

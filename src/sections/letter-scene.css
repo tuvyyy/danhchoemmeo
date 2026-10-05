@@ -112,3 +112,7 @@ html[data-voucher-letter-handoff] .letter-keepsake { will-change: transform; }
 }
 @media(prefers-reduced-motion:reduce) { .letter-open-action { transition:none; } }
 .letter-atelier__footer { justify-content:flex-end; }
+.letter-book-back { position:absolute;inset:0;z-index:5;pointer-events:none;backface-visibility:hidden;background:linear-gradient(90deg,#c7ae8277,transparent 12%,#fff5d166 60%,#d3bd9766),repeating-linear-gradient(0deg,#ac895314 0px,transparent 1px,transparent 3px),#ecdcbb;border:1px solid #e6cfaa;box-shadow:inset -12px 0 24px -12px #8d744b88,0 16px 28px #0004;border-radius:2px; }
+html[data-voucher-letter-handoff] .letter-atelier { overflow:visible; }
+html[data-voucher-letter-handoff] .letter-cover { z-index:6; }
+html[data-voucher-letter-handoff] .letter-keepsake { transform-style:preserve-3d; }

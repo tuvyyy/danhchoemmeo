@@ -1,28 +1,29 @@
-.finale-scene.celebration-scene { --wind:0;--gust-direction:1;position:relative;isolation:isolate;overflow:hidden;min-height:100svh;padding:30px 44px 26px;color:#35322e;background:#eae6dd;touch-action:pan-y pinch-zoom; }
+.finale-scene.celebration-scene { --wind:0;--gust-direction:1;position:relative;isolation:isolate;overflow:hidden;min-height:100svh;padding:32px 48px;color:#302f2b;background:#ede9e0;touch-action:pan-y pinch-zoom; }
 @media(pointer:fine) { .finale-scene.celebration-scene { cursor:url('/assets/birthday-cake/wind-cursor.svg') 18 13,auto; } }
-.celebration-scene::before { content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 24% 42%,#fffdf4bf,transparent 55%),linear-gradient(115deg,transparent 35%,#fffaf355 35.1%,#fffaf300 75%); }
-.finale-header { position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;padding-bottom:18px;border-bottom:1px solid #403e3522;font:8px/1.5 var(--font-body);letter-spacing:.2em;color:#777164; }
-.finale-main { position:relative;min-height:calc(100svh - 125px); }
-.finale-copy { position:absolute;z-index:3;left:54%;top:19%;max-width:590px;width:44%; }
-.finale-kicker { display:block;margin-bottom:27px;font:8px/1.6 var(--font-body);letter-spacing:.25em;color:#837d6f; }
-.finale-copy h2 { margin:0;font:400 clamp(48px,5.5vw,86px)/1.06 var(--font-display);letter-spacing:-.045em; }
+.celebration-scene::before { content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 33% 25%,#fffdf8 0%,#fffdf800 62%),linear-gradient(110deg,#c6c0b947,transparent 44%,#d6d0c126); }
+.celebration-scene::after { content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(111deg,transparent 35%,#fffdf570 35.2%,#fffdf500 56%); }
+.finale-header { position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid #403e3522;font:11px/1.5 var(--font-body);letter-spacing:.18em;color:#777164; }
+.finale-main { min-height:calc(100svh - 110px); }
+.finale-copy { position:absolute;z-index:3;left:56%;top:23%;max-width:680px;width:40%; }
+.finale-kicker { display:block;margin-bottom:30px;font:11px/1.6 var(--font-body);letter-spacing:.24em;color:#777164; }
+.finale-copy h2 { margin:0;font:400 clamp(70px,7.15vw,116px)/1.04 var(--font-display);letter-spacing:-.05em; }
 .finale-copy h2 span,.finale-copy h2 em { display:block; }
-.finale-copy h2 em { font-weight:400;color:#898073; }
-.finale-body { max-width:310px;margin:26px 0 0;color:#787165;font:17px/1.65 var(--font-display); }
-.finale-controls { min-height:115px;margin-top:45px; }
-.wind-invitation { display:flex;align-items:center;gap:14px;color:#7a7369;font:9px/1.7 var(--font-body);max-width:320px; }
-.wind-invitation svg { width:33px;height:19px;flex-shrink:0;stroke:currentColor;stroke-width:1; }
-.candle-blow-action,.reignite-btn,.revisit-btn { display:inline-flex;align-items:center;justify-content:space-between;gap:30px;min-height:44px;border:0;border-bottom:1px solid #8e877c77;padding:10px 0;background:none;color:#4b473f;font:10px/1.5 var(--font-body);cursor:pointer; }
-.candle-blow-action { margin-top:17px; }
+.finale-copy h2 em { font-weight:400;color:#8d8375; }
+.finale-body { max-width:360px;margin:30px 0 0;color:#6c645a;font:22px/1.55 var(--font-display); }
+.finale-controls { min-height:125px;margin-top:36px; }
+.wind-invitation { display:flex;align-items:center;gap:16px;color:#756d62;font:12px/1.7 var(--font-body);max-width:350px; }
+.wind-invitation svg { width:42px;height:22px;flex-shrink:0;stroke:currentColor;stroke-width:1; }
+.candle-blow-action,.reignite-btn,.revisit-btn { display:inline-flex;align-items:center;justify-content:space-between;gap:42px;min-height:48px;border:0;border-bottom:1px solid #8e877c88;padding:12px 0;background:none;color:#4b473f;font:14px/1.5 var(--font-body);cursor:pointer; }
+.candle-blow-action { margin-top:20px; }
 .candle-blow-action span,.reignite-btn span,.revisit-btn span { font-size:20px; }
 .blown-actions { display:flex;gap:30px;flex-wrap:wrap; }
 .finale-controls button:hover { color:#151514;border-color:#252523; }
 .finale-controls button:focus-visible { outline:2px solid #6f6758;outline-offset:7px; }
 .finale-centerpiece { position:absolute;inset:0;pointer-events:none; }
-.cake-altar { position:absolute;left:-32px;bottom:-45px;width:min(49vw,59svh,620px);aspect-ratio:1087/1446; }
+.cake-altar { position:absolute;left:-112px;bottom:-300px;width:min(64vw,95svh,940px);aspect-ratio:1087/1446; }
 .cake-altar::after { content:'';position:absolute;bottom:1%;left:8%;width:82%;height:5%;border-radius:50%;background:#26211a26;filter:blur(20px);z-index:-1; }
 .birthday-cake { position:absolute;inset:0; }
-.birthday-cake img { width:100%;height:100%;object-fit:contain;filter:drop-shadow(20px 14px 17px #38302520);user-select:none; }
+.birthday-cake img { width:100%;height:100%;object-fit:contain;filter:drop-shadow(28px 20px 24px #38302520);user-select:none; }
 .birthday-candle { position:absolute;left:47%;top:22%;width:18px;height:86px;transform:translate(-50%,-100%);z-index:3;touch-action:pan-y; }
 .candle-stick { position:absolute;inset:5px 2px 0;border-radius:3px 3px 4px 4px;background:linear-gradient(90deg,#b7ac98,#fff9e9 26%,#e6dac5 55%,#a59a84);box-shadow:inset 0 2px 1px #fffbe8,3px 2px 5px #352c1e44; }
 .candle-stick::after { content:'';position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 15px,#ffffff55 16px 18px,transparent 19px 28px);border-radius:inherit; }
@@ -41,33 +42,72 @@
 .wind-streak--two { top:75%;left:-45px;width:74px; }
 .celebration-scene[data-gusting="true"] .wind-streak { animation:wind-pass .65s ease-out both; }
 @keyframes wind-pass { 0% { opacity:0;transform:translateX(calc(var(--gust-direction) * -25px)); } 25% { opacity:.6; } 100% { opacity:0;transform:translateX(calc(var(--gust-direction) * 55px)); } }
-.wish-release { position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden; }
-.wish-release span { display:none;position:absolute;left:var(--wish-x);bottom:20%;color:#8a7c61;font:18px var(--font-display); }
-.celebration-scene[data-blown="true"] .wish-release span { display:block;animation:wish-lift 3s var(--wish-delay) ease-out both; }
-@keyframes wish-lift { 0% { opacity:0;transform:translate(0,0) scale(.5); } 20% { opacity:.5; } 100% { opacity:0;transform:translate(var(--wish-drift),-450px) scale(.8); } }
-.finale-footer { position:relative;z-index:4;display:flex;justify-content:space-between;align-items:center;color:#8b8275;font:7px/1.5 var(--font-body);letter-spacing:.15em; }
-.finale-footer > span:first-child { margin-left:57%;font:italic 17px var(--font-display);letter-spacing:0; }
-.finale-handoff-backdrop { position:absolute;inset:0;z-index:-2;background:#eae6dd; }
+.finale-butterflies { position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden; }
+.butterfly-flight { position:absolute;left:0;top:0;width:var(--butterfly-size);aspect-ratio:1;animation-duration:var(--flight-duration);animation-delay:var(--flight-delay);animation-iteration-count:infinite;animation-timing-function:cubic-bezier(.45,0,.55,1); }
+.butterfly-flight--rose { animation-name:butterfly-rose; }
+.butterfly-flight--light { animation-name:butterfly-light; }
+.butterfly-flight--edge { animation-name:butterfly-edge; }
+.butterfly-lift { width:100%;height:100%;transition:transform 2.8s cubic-bezier(.2,.7,.3,1); }
+.celebration-scene[data-blown="true"] .butterfly-lift { transform:translateY(-55px) rotate(-12deg); }
+.celebration-scene[data-blown="true"] .butterfly-flight--light .butterfly-lift { transform:rotate(-12deg); }
+.silver-butterfly { position:relative;width:100%;height:100%;perspective:240px;filter:drop-shadow(7px 10px 8px #38302524); }
+.butterfly-wing { position:absolute;top:0;width:50%;height:100%;overflow:hidden;backface-visibility:visible;animation:butterfly-wingbeat var(--flap-duration) ease-in-out infinite alternate; }
+.butterfly-wing--left { left:0;transform-origin:100% 50%; }
+.butterfly-wing--right { right:0;transform-origin:0 50%;animation-name:butterfly-wingbeat-right; }
+.butterfly-wing img { position:absolute;top:0;width:200%;height:100%;max-width:none;user-select:none; }
+.butterfly-wing--right img { left:-100%; }
+.butterfly-body { position:absolute;inset:0;width:100%;height:100%;clip-path:inset(0 47%); }
+.celebration-scene[data-animating="false"] .butterfly-flight,.celebration-scene[data-animating="false"] .butterfly-wing { animation-play-state:paused; }
+@keyframes butterfly-wingbeat { from { transform:rotateY(8deg); } to { transform:rotateY(68deg); } }
+@keyframes butterfly-wingbeat-right { from { transform:rotateY(-8deg); } to { transform:rotateY(-68deg); } }
+@keyframes butterfly-rose {
+ 0%,100% { transform:translate3d(13vw,55svh,0) rotate(-28deg) scale(.9); }
+ 28% { transform:translate3d(31vw,27svh,0) rotate(18deg) scale(.75); }
+ 55% { transform:translate3d(40vw,12svh,0) rotate(40deg) scale(.65); }
+ 78% { transform:translate3d(16vw,25svh,0) rotate(-24deg) scale(.8); }
+}
+@keyframes butterfly-light {
+ 0%,100% { transform:translate3d(71vw,10svh,0) rotate(22deg) scale(.8); }
+ 35% { transform:translate3d(87vw,12svh,0) rotate(-16deg) scale(1); }
+ 65% { transform:translate3d(92vw,16svh,0) rotate(30deg) scale(.72); }
+}
+@keyframes butterfly-edge {
+ 0%,100% { transform:translate3d(42vw,80svh,0) rotate(32deg); }
+ 30% { transform:translate3d(46vw,64svh,0) rotate(-22deg) scale(.8); }
+ 62% { transform:translate3d(39vw,40svh,0) rotate(-35deg) scale(.7); }
+ 80% { transform:translate3d(28vw,63svh,0) rotate(15deg) scale(.9); }
+}
+.finale-footer { position:absolute;z-index:3;left:56%;bottom:48px;color:#8b8275; }
+.finale-footer > span { font:italic 26px var(--font-display); }
+.finale-handoff-backdrop { position:absolute;inset:0;z-index:-2;background:#ede9e0; }
 html[data-anniversary-finale-handoff] .finale-scene { background:transparent; }
 html[data-anniversary-finale-handoff] [data-journey-ui],html[data-anniversary-finale-handoff] nav { visibility:hidden!important;pointer-events:none!important; }
 html[data-anniversary-finale-handoff] .together-scene,html[data-anniversary-finale-handoff] .finale-scene { pointer-events:none; }
-@media(max-width:1000px) and (min-width:601px) { .finale-scene.celebration-scene { padding-inline:30px; }.finale-copy { left:52%;width:47%;top:22%; }.finale-copy h2 { font-size:58px; }.cake-altar { width:min(52vw,58svh); }.finale-footer > span:last-child { display:none; } }
+@media(max-width:1000px) and (min-width:601px) { .finale-scene.celebration-scene { padding-inline:30px; }.finale-copy { left:53%;width:44%;top:25%; }.finale-copy h2 { font-size:clamp(56px,7.5vw,75px); }.cake-altar { width:69vw;left:-100px;bottom:-170px; }.finale-body { font-size:20px; }.wind-invitation { font-size:11px; }.blown-actions { gap:20px; }.finale-footer { left:53%; } }
 @media(max-width:600px) {
- .finale-scene.celebration-scene { padding:24px 24px 20px;min-height:100svh; }
- .finale-header { font-size:6px;letter-spacing:.13em;padding-bottom:14px; }
- .finale-main { min-height:calc(100svh - 90px); }
- .finale-copy { left:0;top:35px;width:100%;max-width:none; }
- .finale-kicker { font-size:6px;margin-bottom:18px; }
- .finale-copy h2 { font-size:clamp(37px,10.5vw,52px);line-height:1.08; }
- .finale-body { font-size:15px;line-height:1.5;max-width:285px;margin-top:18px; }
+ .finale-scene.celebration-scene { padding:24px;min-height:100svh; }
+ .finale-header { font-size:9px;letter-spacing:.1em;padding-bottom:14px; }
+ .finale-main { min-height:calc(100svh - 80px); }
+ .finale-copy { left:24px;top:86px;width:calc(100% - 48px);max-width:none; }
+ .finale-kicker { font-size:9px;margin-bottom:16px; }
+ .finale-copy h2 { font-size:clamp(44px,13.1vw,68px);line-height:1.04; }
+ .finale-body { font-size:18px;line-height:1.45;max-width:300px;margin-top:17px; }
  .finale-controls { margin-top:22px;min-height:100px; }
- .wind-invitation { font-size:8px;gap:10px; }
- .candle-blow-action { margin-top:9px;font-size:9px; }
- .cake-altar { width:min(80vw,355px);left:-29px;bottom:-27px; }
+ .wind-invitation { font-size:11px;gap:10px;max-width:320px; }
+ .wind-invitation svg { width:32px; }
+ .candle-blow-action { margin-top:9px; }
+ .cake-altar { width:115vw;left:-28vw;bottom:-125px; }
  .birthday-candle { height:58px;width:14px; }.candle-wick { left:6px; }.candle-flame-wrap { width:26px;height:40px; }
  .candle-aura { width:170px;height:170px; }
- .blown-actions { gap:24px; }.reignite-btn,.revisit-btn { font-size:9px;gap:16px; }
+ .blown-actions { gap:22px; }.reignite-btn,.revisit-btn { font-size:13px;gap:16px; }
+ .butterfly-flight { width:calc(var(--butterfly-size) * .72); }
+ .butterfly-flight:nth-child(4) { display:none; }
+ @keyframes butterfly-rose { 0%,100% { transform:translate3d(9vw,57svh,0) rotate(-28deg) scale(.9); }35% { transform:translate3d(65vw,48svh,0) rotate(22deg) scale(.65); }65% { transform:translate3d(70vw,76svh,0) rotate(35deg) scale(.8); } }
+ @keyframes butterfly-light { 0%,100% { transform:translate3d(76vw,9svh,0) rotate(22deg) scale(.8); }45% { transform:translate3d(85vw,36svh,0) rotate(-16deg); }70% { transform:translate3d(82vw,51svh,0) rotate(30deg) scale(.72); } }
+ @keyframes butterfly-edge { 0%,100% { transform:translate3d(69vw,82svh,0) rotate(32deg); }35% { transform:translate3d(66vw,68svh,0) rotate(-22deg) scale(.8); }65% { transform:translate3d(31vw,53svh,0) rotate(-35deg) scale(.7); } }
  .finale-footer { display:none; }
 }
-@media(max-width:600px) and (max-height:730px) { .finale-main { min-height:760px; }.cake-altar { bottom:-15px; } }
-@media(prefers-reduced-motion:reduce) { .candle-flame,.smoke-wisp,.wind-streak,.wish-release span { animation:none!important; }.candle-flame,.candle-aura { transition:none!important; }.celebration-scene[data-blown="true"] .wish-release { display:none; } }
+@media(max-width:600px) and (max-height:730px) { .finale-main { min-height:770px; } }
+@media(prefers-reduced-motion:reduce) { .candle-flame,.smoke-wisp,.wind-streak,.butterfly-flight,.butterfly-wing { animation:none!important; }.candle-flame,.candle-aura,.butterfly-lift { transition:none!important; }.butterfly-flight--rose { transform:translate(28vw,24svh) rotate(-25deg); }.butterfly-flight--light { transform:translate(86vw,13svh) rotate(25deg); }.butterfly-flight--edge { transform:translate(46vw,68svh) rotate(-12deg); }.butterfly-flight:nth-child(4) { display:none; } }
+@media(prefers-reduced-motion:reduce) and (max-width:600px) { .butterfly-flight--rose { transform:translate(64vw,52svh) rotate(-25deg); }.butterfly-flight--light { transform:translate(76vw,10svh) rotate(25deg); }.butterfly-flight--edge { transform:translate(67vw,77svh) rotate(-12deg); } }
+@media(prefers-reduced-motion:reduce) { .butterfly-lift { transform:none!important; } }

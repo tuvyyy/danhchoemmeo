@@ -100,6 +100,12 @@ export function anniversaryFinaleHandoff({
         0.44,
       )
       .fromTo(
+        finale.querySelector('.finale-butterflies'),
+        { opacity: 0 },
+        { opacity: 1, duration: 0.38, ease: 'power1.out' },
+        0.62,
+      )
+      .fromTo(
         finale.querySelectorAll(
           ".finale-header, .finale-copy > *, .finale-footer",
         ),

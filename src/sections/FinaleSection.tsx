@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import { useSceneExperience } from "@/components/effects/SceneExperience";
 import { useScenePreferences } from "@/components/effects/useScenePreferences";
 import { useChapterFlow } from "@/chapters/useChapterFlow";
 import { useChapterLifecycle } from "@/chapters/useChapterLifecycle";
 import { candleWind, type WindPoint } from './candleWind';
+import { FinaleButterflies } from './FinaleButterflies';
 import "./finale-scene.css";
 
 export default function FinaleSection({ onComplete }: { onComplete?: () => void } = {}) {
@@ -14,16 +15,17 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
   const { isActive, isTransitioning } = useChapterLifecycle(6);
   const [blown, setBlown] = useState(false);
   const [gusting, setGusting] = useState(false);
-  const [celebration, setCelebration] = useState(0);
+  const [visible, setVisible] = useState(() => !document.hidden);
   const root=useRef<HTMLElement>(null), flame=useRef<HTMLDivElement>(null);
   const blowButton=useRef<HTMLButtonElement>(null), reigniteButton=useRef<HTMLButtonElement>(null);
   const transferFocus=useRef(false), lit=useRef(true), gustTimer=useRef(0);
   const { finale }=BIRTHDAY_DATA;
   useEffect(()=>{if(!isActive||isTransitioning)setGusting(false);},[isActive,isTransitioning]);
+  useEffect(()=>{const update=()=>setVisible(!document.hidden);document.addEventListener('visibilitychange',update);return()=>document.removeEventListener('visibilitychange',update);},[]);
 
   const extinguish=useCallback(()=>{
     if(!lit.current)return;
-    lit.current=false;setBlown(true);setCelebration(value=>value+1);celebrate();onComplete?.();
+    lit.current=false;setBlown(true);celebrate();onComplete?.();
   },[celebrate,onComplete]);
   const blow=useCallback((event:MouseEvent<HTMLButtonElement>)=>{
     transferFocus.current=document.activeElement===event.currentTarget;extinguish();
@@ -66,12 +68,12 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
     return()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerdown',down);window.removeEventListener('pointerup',reset);window.removeEventListener('pointercancel',reset);window.removeEventListener('blur',reset);cancelAnimationFrame(frame);clearTimeout(gustTimer.current);if(!blown)lit.current=true;root.current?.style.setProperty('--wind','0');};
   },[isActive,isTransitioning,overlayOpen,blown,reducedMotion,extinguish]);
 
-  return <section ref={root} className="finale-scene celebration-scene" data-blown={blown} data-gusting={gusting} aria-label={finale.chapter}>
+  return <section ref={root} className="finale-scene celebration-scene" data-blown={blown} data-gusting={gusting} data-animating={isActive&&!isTransitioning&&!overlayOpen&&visible&&!reducedMotion} aria-label={finale.chapter}>
     <header className="finale-header"><span>CHƯƠNG 06 / MỘT ĐIỀU ƯỚC</span><span>10 NOVEMBER</span></header>
     <div className="finale-main">
       <div className="finale-copy" data-mascot-obstacle>
         <span className="finale-kicker">DÀNH RIÊNG EM MÈO</span>
-        <h2>{blown?<><span>Thêm một tuổi,</span><em>thêm nhiều thương.</em></>:<><span>Ước một điều.</span><em>Để gió gửi đi.</em></>}</h2>
+        <h2>{blown?<><span>Thêm một tuổi,</span><em>thêm thương.</em></>:<><span>Ước một điều.</span><em>Để gió gửi đi.</em></>}</h2>
         <p className="finale-body">{blown?'Chúc em một tuổi mới bình an. Phần còn lại, có tui ở đây.':'Nhắm mắt một chút, giữ trong lòng điều em mong nhất.'}</p>
         <div className="finale-controls">
           {!blown?<>
@@ -80,6 +82,7 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
           </>:<div className="blown-actions"><button ref={reigniteButton} className="reignite-btn" onClick={reignite}>Thắp lại nến <span aria-hidden="true">↺</span></button><button className="revisit-btn" onClick={()=>goTo(0)}>Xem lại từ đầu <span aria-hidden="true">↗</span></button></div>}
         </div>
       </div>
+      <FinaleButterflies/>
       <div className="finale-centerpiece">
         <div className="cake-altar" data-mascot-obstacle>
           <div className="candle-aura" aria-hidden="true"/>
@@ -94,9 +97,8 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
           </div>
         </div>
       </div>
-      <div key={celebration} className="wish-release" aria-hidden="true">{Array.from({length:12},(_,i)=><span key={i} style={{'--wish-x':`${20+i*6}%`,'--wish-delay':`${i*.08}s`,'--wish-drift':`${(i%2?1:-1)*(35+i*9)}px`} as CSSProperties}>✧</span>)}</div>
     </div>
-    <footer className="finale-footer"><span>for you, always.</span><span>{blown?'ĐIỀU ƯỚC ĐÃ ĐƯỢC GỬI ĐI':'MỘT TUỔI MỚI · MỘT CHÚT DỊU DÀNG'}</span></footer>
+    <footer className="finale-footer"><span>for you, always.</span></footer>
     <p className="sr-only" role="status" aria-live="polite">{blown?'Nến đã tắt. Chúc mừng sinh nhật em mèo!':'Nến đang sáng. Quơ chuột hoặc vuốt ngang nến để thổi. Bạn cũng có thể dùng nút Thổi nến.'}</p>
   </section>;
 }

@@ -2,15 +2,16 @@ import puppeteer from 'puppeteer-core';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 const mobile = process.argv.includes('--mobile'), reduced = process.argv.includes('--reduced');
-const out = `docs/captures/letter-bloom${mobile ? '-mobile' : ''}${reduced ? '-reduced' : ''}`;
+const out = process.env.LETTER_CAPTURE_DIR || `docs/captures/letter-bloom${mobile ? '-mobile' : ''}${reduced ? '-reduced' : ''}`;
 await fs.mkdir(out, { recursive: true });
 const browser = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 try {
- const p = await browser.newPage(), errors = [];
+ const p = await browser.newPage(), errors = [], requests = [];
+ p.on('request', request => requests.push(request.url()));
  p.on('pageerror', error => { errors.push(error.message); console.log('PAGE ERROR',error.message); });
  await p.setViewport({ width: mobile ? 390 : 1440, height: mobile ? 844 : 900, isMobile: mobile, hasTouch: mobile });
- await p.goto('http://127.0.0.1:3333', { waitUntil: 'networkidle2' });
+ await p.goto(process.env.TEST_URL || 'http://127.0.0.1:3333', { waitUntil: 'networkidle2' });
  await p.waitForSelector('.gallery-loader', { hidden: true });
  await p.click('.garden-gate__enter'); await p.waitForSelector('.entrance-gate', { hidden: true });
  await p.click('.hero-gallery .cinematic-hero__cta');
@@ -39,8 +40,16 @@ try {
  if (mobile) await p.evaluate(() => document.querySelector('.letter-bloom-garden').scrollIntoView({ block: 'end', behavior: 'instant' }));
  await p.waitForSelector('.letter-bloom-garden[data-running="true"]');
  assert.equal(await p.$$eval('.letter-bloom-garden canvas', es => es.length), 15);
+ assert.equal(await p.$('.letter-bloom-garden__grass'), null, 'The flowers are cutouts without a meadow behind them');
+ assert.equal(requests.some(url => url.includes('/letter-garden/garden-dusk.webp')), false, 'No scenic background image loads behind the cluster');
  await p.screenshot({ path: `${out}/01-buds.png` });
- if (!reduced) {
+ if (!reduced && process.argv.includes('--frames')) {
+  const started = Date.now();
+  for (const percent of [0, 20, 40, 50, 60, 80, 100]) {
+   await wait(Math.max(0, percent / 100 * 7600 - (Date.now() - started)));
+   await p.screenshot({ path: `${out}/bloom-${String(percent).padStart(3, '0')}.png` });
+  }
+ } else if (!reduced) {
   await wait(2600);
   const frame = await p.$eval('.letter-bloom-garden [data-flower-main]', e => +e.dataset.bloomFrame);
   assert(frame > 1 && frame < 60, 'Lily gradually opens');
@@ -49,6 +58,9 @@ try {
  await p.waitForSelector('.letter-bloom-garden[data-bloomed="true"]', { timeout: 20000 });
  await p.screenshot({ path: `${out}/03-bloomed.png` });
  assert.equal(await p.$$eval('.letter-bloom-garden canvas[data-bloom-stage="6"]', es => es.length), 13);
+ await p.click('.letter-desk__controls button:last-child');
+ await wait(reduced ? 30 : 1150);
+ await p.screenshot({ path: `${out}/03-cover-closed.png` });
  await p.click('.letter-cover'); await wait(reduced ? 30 : 1150);
  await p.screenshot({ path: `${out}/04-letter-open.png` });
  await p.click('.letter-page__read'); await p.waitForSelector('.letter-reader');

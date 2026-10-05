@@ -1,4 +1,4 @@
-.letter-scene.letter-atelier { position: relative; min-height: 100svh; padding: 42px max(70px, calc((100vw - 1270px) / 2)) 44px; display: grid; grid-template-columns: .9fr 1.1fr; grid-template-rows: auto 1fr auto; column-gap: 70px; overflow: hidden; color: #f3e2c8; background: #0d1a16; isolation: isolate; }
+.letter-scene.letter-atelier { position: relative; min-height: 100svh; padding: 42px max(70px, calc((100vw - 1270px) / 2)) 44px; display: grid; grid-template-columns: .9fr 1.1fr; grid-template-rows: auto 1fr auto; column-gap: 70px; overflow: hidden; color: #f3e2c8; background: #171014; isolation: isolate; }
 .letter-atelier__light { position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .45; background: linear-gradient(115deg, transparent 45%, #ecbc7310 45.1%, #efc88c06 66%, transparent 66.1%); }
 .letter-atelier__thread { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 .letter-atelier__thread path { fill: none; stroke: #bc955f; stroke-width: 1.3; opacity: .45; }
@@ -79,30 +79,29 @@ html[data-voucher-letter-handoff] .letter-keepsake { will-change: transform; }
 @media (min-width: 601px) and (max-width: 900px) { .letter-keepsake { --letter-paper-height: 520px; } }
 @media (max-width: 600px) { .letter-keepsake { --letter-paper-height: 445px; } }
 
-/* The paper and animated flower beds share one dusk garden and light direction. */
-.letter-atelier__landscape { position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(90deg,#0b1919ed 0%,#101e1ba8 40%,#12221a55 72%,#101c1766),linear-gradient(180deg,#0c191c99,transparent 48%,#101e1599 84%,#08140ffc),url('/assets/letter-garden/garden-dusk.webp') center bottom / cover no-repeat; }
+/* A quiet, image-free stage for the letter and transparent flower cluster. */
+.letter-atelier__landscape { position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 72% 62%,#50343c38,transparent 60%),linear-gradient(145deg,#261a20,#171014 70%); }
 .letter-atelier__light { z-index:0;opacity:.65;background:radial-gradient(ellipse at 71% 35%,#ead5a017,transparent 46%); }
 .letter-atelier__thread { visibility:hidden; }
-.letter-atelier__header { color:#c3c8af;border-color:#b9c5aa26;font-size:9px; }
-.letter-atelier__eyebrow { color:#b9c3a6;letter-spacing:.23em; }
+.letter-atelier__header { color:#c5ac94;border-color:#c5ac9426;font-size:9px; }
+.letter-atelier__eyebrow { color:#c5ac94;letter-spacing:.23em; }
 .letter-atelier h2 { font-weight:400;color:#f2eddd; }
-.letter-atelier h2 em { color:#bcc9a9; }
+.letter-atelier h2 em { color:#d8ae7a; }
 .letter-atelier__intro > p { color:#bfc5b7;font-size:19px; }
 .letter-atelier__note { color:#a5b09e;font-size:14px;margin-top:20px; }
-.letter-open-action { display:inline-flex;min-height:48px;gap:36px;border:1px solid #b7c9a859;border-radius:40px;padding:13px 22px;background:#14291e80;backdrop-filter:blur(10px);color:#e6ead5;font-size:10px;transition:background .25s,border-color .25s; }
-.letter-open-action:hover { background:#304632bb;border-color:#c1d0ab; }
+.letter-open-action { display:inline-flex;min-height:48px;gap:36px;border:1px solid #c5ac9459;border-radius:40px;padding:13px 22px;background:#36252d80;color:#f0dcb7;font-size:10px;transition:background .25s,border-color .25s; }
+.letter-open-action:hover { background:#4a333dbb;border-color:#d8b990; }
 .letter-open-action > span:last-child { font-size:19px; }
-.letter-keepsake { filter:saturate(.76); }
+.letter-keepsake { filter:saturate(.95); }
 .letter-desk__annotation { color:#b8c2a0;font-size:21px; }
-.letter-desk__controls { gap:24px;color:#e0e5cf;width:auto;max-width:100%;padding:0 16px;border-radius:26px;background:#0c1d16c9;backdrop-filter:blur(8px); }
+.letter-desk__controls { gap:24px;color:#eddbbe;width:auto;max-width:100%;padding:0 16px;border-radius:26px;background:#21171ed9; }
 .letter-desk__closed-note { color:#bcc6ad;font-size:14px; }
-.letter-atelier__footer { border-color:#adc29820; }
+.letter-atelier__footer { border-color:#c5ac9420; }
 .letter-atelier__footer > span { color:#bdc8b1;text-shadow:0 1px 6px #071109; }
 .letter-atelier__footer i { background:#b2c59950; }
-.letter-next { color:#e2e8d2;border-color:#bed0a76b;background:#0c1d16c9;border-radius:24px;padding:0 17px;backdrop-filter:blur(8px); }
-.letter-reader { background:#091510f5; }
+.letter-next { color:#eddbbe;border-color:#d8b9906b;background:#21171ed9;border-radius:24px;padding:0 17px; }
+.letter-reader { background:#171014f5; }
 @media(max-width:600px) {
- .letter-atelier__landscape { background-position:62% bottom;background-size:auto 100%; }
  .letter-atelier__intro { padding-top:30px; }
  .letter-atelier__eyebrow { font-size:6px;letter-spacing:.17em; }
  .letter-open-action { min-height:44px;padding:9px 18px;font-size:9px; }

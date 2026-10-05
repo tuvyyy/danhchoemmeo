@@ -11,7 +11,7 @@ export function letterMomentsHandoff({ letter, moments, letterContent, momentsCo
   const prints = [...moments.querySelectorAll<HTMLElement>(".memory-print")];
   const letterHeight = letter.offsetHeight, momentsHeight = moments.offsetHeight;
   const oldCopy = letter.querySelectorAll<HTMLElement>(".letter-atelier__intro > *, .letter-atelier__header, .letter-atelier__footer, .letter-desk__annotation, .letter-desk__controls");
-  const flowers = letter.querySelectorAll<HTMLElement>(".letter-bloom-garden > :not(.letter-bloom-garden__grass)");
+  const flowers = letter.querySelectorAll<HTMLElement>(".letter-bloom-garden > *");
   const newCopy = moments.querySelectorAll(".memory-table__header, .memory-table__intro, .memory-table__footer, .memory-board__annotation");
   document.documentElement.dataset.letterMomentsHandoff = reverse ? "reverse" : "forward";
   const backdrop = document.createElement("div"); backdrop.className = "moments-handoff-backdrop"; scene.prepend(backdrop);
@@ -32,7 +32,6 @@ export function letterMomentsHandoff({ letter, moments, letterContent, momentsCo
     choreography.to(letter.querySelector(".letter-atelier__landscape"), {
       scale: 1.055, y: -innerHeight * .025, opacity: 0, duration: .85, ease: "sine.inOut",
     }, .1);
-    choreography.to(letter.querySelector(".letter-bloom-garden__grass"), { opacity: 0, duration: .5 }, .2);
     prints.forEach((print, index) => {
       const angle = parseFloat(getComputedStyle(print).getPropertyValue("--print-angle"));
       const bounds = print.getBoundingClientRect();

@@ -26,7 +26,7 @@ function copyAppearance(source: Element, target: HTMLElement) {
 
 export function letterFragmentSources(letter: HTMLElement) {
   return [...letter.querySelectorAll<HTMLElement>(
-    '.letter-keepsake,.letter-atelier__intro > *,.letter-atelier__header,.letter-atelier__footer,.letter-desk__annotation,.letter-desk__controls,.letter-bloom-garden > :not(.letter-bloom-garden__grass)',
+    '.letter-keepsake,.letter-atelier__intro > *,.letter-atelier__header,.letter-atelier__footer,.letter-desk__annotation,.letter-desk__controls,.letter-bloom-garden > *',
   )];
 }
 type Snapshot = { key: string; bitmap: Promise<HTMLCanvasElement> };

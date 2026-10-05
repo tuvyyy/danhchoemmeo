@@ -3,21 +3,21 @@ import FlowerBloomCanvas from './FlowerBloomCanvas';
 import TulipBloom from './TulipBloom';
 import './letter-bloom-garden.css';
 
-// The original two lilies and thirteen tulips, planted across the bottom band.
+// The original bloom sequences, gathered into a fan-shaped cluster at the letter.
 const TULIPS = [
-  { id: 'letter-ivory-left', x: 5, y: 12, scale: 0.64, rotate: -12, delay: 1000, depth: 'foreground' },
-  { id: 'letter-ivory-right', x: 13, y: 3, scale: 0.91, rotate: 10, delay: 1800, depth: 'foreground' },
-  { id: 'letter-ivory-back', x: 20, y: 19, scale: 0.58, rotate: 5, delay: 2600, depth: 'background' },
-  { id: 'letter-butter-left', x: 26, y: 4, scale: 0.73, rotate: -16, delay: 1400, depth: 'foreground', color: 'butter' },
-  { id: 'letter-lavender-left', x: 32, y: 15, scale: 0.55, rotate: -8, delay: 2200, depth: 'background', color: 'lavender' },
-  { id: 'letter-coral-left', x: 40, y: 3, scale: 0.63, rotate: -7, delay: 1700, depth: 'foreground', color: 'coral' },
-  { id: 'letter-butter-middle', x: 48, y: 8, scale: 0.51, rotate: 5, delay: 2800, depth: 'midground', color: 'butter' },
-  { id: 'letter-coral-right', x: 71, y: 2, scale: 0.78, rotate: 9, delay: 2400, depth: 'foreground', color: 'coral' },
-  { id: 'letter-lavender-right', x: 78, y: 16, scale: 0.57, rotate: 16, delay: 3400, depth: 'background', color: 'lavender' },
-  { id: 'letter-butter-edge', x: 82, y: 5, scale: 0.69, rotate: -10, delay: 3100, depth: 'foreground', color: 'butter' },
-  { id: 'letter-lavender-front', x: 88, y: 0, scale: 0.86, rotate: -4, delay: 3800, depth: 'foreground', color: 'lavender' },
-  { id: 'letter-coral-front', x: 92, y: 13, scale: 0.59, rotate: 6, delay: 4100, depth: 'foreground', color: 'coral' },
-  { id: 'letter-butter-right', x: 97, y: 0, scale: 0.74, rotate: 12, delay: 3000, depth: 'foreground', color: 'butter' },
+  { id: 'letter-ivory-left', x: 24, y: 2, scale: 0.86, rotate: -25, delay: 1000, depth: 'foreground' },
+  { id: 'letter-ivory-right', x: 71, y: 1, scale: 1.03, rotate: 20, delay: 1800, depth: 'foreground' },
+  { id: 'letter-ivory-back', x: 41, y: 8, scale: 0.96, rotate: -9, delay: 2600, depth: 'background' },
+  { id: 'letter-butter-left', x: 33, y: 0, scale: 0.77, rotate: -19, delay: 1400, depth: 'foreground', color: 'butter' },
+  { id: 'letter-lavender-left', x: 35, y: 10, scale: 0.95, rotate: -16, delay: 2200, depth: 'background', color: 'lavender' },
+  { id: 'letter-coral-left', x: 40, y: 0, scale: 0.71, rotate: -12, delay: 1700, depth: 'foreground', color: 'coral' },
+  { id: 'letter-butter-middle', x: 49, y: 6, scale: 0.94, rotate: -4, delay: 2800, depth: 'midground', color: 'butter' },
+  { id: 'letter-coral-right', x: 65, y: 2, scale: 0.84, rotate: 16, delay: 2400, depth: 'foreground', color: 'coral' },
+  { id: 'letter-lavender-right', x: 66, y: 11, scale: 1.04, rotate: 14, delay: 3400, depth: 'background', color: 'lavender' },
+  { id: 'letter-butter-edge', x: 76, y: 0, scale: 0.72, rotate: 27, delay: 3100, depth: 'foreground', color: 'butter' },
+  { id: 'letter-lavender-front', x: 59, y: 0, scale: 0.65, rotate: 7, delay: 3800, depth: 'foreground', color: 'lavender' },
+  { id: 'letter-coral-front', x: 53, y: 0, scale: 0.7, rotate: -6, delay: 4100, depth: 'foreground', color: 'coral' },
+  { id: 'letter-butter-right', x: 81, y: 0, scale: 0.8, rotate: 29, delay: 3000, depth: 'foreground', color: 'butter' },
 ] as const;
 
 export default function LetterBloomGarden({ active }: { active: boolean }) {
@@ -48,6 +48,5 @@ export default function LetterBloomGarden({ active }: { active: boolean }) {
       delayMs={100} durationMs={6200} onBloomComplete={() => finish('lily-right')} />
     {TULIPS.map(tulip => <TulipBloom key={tulip.id} {...tulip} durationMs={3000}
       isActive={running} hasBloomed={bloomed} onBloomComplete={() => finish(tulip.id)} />)}
-    <img className="letter-bloom-garden__grass" src="/assets/flowers/nature/grass-back-strip.png" alt="" />
   </div>;
 }

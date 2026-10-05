@@ -25,9 +25,15 @@ export function anniversaryFinaleHandoff({
   const cake = finale.querySelector<HTMLElement>(".cake-altar")!;
   const flame = finale.querySelector<HTMLElement>(".candle-flame")!;
   const aura = finale.querySelector<HTMLElement>(".candle-aura")!;
+  const lighting = finale.querySelector<HTMLElement>('.finale-lighting')!;
   const anniversaryHeight = anniversary.offsetHeight;
   const finaleHeight = finale.offsetHeight;
   const candleLit = finaleScene.dataset.blown !== 'true';
+  // A user may reverse the chapter while the room is still brightening.
+  // Start from the visible light level so that interrupting it never snaps.
+  const nightOpacity = reverse ? Number(getComputedStyle(lighting).opacity) : candleLit ? 1 : 0;
+  const flameOpacity = reverse ? Number(getComputedStyle(flame).opacity) : candleLit ? 1 : 0;
+  const auraOpacity = reverse ? Number(getComputedStyle(aura).opacity) : candleLit ? 1 : 0;
 
   document.documentElement.dataset.anniversaryFinaleHandoff = reverse ? "reverse" : "forward";
   const backdrop = document.createElement("div");
@@ -49,6 +55,7 @@ export function anniversaryFinaleHandoff({
     choreography = gsap.timeline({ paused: true });
     choreography
       .fromTo(backdrop, { opacity: 0 }, { opacity: 1, duration: 0.65, ease: "none" }, 0.25)
+      .fromTo(lighting, { opacity: 0 }, { opacity: nightOpacity, duration: 0.65, ease: 'none' }, 0.25)
       .to(
         anniversary.querySelectorAll(
           ".together-header, .together-copy > *, .together-stations, .together-footer, .together-annotation",
@@ -90,13 +97,13 @@ export function anniversaryFinaleHandoff({
       .fromTo(
         flame,
         { scale: 0, opacity: 0 },
-        { scale: candleLit ? 1 : 0.1, opacity: candleLit ? 1 : 0, duration: 0.4, ease: "back.out(1.8)" },
+        { scale: candleLit ? 1 : 0.1, opacity: flameOpacity, duration: 0.4, ease: "back.out(1.8)" },
         0.48,
       )
       .fromTo(
         aura,
         { opacity: 0, scale: 0.4 },
-        { opacity: candleLit ? 1 : 0, scale: candleLit ? 1 : 0.4, duration: 0.48, ease: "power2.out" },
+        { opacity: auraOpacity, scale: candleLit ? 1 : 0.4, duration: 0.48, ease: "power2.out" },
         0.44,
       )
       .fromTo(

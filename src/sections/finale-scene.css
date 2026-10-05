@@ -1,7 +1,22 @@
 .finale-scene.celebration-scene { --wind:0;--gust-direction:1;position:relative;isolation:isolate;overflow:hidden;min-height:100svh;padding:32px 48px;color:#302f2b;background:#ede9e0;touch-action:pan-y pinch-zoom; }
 @media(pointer:fine) { .finale-scene.celebration-scene { cursor:url('/assets/birthday-cake/wind-cursor.svg') 18 13,auto; } }
+@media(pointer:fine) { .finale-scene.celebration-scene[data-blown="false"] { cursor:url('/assets/birthday-cake/wind-cursor-lit.svg') 18 13,auto; } }
 .celebration-scene::before { content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 33% 25%,#fffdf8 0%,#fffdf800 62%),linear-gradient(110deg,#c6c0b947,transparent 44%,#d6d0c126); }
 .celebration-scene::after { content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(111deg,transparent 35%,#fffdf570 35.2%,#fffdf500 56%); }
+.finale-lighting { position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 27% 23%,#24160f,#0b090c 52%,#060609 100%);opacity:1;transition:opacity 1.8s cubic-bezier(.2,.65,.25,1); }
+.celebration-scene::before,.celebration-scene::after { transition:opacity 1.8s; }
+.celebration-scene[data-blown="false"]::before,.celebration-scene[data-blown="false"]::after { opacity:0; }
+.celebration-scene[data-blown="true"] .finale-lighting { opacity:0; }
+.celebration-scene[data-blown="false"] { color:#f7eddb; }
+.finale-scene,.finale-header,.finale-kicker,.finale-copy h2 em,.finale-body,.wind-invitation,.finale-controls button,.finale-footer { transition:color .36s ease,border-color .36s ease; }
+.celebration-scene[data-blown="false"] .finale-header { color:#b8a68e;border-color:#f4d6a12c; }
+.celebration-scene[data-blown="false"] .finale-kicker,.celebration-scene[data-blown="false"] .finale-footer { color:#c0a17a; }
+.celebration-scene[data-blown="false"] .finale-copy h2 em { color:#d9b57b; }
+.celebration-scene[data-blown="false"] .finale-body { color:#c8b9a4; }
+.celebration-scene[data-blown="false"] .wind-invitation { color:#cbb28e; }
+.celebration-scene[data-blown="false"] .finale-controls button { color:#f2d6a6;border-color:#d1ae735c; }
+.celebration-scene[data-blown="false"] .finale-controls button:hover { color:#fff7e6;border-color:#f4d6a1; }
+.celebration-scene[data-blown="false"] .finale-controls button:focus-visible { outline-color:#f4d6a1; }
 .finale-header { position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid #403e3522;font:11px/1.5 var(--font-body);letter-spacing:.18em;color:#777164; }
 .finale-main { min-height:calc(100svh - 110px); }
 .finale-copy { position:absolute;z-index:3;left:56%;top:23%;max-width:680px;width:40%; }
@@ -23,15 +38,22 @@
 .cake-altar { position:absolute;left:-112px;bottom:-300px;width:min(64vw,95svh,940px);aspect-ratio:1087/1446; }
 .cake-altar::after { content:'';position:absolute;bottom:1%;left:8%;width:82%;height:5%;border-radius:50%;background:#26211a26;filter:blur(20px);z-index:-1; }
 .birthday-cake { position:absolute;inset:0; }
-.birthday-cake img { width:100%;height:100%;object-fit:contain;filter:drop-shadow(28px 20px 24px #38302520);user-select:none; }
+.birthday-cake img { width:100%;height:100%;object-fit:contain;filter:brightness(1) saturate(1) drop-shadow(28px 20px 24px #38302520);user-select:none;transition:filter 1.8s cubic-bezier(.2,.65,.25,1); }
+.celebration-scene[data-blown="false"] .birthday-cake img { filter:brightness(.66) saturate(.8) drop-shadow(28px 20px 24px #0009); }
 .birthday-candle { position:absolute;left:47%;top:22%;width:18px;height:86px;transform:translate(-50%,-100%);z-index:3;touch-action:pan-y; }
 .candle-stick { position:absolute;inset:5px 2px 0;border-radius:3px 3px 4px 4px;background:linear-gradient(90deg,#b7ac98,#fff9e9 26%,#e6dac5 55%,#a59a84);box-shadow:inset 0 2px 1px #fffbe8,3px 2px 5px #352c1e44; }
 .candle-stick::after { content:'';position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 15px,#ffffff55 16px 18px,transparent 19px 28px);border-radius:inherit; }
 .candle-wick { position:absolute;top:0;left:8px;width:2px;height:8px;background:#443c30;border-radius:2px; }
 .candle-flame-wrap { position:absolute;left:50%;bottom:calc(100% - 3px);width:32px;height:50px;transform:translateX(-50%); }
-.candle-flame { width:100%;height:100%;overflow:visible;transform-origin:50% 95%;transform:rotate(calc(var(--wind) * -30deg)) scaleX(calc(1 - var(--wind) * .1));filter:drop-shadow(0 0 8px #e7a455) drop-shadow(0 0 20px #ecc77988);animation:flame-breathe 2.6s ease-in-out infinite;transition:opacity .18s; }
-@keyframes flame-breathe { 50% { scale:.93 1.07; } }
-.candle-aura { position:absolute;left:47%;top:8%;width:260px;height:260px;transform:translate(-50%,-50%);pointer-events:none;background:radial-gradient(ellipse,#f5c46b22,transparent 65%);transition:opacity .8s; }
+.candle-flame { position:relative;width:100%;height:100%;overflow:visible;transform-origin:50% 95%;transform:rotate(calc(var(--wind) * -30deg)) scaleX(calc(1 - var(--wind) * .1));filter:drop-shadow(0 0 10px #ffb353) drop-shadow(0 0 30px #f5b85fa0);animation:flame-breathe 2.8s ease-in-out infinite;transition:opacity .18s; }
+@keyframes flame-breathe { 0%,100% { scale:1 1; }18% { scale:.92 1.13; }26% { scale:1.05 .88; }43% { scale:.94 1.08; }55% { scale:1.04 .91; }67% { scale:.91 1.15; }82% { scale:.98 .96; } }
+.candle-room-glow { position:absolute;left:50%;top:50%;width:150vw;height:160svh;transform:translate(-50%,-50%);pointer-events:none;opacity:1;transition:opacity .95s ease-out; }
+.candle-room-glow i { position:absolute;inset:0;display:block;background:radial-gradient(ellipse at center,#ffc87959 0%,#e39a3c2e 17%,#a55b221a 35%,transparent 65%);animation:candle-room-flicker 2.8s ease-in-out infinite; }
+@keyframes candle-room-flicker { 0%,100% { opacity:.7; }18% { opacity:1; }26% { opacity:.42; }43% { opacity:.88; }55% { opacity:.48; }67% { opacity:1; }82% { opacity:.6; } }
+.celebration-scene[data-blown="true"] .candle-room-glow { opacity:0; }
+.celebration-scene[data-gusting="true"]:not([data-blown="true"]) .candle-room-glow { opacity:.35;transition-duration:.2s; }
+.celebration-scene[data-animating="false"] .candle-flame,.celebration-scene[data-animating="false"] .candle-room-glow i,.celebration-scene[data-blown="true"] .candle-flame,.celebration-scene[data-blown="true"] .candle-room-glow i { animation-play-state:paused; }
+.candle-aura { position:absolute;left:47%;top:8%;width:260px;height:260px;transform:translate(-50%,-50%);pointer-events:none;background:radial-gradient(ellipse,#ffc56d55,transparent 65%);transition:opacity .8s; }
 .smoke-wisp { position:absolute;bottom:3px;left:-22px;width:70px;height:140px;stroke:#77776e;stroke-width:1.4;stroke-linecap:round;opacity:0;pointer-events:none; }
 .smoke-wisp path:last-child { stroke-width:.8; }
 .celebration-scene[data-gusting="true"]:not([data-blown="true"]) .candle-flame { transform:rotate(calc(var(--gust-direction) * -67deg)) scale(.85,.55);transition:transform .18s,opacity .18s; }
@@ -80,7 +102,9 @@
 .finale-footer { position:absolute;z-index:3;left:56%;bottom:48px;color:#8b8275; }
 .finale-footer > span { font:italic 26px var(--font-display); }
 .finale-handoff-backdrop { position:absolute;inset:0;z-index:-2;background:#ede9e0; }
+.celebration-scene[data-blown="false"] .finale-handoff-backdrop { background:#0b090c; }
 html[data-anniversary-finale-handoff] .finale-scene { background:transparent; }
+html[data-anniversary-finale-handoff] .finale-lighting,html[data-anniversary-finale-handoff] .candle-aura,html[data-anniversary-finale-handoff] .candle-flame { transition:none; }
 html[data-anniversary-finale-handoff] [data-journey-ui],html[data-anniversary-finale-handoff] nav { visibility:hidden!important;pointer-events:none!important; }
 html[data-anniversary-finale-handoff] .together-scene,html[data-anniversary-finale-handoff] .finale-scene { pointer-events:none; }
 @media(max-width:1000px) and (min-width:601px) { .finale-scene.celebration-scene { padding-inline:30px; }.finale-copy { left:53%;width:44%;top:25%; }.finale-copy h2 { font-size:clamp(56px,7.5vw,75px); }.cake-altar { width:69vw;left:-100px;bottom:-170px; }.finale-body { font-size:20px; }.wind-invitation { font-size:11px; }.blown-actions { gap:20px; }.finale-footer { left:53%; } }
@@ -111,3 +135,4 @@ html[data-anniversary-finale-handoff] .together-scene,html[data-anniversary-fina
 @media(prefers-reduced-motion:reduce) { .candle-flame,.smoke-wisp,.wind-streak,.butterfly-flight,.butterfly-wing { animation:none!important; }.candle-flame,.candle-aura,.butterfly-lift { transition:none!important; }.butterfly-flight--rose { transform:translate(28vw,24svh) rotate(-25deg); }.butterfly-flight--light { transform:translate(86vw,13svh) rotate(25deg); }.butterfly-flight--edge { transform:translate(46vw,68svh) rotate(-12deg); }.butterfly-flight:nth-child(4) { display:none; } }
 @media(prefers-reduced-motion:reduce) and (max-width:600px) { .butterfly-flight--rose { transform:translate(64vw,52svh) rotate(-25deg); }.butterfly-flight--light { transform:translate(76vw,10svh) rotate(25deg); }.butterfly-flight--edge { transform:translate(67vw,77svh) rotate(-12deg); } }
 @media(prefers-reduced-motion:reduce) { .butterfly-lift { transform:none!important; } }
+@media(prefers-reduced-motion:reduce) { .candle-room-glow i { animation:none!important;opacity:.7; }.finale-lighting,.celebration-scene::before,.celebration-scene::after,.birthday-cake img,.candle-room-glow,.finale-scene,.finale-header,.finale-kicker,.finale-copy h2 em,.finale-body,.wind-invitation,.finale-controls button,.finale-footer { transition-duration:.15s; } }

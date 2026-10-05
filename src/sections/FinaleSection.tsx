@@ -69,6 +69,7 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
   },[isActive,isTransitioning,overlayOpen,blown,reducedMotion,extinguish]);
 
   return <section ref={root} className="finale-scene celebration-scene" data-blown={blown} data-gusting={gusting} data-animating={isActive&&!isTransitioning&&!overlayOpen&&visible&&!reducedMotion} aria-label={finale.chapter}>
+    <div className="finale-lighting" aria-hidden="true"/>
     <header className="finale-header"><span>CHƯƠNG 06 / MỘT ĐIỀU ƯỚC</span><span>10 NOVEMBER</span></header>
     <div className="finale-main">
       <div className="finale-copy" data-mascot-obstacle>
@@ -89,6 +90,7 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
           <div className="birthday-cake"><img src="/assets/birthday-cake/ivory-noir-cake.webp" alt="Bánh sinh nhật kem ngà, hoa hồng đen trắng và bướm bạc" width="1087" height="1446" decoding="async" draggable={false}/></div>
           <div className="birthday-candle" aria-hidden="true">
             <div ref={flame} className="candle-flame-wrap">
+              <div className="candle-room-glow"><i/></div>
               <svg className="candle-flame" viewBox="0 0 30 52"><defs><radialGradient id="wish-flame"><stop stopColor="#fffef0"/><stop offset=".45" stopColor="#fff2b4"/><stop offset=".75" stopColor="#f1a555"/><stop offset="1" stopColor="#c66b3a"/></radialGradient></defs><path d="M15 2C12 15 4 22 4 34c0 20 22 20 22 0 0-12-8-19-11-32Z" fill="url(#wish-flame)"/><path d="M15 26c-3 5-5 8-5 12 0 9 10 9 10 0 0-4-2-7-5-12Z" fill="#fffcec"/></svg>
               <svg className="smoke-wisp" viewBox="0 0 70 140" fill="none"><path d="M35 138c-26-24 24-35 4-61S15 46 40 15"/><path d="M36 130c16-25-18-39-3-61S53 33 32 4"/></svg>
               <span className="wind-streak wind-streak--one"/><span className="wind-streak wind-streak--two"/>

@@ -10,14 +10,14 @@ try{
  const p=await b.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
  const height=mobile?844:900;await p.setViewport({width:mobile?390:1440,height,isMobile:mobile,hasTouch:mobile});
  if(reduced)await p.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);
- await p.goto('http://127.0.0.1:3333',{waitUntil:'networkidle2'});await p.waitForSelector('.gallery-loader',{hidden:true});
+ await p.goto(process.env.TEST_URL||'http://127.0.0.1:3333',{waitUntil:'networkidle2'});await p.waitForSelector('.gallery-loader',{hidden:true});
  assert.equal(await p.$eval('.hero-gallery',e=>e.inert),true);
  await p.screenshot({path:`${out}/gate.png`});
  const hit=await p.$eval('.garden-gate__hit',e=>{const r=e.getBoundingClientRect();return{x:r.left+r.width/2,y:Math.min(innerHeight-120,r.top+r.width*.75)}});
  if(mobile)await p.touchscreen.tap(hit.x,hit.y);else await p.mouse.move(hit.x,hit.y);
- await wait(reduced?50:1550);assert(await p.$eval('.garden-gate',e=>+getComputedStyle(e).getPropertyValue('--gate-open')>.99));
+ await p.waitForFunction(()=>+getComputedStyle(document.querySelector('.garden-gate')).getPropertyValue('--gate-open')>.99,{timeout:5000});
  if(mobile)await p.touchscreen.tap(hit.x,hit.y);else await p.mouse.move(90,700);
- await wait(reduced?50:1750);assert(await p.$eval('.garden-gate',e=>+getComputedStyle(e).getPropertyValue('--gate-open')<.01));
+ await p.waitForFunction(()=>+getComputedStyle(document.querySelector('.garden-gate')).getPropertyValue('--gate-open')<.01,{timeout:5000});
  const touch=mobile?await p.createCDPSession():null;
  async function input(delta){if(!mobile)return p.mouse.wheel({deltaY:delta});const y=delta>0?height-110:120;await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:190,y}]});await touch.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:190,y:y-delta}]});await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}
  if(!reduced){

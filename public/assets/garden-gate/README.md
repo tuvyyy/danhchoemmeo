@@ -2,7 +2,7 @@
 
 The current entrance uses [`estate-sunset.webp`](estate-sunset.webp), converted at quality 93 from the user's supplied 1774 × 887 sunset photograph on 3 October 2026. `sunset-reference.png` preserves the original attachment. No generated replacement image is used.
 
-`SunlitIronGate.tsx` builds actual Three.js geometry from the existing ironwork paths: tubular rails, extruded ornaments, bronze hinges and raised handles. A perspective camera and two independently hinged leaves provide depth; warm light from the right matches the sun in the photograph. It renders on opening/resize changes instead of continuously when idle. The original SVG doors remain available when WebGL is unavailable or its context is lost.
+`gateIronwork.ts` defines two full-height arched leaves fitted to the photograph's asymmetric inner reveal. Their arched crowns rotate with the leaves; there is no separate fixed fanlight. Bars meet the curved frame and cross the waist rails continuously. `SunlitIronGate.tsx` builds the square and round iron stock, raised handles, hinge straps, fixed pintles and bolted masonry sockets as Three.js geometry. Dark hammered patina, warm sky reflections and grazing light from the right give the metal thickness without bright outlines. The SVG sockets add restrained contact shadows along the stone reveal. Rendering happens on opening/resize changes instead of continuously when idle. SVG doors share the same path definitions and remain available when WebGL is unavailable or its context is lost.
 
 The previous `estate-mist.webp` and floral `limestone-arch.webp` are retained as unused earlier iterations. The mist plate's generation notes remain in [estate-mist.md](estate-mist.md).
 

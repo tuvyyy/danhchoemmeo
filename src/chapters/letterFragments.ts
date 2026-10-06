@@ -34,8 +34,7 @@ const snapshots = new WeakMap<HTMLElement, Snapshot>();
 const embeddedAssets = new Map<string, Promise<string>>();
 function snapshotKey(source: HTMLElement) {
   const canvases=[...source.querySelectorAll('canvas')].map(c=>`${c.dataset.bloomFrame}:${c.dataset.bloomStage}`).join(',');
-  const accent=source.matches('.letter-bloom-garden__accent')?getComputedStyle(source.querySelector('img')!):null;
-  return `${source.offsetWidth}:${source.offsetHeight}:${source.closest('.letter-atelier')?.getAttribute('data-open')}:${source.querySelector('[data-page]')?.getAttribute('data-page')}:${source.dataset.bloomFrame}:${source.closest('.letter-bloom-garden')?.getAttribute('data-bloomed')}:${accent?.opacity}:${accent?.transform}:${canvases}`;
+  return `${source.offsetWidth}:${source.offsetHeight}:${source.closest('.letter-atelier')?.getAttribute('data-open')}:${source.querySelector('[data-page]')?.getAttribute('data-page')}:${source.dataset.bloomFrame}:${source.dataset.flowerColor}:${source.closest('.letter-bloom-garden')?.getAttribute('data-bloomed')}:${canvases}`;
 }
 
 /** Prepare one object per idle task while reading, before the scroll handler needs it. */
@@ -117,9 +116,8 @@ function snapshot(source: HTMLElement, defer = false): Promise<HTMLCanvasElement
   const origin=computed.transformOrigin.split(' ').map(parseFloat);
   const corners=[[0,0],[width,0],[width,height],[0,height]].map(([x,y])=>new DOMPoint(x-origin[0],y-origin[1]).matrixTransform(matrix));
   const minX=Math.min(...corners.map(p=>p.x))+origin[0],minY=Math.min(...corners.map(p=>p.y))+origin[1];
-  const image=source.matches('.letter-bloom-garden__accent')?source.querySelector('img'):
-    source.matches('.letter-bloom-garden__bloom')?source.querySelector('canvas'):null;
-  if(image&&(image instanceof HTMLCanvasElement?image.width>0&&image.height>0:image.complete&&image.naturalWidth>0)){
+  const image=source.matches('.letter-bloom-garden__bloom')?source.querySelector('canvas'):null;
+  if(image&&image.width>0&&image.height>0){
     // Cutouts and bloom canvases are already decoded. Draw their displayed size
     // instead of serializing and decoding another PNG/SVG for every flower.
     const bitmap=document.createElement('canvas');bitmap.width=Math.ceil(rect.width);bitmap.height=Math.ceil(rect.height);
@@ -135,7 +133,7 @@ function snapshot(source: HTMLElement, defer = false): Promise<HTMLCanvasElement
     ink.filter=computed.filter;ink.globalAlpha=Number(computed.opacity)*Number(imageStyle.opacity);
     ink.drawImage(image,0,0,width,height);ink.restore();
     // Match the live plant's fade into the grass, in the same rotated coordinates.
-    const fade=ink.createLinearGradient(0,image instanceof HTMLCanvasElement?height-26:height*.92,0,height);fade.addColorStop(0,'#000');fade.addColorStop(1,'#0000');
+    const fade=ink.createLinearGradient(0,height-26,0,height);fade.addColorStop(0,'#000');fade.addColorStop(1,'#0000');
     ink.globalCompositeOperation='destination-in';ink.fillStyle=fade;ink.fillRect(0,0,width,height);
     const promise=Promise.resolve(bitmap);snapshots.set(source,{key,bitmap:promise});return promise;
   }

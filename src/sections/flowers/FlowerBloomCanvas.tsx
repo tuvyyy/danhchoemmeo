@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { drawBloomFrame, type BloomPalette } from './bloomPalette';
 import {
   getCachedBloomFrames,
   preloadBloomSequence,
@@ -21,6 +22,7 @@ interface FlowerBloomCanvasProps {
   baseRotation?: number;
   className?: string;
   style?: React.CSSProperties;
+  palette?: BloomPalette;
 }
 
 const DEFAULT_BLOOM_DURATION_MS = 5000; // ~12 FPS across 60 frames = 5.0 seconds
@@ -37,6 +39,7 @@ export default function FlowerBloomCanvas({
   baseRotation = 0,
   className,
   style,
+  palette = 'pink',
 }: FlowerBloomCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -109,17 +112,10 @@ export default function FlowerBloomCanvas({
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, displayWidth, displayHeight);
 
-    const isCanvas = "getContext" in targetImg;
-    const srcWidth = isCanvas
-      ? (targetImg as HTMLCanvasElement).width
-      : (targetImg as HTMLImageElement).naturalWidth || 1024;
-    const srcHeight = isCanvas
-      ? (targetImg as HTMLCanvasElement).height
-      : (targetImg as HTMLImageElement).naturalHeight || 1024;
-
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(targetImg, 0, 0, srcWidth, srcHeight, 0, 0, displayWidth, displayHeight);
+    const renderer = drawBloomFrame(ctx, targetImg, palette, displayWidth, displayHeight);
+    if (containerRef.current) containerRef.current.dataset.paletteRenderer = renderer;
 
     ctx.restore();
   };
@@ -206,7 +202,7 @@ export default function FlowerBloomCanvas({
       img001.onload = null;
       img060.onload = null;
     };
-  }, [hasBloomed]);
+  }, [hasBloomed, palette]);
 
   // ── 3. Chapter Lifecycle, RAF Playback & Timing ──
   useEffect(() => {
@@ -366,7 +362,7 @@ export default function FlowerBloomCanvas({
       }
       isPlayingRef.current = false;
     };
-  }, [isActive, hasBloomed, framesReady, delayMs, durationMs]);
+  }, [isActive, hasBloomed, framesReady, delayMs, durationMs, palette]);
 
   // Window resize handler to maintain Retina crispness
   useEffect(() => {
@@ -389,6 +385,7 @@ export default function FlowerBloomCanvas({
       data-flower-main={!isSecondary ? "true" : undefined}
       data-flower-secondary={isSecondary ? "true" : undefined}
       data-bloom-mode="canvas-sequence"
+      data-flower-color={palette}
       data-bloom-frame={String(currentFrameIndexRef.current + 1)}
       className={className || defaultClass}
       style={{

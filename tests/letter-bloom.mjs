@@ -41,7 +41,8 @@ try {
  await p.waitForFunction(() => document.querySelector('#chapter-letter').dataset.chapterState === 'active' && !document.documentElement.dataset.voucherLetterHandoff);
  if (mobile) await p.evaluate(() => document.querySelector('.letter-bloom-garden').scrollIntoView({ block: 'end', behavior: 'instant' }));
  await p.waitForSelector('.letter-bloom-garden[data-running="true"]');
- assert.equal(await p.$$eval('.letter-bloom-garden canvas', es => es.length), 15);
+ assert.equal(await p.$$eval('.letter-bloom-garden canvas', es => es.length), 33);
+ assert.equal(await p.$('.letter-cover'), null, 'The letter is a flat page, without a book cover');
  assert.equal(await p.$$eval('.letter-bloom-garden__grass', es => es.length), 3, 'The original three grass layers return');
  assert(await p.$$eval('.letter-bloom-garden__grass', es => es.every(e => e.complete && e.naturalWidth > 0)), 'Grass assets load');
  assert.equal(await p.$('.letter-atelier__intro'), null, 'Remove the left introduction');
@@ -62,12 +63,9 @@ try {
  }
  await p.waitForSelector('.letter-bloom-garden[data-bloomed="true"]', { timeout: 20000 });
  await p.screenshot({ path: `${out}/03-bloomed.png` });
- assert.equal(await p.$$eval('.letter-bloom-garden canvas[data-bloom-stage="6"]', es => es.length), 13);
+ assert.equal(await p.$$eval('.letter-bloom-garden canvas[data-bloom-stage="6"]', es => es.length), 31);
  if (mobile) await p.evaluate(() => document.querySelector('.letter-desk').scrollIntoView({ block: 'start', behavior: 'instant' }));
- await p.click('.letter-desk__controls button:last-child');
- await wait(reduced ? 30 : 1150);
- await p.screenshot({ path: `${out}/03-cover-closed.png` });
- await p.click('.letter-cover'); await wait(reduced ? 30 : 1150);
+ await p.mouse.move(800, 60);
  await p.screenshot({ path: `${out}/04-letter-open.png` });
  await p.click('.letter-page__read'); await p.waitForSelector('.letter-reader');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
@@ -79,5 +77,5 @@ try {
  await p.waitForFunction(() => document.querySelector('#chapter-moments').dataset.chapterState === 'active');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
  assert.deepEqual(errors, []);
- console.log(`${out}: PASS preserved video, 15 staggered blooms, original grass, letter left, no premature playback, reader/pagination, pause, next chapter, no overflow/errors`);
+ console.log(`${out}: PASS preserved video, 31 tulips + 2 lilies, grass, flat letter left, reader/pagination, pause, next chapter, no overflow/errors`);
 } finally { await browser.close(); }

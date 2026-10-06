@@ -5,7 +5,7 @@ export interface MotionClock {
 }
 
 /** One frame loop for a gesture. New input changes the destination, not the clock. */
-export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finish, distance, clock, autoDuration }: {
+export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finish, distance, clock, autoDuration, response = 24 }: {
   reverse: boolean;
   scrollDelta?: number;
   paint: (progress: number) => void;
@@ -15,6 +15,8 @@ export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finis
   clock?: MotionClock;
   /** Optional cinematic CTA duration; gesture input still scrubs without autoplay. */
   autoDuration?: number;
+  /** Critically damped response rate; lower values give a heavier page turn. */
+  response?: number;
 }) {
   const timing = clock ?? {
     now: () => performance.now(),
@@ -53,7 +55,7 @@ export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finis
       if (t === 1) automatic = null;
     } else {
       // Analytic critically damped response: velocity survives rapid wheel reversals.
-      const omega = 24;
+      const omega = response;
       const error = position - target;
       const impulse = (velocity + omega * error) * dt;
       const decay = Math.exp(-omega * dt);

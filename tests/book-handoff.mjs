@@ -2,7 +2,7 @@ import puppeteer from 'puppeteer-core';
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const mobile=process.argv.includes('--mobile'),height=mobile?844:900;
-const out=`docs/captures/book-opening${mobile?'-mobile':''}`;
+const out=process.env.BOOK_CAPTURE_DIR||`docs/captures/chapter-page-turn${mobile?'-mobile':''}`;
 await fs.mkdir(out,{recursive:true});
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
@@ -23,6 +23,7 @@ try{
   for(let i=1;i<=5;i++){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:190,y:start-delta*i/5}]});await wait(20);}
   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();
  };
+ const measurements=[];
  for(const direction of ['forward','reverse']){
   await p.evaluate(id=>scrollTo({top:document.querySelector(`#chapter-${id}`).offsetTop,behavior:'instant'}),direction==='forward'?'wallet':'letter');await wait(250);
   await p.screenshot({path:`${out}/${direction}-000.png`});let last=0;
@@ -32,12 +33,34 @@ try{
     const target=(direction==='forward'?percent:100-percent)/100;
     await p.waitForFunction(target=>Math.abs(+document.querySelector('.letter-atelier').dataset.handoffProgress-target)<.003,{},target);
     assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+    const state=await p.evaluate(()=>{
+     const paper=document.querySelector('.letter-keepsake'),r=paper.getBoundingClientRect();
+     const flat=new DOMMatrix(getComputedStyle(paper).transform),page=new DOMMatrix(getComputedStyle(document.querySelector('[data-chapter-content="wallet"]')).transform);
+     return{left:r.left,top:r.top,width:r.width,height:r.height,paperDepth:flat.m13,pageDepth:page.m13};
+    });
+    assert(Math.abs(state.paperDepth)<.0001,'The letter itself never hinges open');
+    assert(Math.abs(state.pageDepth)>.01,'The outgoing chapter is the turning page');
+    measurements.push({direction,percent,...state});
     if(percent===50){await wait(450);assert(Math.abs(await p.$eval('.letter-atelier',e=>+e.dataset.handoffProgress)-target)<.003);}
    }else await stable(direction==='forward'?'letter':'wallet');
    await p.screenshot({path:`${out}/${direction}-${String(percent).padStart(3,'0')}.png`});last=percent;
   }
-  assert.equal(await p.$('.letter-book-back'),null,'temporary reverse paper face must be removed');
+  assert.equal(await p.$('.letter-book-back'),null,'No blank reverse face attached to the letter');
+  assert.equal(await p.$('.chapter-page-turn-shade'),null,'Page shade is removed after each handoff');
+  assert.equal(await p.$('.letter-cover'),null,'No book cover in chapter three');
   if(direction==='forward')assert.equal(await p.$eval('.letter-atelier',e=>e.dataset.open),'true');
  }
- assert.deepEqual(errors,[]);console.log(`${out}: PASS book opening/closing, pause, open arrival, cleanup, no overflow and no errors`);
+ // Capture frame cadence without screenshots/readback during the CTA animation.
+ await p.evaluate(()=>{
+  window.__pageTurnFrames=[];let previous=performance.now();
+  const tick=time=>{window.__pageTurnFrames.push(time-previous);previous=time;if(document.documentElement.dataset.voucherLetterHandoff)requestAnimationFrame(tick);};
+  document.querySelector('.scene-next').click();requestAnimationFrame(tick);
+ });
+ await stable('letter');
+ const cadence=await p.evaluate(()=>window.__pageTurnFrames);
+ const final=await p.$eval('.letter-keepsake',e=>{const r=e.getBoundingClientRect();return{left:r.left,top:r.top,width:r.width,height:r.height};});
+ const held=measurements.find(m=>m.direction==='forward'&&m.percent===80);
+ for(const key of ['left','top','width','height'])assert(Math.abs(final[key]-held[key])<1,'No arrival geometry jump');
+ await fs.writeFile(`${out}/measurements.json`,JSON.stringify({measurements,cadence:{frames:cadence.length,meanMs:cadence.reduce((a,b)=>a+b,0)/cadence.length,maxMs:Math.max(...cadence),over50Ms:cadence.filter(t=>t>50).length}},null,2));
+ assert.deepEqual(errors,[]);console.log(`${out}: PASS whole-chapter page turn, flat letter, forward/reverse/hold, stable arrival, cleanup and no overflow/errors`);
 }finally{await browser.close();}

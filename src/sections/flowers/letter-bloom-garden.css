@@ -1,35 +1,45 @@
-/* The pre-video planting, moved to the right of the letter. */
+/* A single meadow to the right of a flat, readable letter. */
+.letter-scene.letter-atelier { grid-template-columns:.8fr 1.2fr;column-gap:60px; }
 .letter-bloom-garden { position:absolute;inset:0;pointer-events:none;z-index:0;overflow:visible; }
-.letter-bloom-garden__flowers { position:absolute;right:0;bottom:0;width:min(1020px,68vw);height:100%;--lily-size:min(26.7vw,40.94svh); }
-.letter-bloom-garden__lily { position:absolute;z-index:2;aspect-ratio:1;transform-origin:center bottom;mask-image:linear-gradient(#000 calc(100% - 24px),transparent); }
-.letter-bloom-garden__lily--left { left:calc(54% - var(--lily-size) * .3);bottom:7%;width:calc(var(--lily-size) * .6); }
-.letter-bloom-garden__lily--right { left:calc(70% - var(--lily-size) / 2);bottom:9%;width:var(--lily-size); }
-.letter-bloom-garden__meadow { position:absolute;left:0;right:0;bottom:-7%;height:56%;overflow:visible; }
+.letter-bloom-garden__flowers { position:absolute;z-index:1;right:0;bottom:28px;width:min(1010px,63vw);height:min(60svh,570px);--lily-size:min(23vw,35svh); }
+.letter-bloom-garden__lily { position:absolute;z-index:1;aspect-ratio:1;transform-origin:center bottom;mask-image:linear-gradient(#000 calc(100% - 24px),transparent); }
+.letter-bloom-garden__lily--left { left:calc(31% - var(--lily-size) * .3);bottom:18%;width:calc(var(--lily-size) * .6); }
+.letter-bloom-garden__lily--right { left:calc(61% - var(--lily-size) / 2);bottom:21%;width:var(--lily-size); }
+.letter-bloom-garden .nature-bloom__tulip { left:var(--tulip-x);bottom:var(--tulip-bottom);height:calc(min(38svh,28vw) * var(--tulip-scale)); }
+.letter-bloom-garden .nature-bloom__tulip[data-depth="background"] { z-index:0; }
+.letter-bloom-garden .nature-bloom__tulip[data-depth="midground"] { z-index:2; }
+.letter-bloom-garden .nature-bloom__tulip[data-depth="foreground"] { z-index:3; }
+.letter-bloom-garden__meadow { position:absolute;z-index:0;left:0;right:0;bottom:-7%;height:48%;overflow:visible; }
 .letter-bloom-garden__meadow::before { content:"";position:absolute;left:0;right:0;bottom:0;height:42%;z-index:4;background:linear-gradient(transparent,#050505); }
 .letter-bloom-garden__grass { position:absolute;bottom:0;max-width:none;transform-origin:center bottom;filter:brightness(.48) saturate(.62); }
-.letter-bloom-garden__grass--strip { z-index:3;right:-3%;bottom:-10%;width:106%;min-width:1000px;opacity:.82; }
-.letter-bloom-garden__grass--left { z-index:4;left:-5%;width:min(40vw,570px);opacity:.7;animation:letter-grass-left 8s ease-in-out infinite alternate; }
-.letter-bloom-garden__grass--right { z-index:4;right:-7%;width:min(40vw,570px);opacity:.66;animation:letter-grass-right 9.5s ease-in-out infinite alternate; }
+.letter-bloom-garden__grass--strip { z-index:3;right:-3%;bottom:0;width:106%;min-width:1000px;opacity:.82; }
+.letter-bloom-garden__grass--left { z-index:4;left:-5%;width:min(30vw,420px);opacity:.4;animation:letter-grass-left 8s ease-in-out infinite alternate; }
+.letter-bloom-garden__grass--right { z-index:4;right:-7%;width:min(30vw,420px);opacity:.46;animation:letter-grass-right 9.5s ease-in-out infinite alternate; }
 .letter-bloom-garden[data-running="false"] .letter-bloom-garden__grass { animation-play-state:paused; }
+.letter-bloom-garden .flower-atmosphere__fireflies { opacity:.5; }
+.letter-bloom-garden .flower-atmosphere__petal[data-depth="near"] { display:none; }
 @keyframes letter-grass-left { from { transform:rotate(-.8deg) translateX(-2px); } to { transform:rotate(.8deg) translateX(2px); } }
 @keyframes letter-grass-right { from { transform:scaleX(-1) rotate(.6deg) translateX(2px); } to { transform:scaleX(-1) rotate(-.6deg) translateX(-2px); } }
-.letter-desk { grid-column:1;grid-row:2; }
-.letter-desk > .letter-keepsake { z-index:2; }
-.letter-desk > .letter-desk__controls { position:relative;z-index:3; }
-.letter-desk__controls:empty { visibility:hidden; }
-html[data-voucher-letter-handoff] .letter-bloom-garden { opacity:0; }
+.letter-desk { grid-column:1;grid-row:2;padding:28px 0 20px; }
+.letter-desk > .letter-keepsake { z-index:2;width:min(100%,380px);--letter-paper-height:clamp(430px,56svh,530px);transform:rotate(-3deg); }
+.letter-desk > .letter-desk__controls { position:relative;z-index:3;font-size:11px;gap:18px;background:#10110ed9; }
+.letter-atelier__header { font-size:10px; }
+.letter-atelier__footer { border-color:transparent; }
 @media(max-width:600px) {
  .letter-scene.letter-atelier { min-height:100svh;padding-bottom:38px; }
  .letter-desk { align-self:flex-start;max-width:290px;padding:35px 8px 225px; }
- .letter-desk .letter-keepsake { --letter-paper-height:380px; }
+ .letter-desk > .letter-keepsake { --letter-paper-height:380px; }
  .letter-desk .letter-page__note-img { max-height:290px; }
+ .letter-desk > .letter-desk__controls { font-size:9px;gap:12px; }
+ .letter-atelier__header { font-size:8px; }
  .letter-atelier__footer { margin-top:auto; }
- .letter-bloom-garden__flowers { width:100%;height:320px;bottom:58px;--lily-size:min(46.28vw,26.7svh); }
- .letter-bloom-garden__lily--right { left:calc(68% - var(--lily-size) / 2);bottom:24%; }
- .letter-bloom-garden__lily--left { left:calc(38% - var(--lily-size) * .3);bottom:22%; }
- .letter-bloom-garden__meadow { height:430px;bottom:-60px; }
+ .letter-bloom-garden__flowers { width:100%;height:270px;bottom:58px;--lily-size:min(42vw,24svh); }
+ .letter-bloom-garden .nature-bloom__tulip { height:calc(min(26svh,54vw) * var(--tulip-scale)); }
+ .letter-bloom-garden__lily--right { left:calc(64% - var(--lily-size) / 2);bottom:24%; }
+ .letter-bloom-garden__lily--left { left:calc(31% - var(--lily-size) * .3);bottom:22%; }
+ .letter-bloom-garden__meadow { height:330px;bottom:-50px; }
  .letter-bloom-garden__grass--strip { min-width:760px; }
- .letter-bloom-garden__grass--left,.letter-bloom-garden__grass--right { width:60vw; }
+ .letter-bloom-garden__grass--left,.letter-bloom-garden__grass--right { width:50vw; }
 }
 @media(prefers-reduced-motion:reduce) {
  .letter-bloom-garden__grass { animation:none; }

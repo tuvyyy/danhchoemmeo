@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import { useSceneOverlay } from "@/components/effects/SceneExperience";
@@ -45,22 +45,16 @@ function LetterPage({ index }: { index: number }) {
 }
 
 export default function LetterSection({ onComplete }: { onComplete: () => void }) {
-  const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [reading, setReading] = useState(false);
   const atelier = useRef<HTMLElement>(null);
   const { isActive, isTransitioning } = useChapterLifecycle(3);
   const { currentChapter } = useChapterFlowContext();
-  const previousChapter = useRef(currentChapter);
-  useLayoutEffect(() => {
-    if (currentChapter === 3 && previousChapter.current < 3) setOpen(true);
-    previousChapter.current = currentChapter;
-  }, [currentChapter]);
   useSceneOverlay(reading);
   const dialogRef = useDialogFocus(reading);
-  useEffect(() => { if (!isActive) { setReading(false); if (currentChapter < 3) { setOpen(false); setPage(0); } } }, [isActive, currentChapter]);
+  useEffect(() => { if (!isActive) { setReading(false); if (currentChapter < 3) setPage(0); } }, [isActive, currentChapter]);
   useEffect(() => {
-    if (!isActive || isTransitioning || !open || reading || !atelier.current) return;
+    if (!isActive || isTransitioning || reading || !atelier.current) return;
     let stop: (() => void) | undefined;
     let timer = 0;
     const prepare = () => { clearTimeout(timer); timer=window.setTimeout(()=>{stop?.();stop=prepareLetterFragments(atelier.current!);},1250); };
@@ -69,7 +63,7 @@ export default function LetterSection({ onComplete }: { onComplete: () => void }
     const observer=new MutationObserver(prepare);
     if(garden)observer.observe(garden,{attributes:true,attributeFilter:['data-bloomed']});
     return()=>{clearTimeout(timer);stop?.();observer.disconnect();};
-  }, [isActive, isTransitioning, open, page, reading]);
+  }, [isActive, isTransitioning, page, reading]);
   useEffect(() => {
     if (!reading) return;
     const previous = document.body.style.overflow;
@@ -82,7 +76,7 @@ export default function LetterSection({ onComplete }: { onComplete: () => void }
     window.addEventListener("keydown", key);
     return () => { document.body.style.overflow = previous; window.removeEventListener("keydown", key); };
   }, [reading]);
-  return <section ref={atelier} className="letter-scene letter-atelier" data-open={open} data-reading={reading} aria-label="Chương 03 — Một lá thư dành riêng em">
+  return <section ref={atelier} className="letter-scene letter-atelier" data-open="true" data-reading={reading} aria-label="Chương 03 — Một lá thư dành riêng em">
     <div className="letter-atelier__light" aria-hidden="true"/>
     <div className="letter-atelier__landscape" aria-hidden="true"/>
     <LetterBloomGarden active={isActive && !isTransitioning && !reading}/>
@@ -90,23 +84,16 @@ export default function LetterSection({ onComplete }: { onComplete: () => void }
     <div className="letter-desk">
       <div className="letter-keepsake">
         <div className="letter-keepsake__back" aria-hidden="true"/>
-        <div className="letter-keepsake__pages" inert={!open}>
+        <div className="letter-keepsake__pages">
           <LetterPage index={page}/>
           <button className="letter-page__read" onClick={() => setReading(true)} aria-label="Phóng to đọc thư">⤢</button>
         </div>
-        <button className="letter-cover" onClick={() => setOpen(true)} disabled={open} aria-label="Mở lá thư dành riêng em">
-          <span className="letter-cover__border" aria-hidden="true"/>
-          <svg className="letter-cover__flower" viewBox="0 0 120 150" fill="none" stroke="currentColor" strokeWidth=".8" aria-hidden="true"><path d="M58 132c-7-25 14-55 1-80M59 91C38 98 26 77 31 68c15 0 28 10 28 23Zm0-20c14 4 29-5 30-22-18-1-30 9-30 22ZM59 53C15 45 35 14 59 41c-14-47 29-39 10 2 37-31 48 8 1 15M56 130c18 2 31-5 35-16-19-4-30 2-35 16Z"/></svg>
-          <span className="letter-cover__to">Gửi em mèo,</span><span className="letter-cover__subtitle">với tất cả dịu dàng.</span>
-          <img className="letter-cover__seal" src={ENVELOPE_ASSETS.seal.src} alt=""/>
-          <span className="letter-cover__date">10.11 <i/> for you, always</span>
-        </button>
       </div>
       <div className="letter-desk__controls" aria-label="Điều khiển lá thư">
-        {open ? <><button onClick={() => setPage(value => 1 - value)} aria-label={page ? "Đọc trang thứ nhất" : "Đọc trang thứ hai"}>{page ? "← Trang trước" : "Trang tiếp theo →"}</button><span>0{page + 1} / 02</span><button onClick={() => setOpen(false)}>Gấp thư lại</button></> : null}
+        <button onClick={() => setPage(value => 1 - value)} aria-label={page ? "Đọc trang thứ nhất" : "Đọc trang thứ hai"}>{page ? "← Trang trước" : "Trang tiếp theo →"}</button><span>0{page + 1} / 02</span><button onClick={() => setReading(true)}>Đọc rõ hơn ↗</button>
       </div>
     </div>
-    <footer className="letter-atelier__footer">{open && <button className="letter-next" onClick={onComplete}>{BIRTHDAY_DATA.letter.cta} <span aria-hidden="true">↗</span></button>}</footer>
+    <footer className="letter-atelier__footer"><button className="letter-next" onClick={onComplete}>{BIRTHDAY_DATA.letter.cta} <span aria-hidden="true">↗</span></button></footer>
     {reading && createPortal(<div className="letter-reader" role="dialog" aria-modal="true" aria-label="Đọc thư dành riêng em" ref={dialogRef} tabIndex={-1} onClick={() => setReading(false)}>
       <div className="letter-reader__body" onClick={event => event.stopPropagation()}>
         <div className="letter-reader__toolbar"><span>LÁ THƯ DÀNH RIÊNG EM</span><button data-dialog-close onClick={() => setReading(false)} aria-label="Đóng chế độ đọc">Đóng ✕</button></div>

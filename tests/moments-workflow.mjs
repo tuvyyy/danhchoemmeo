@@ -13,7 +13,7 @@ try {
  try{await page.waitForFunction(()=>document.querySelector('.envelope__seal')?.disabled===false,{timeout:45000});}catch(e){console.log(await page.evaluate(()=>({html:document.documentElement.dataset,stages:[...document.querySelectorAll('[data-chapter-state]')].map(e=>({id:e.id,state:e.dataset.chapterState,top:e.getBoundingClientRect().top})),viewport:[innerWidth,innerHeight],seal:document.querySelector('.envelope__seal').disabled})));throw e;}await wait(200);await page.waitForFunction(()=>['active','completing'].includes(document.querySelector('#chapter-wallet').dataset.chapterState));await page.click('.envelope__seal');await page.waitForSelector('.chapter-envelope-scene[data-state="open"]');await page.click('.scene-next');await page.waitForFunction(()=>document.querySelector('#chapter-letter')?.dataset.chapterState==='active'&&!document.documentElement.dataset.voucherLetterHandoff);
  await page.mouse.move(310,220);await wait(300);
  if(!mobile){assert(await page.$eval('[data-custom-cursor]',e=>getComputedStyle(e).visibility==='visible'&&+getComputedStyle(e).opacity>0),'Chapter 03 custom cursor restored');await page.screenshot({path:`${out}/letter-cursor.png`});}
- if(await page.$eval('.letter-atelier',e=>e.dataset.open)!=='true')await page.click('.letter-cover');await wait(reduced?100:1150);
+ await wait(reduced?100:1150);
  await page.evaluate(()=>{const s=document.querySelector('#chapter-letter');scrollTo(0,s.offsetTop+s.offsetHeight-innerHeight);});await wait(250);
  const record=process.argv.includes('--record')?await page.screencast({path:`${out}/workflow.mp4`,format:'mp4',fps:30}):null;
  const measurements=[];

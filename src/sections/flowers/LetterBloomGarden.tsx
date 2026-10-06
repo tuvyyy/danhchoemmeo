@@ -3,8 +3,7 @@ import FlowerBloomCanvas from './FlowerBloomCanvas';
 import { preloadBloomSequence } from '@/lib/assets/preloadBloomSequence';
 import FlowerAtmosphere from './FlowerAtmosphere';
 
-// Use the original photographic pink, wide-petal sequence throughout the bed.
-// A taller central bloom anchors the group; smaller blooms recede into the grass.
+// Keep the original opening sequence; cooler and ivory accents sit between its layers.
 const PINK_BLOOMS = [
   { id: 'pink-back-left', x: 18, y: 16, scale: .54, rotate: -7, delay: 850, duration: 4400, depth: 'back' },
   { id: 'pink-back-middle', x: 39, y: 24, scale: .65, rotate: 5, delay: 1200, duration: 4600, depth: 'back' },
@@ -17,6 +16,13 @@ const PINK_BLOOMS = [
   { id: 'pink-front-right', x: 84, y: 1, scale: .56, rotate: 6, delay: 2950, duration: 4050, depth: 'front' },
 ] as const;
 
+const ACCENT_BLOOMS = [
+  { id: 'blue-tall', color: 'slate-blue', asset: 'slate-blue-lily', x: 33, y: 20, scale: .92, rotate: -7, delay: .35 },
+  { id: 'ivory-tall', color: 'ivory', asset: 'ivory-lily', x: 75, y: 18, scale: .97, rotate: 5, delay: .95 },
+  { id: 'ivory-front', color: 'ivory', asset: 'ivory-lily', x: 17, y: 1, scale: .68, rotate: -11, delay: 1.65 },
+  { id: 'blue-front', color: 'slate-blue', asset: 'slate-blue-lily', x: 91, y: 2, scale: .72, rotate: 8, delay: 2.2 },
+] as const;
+
 export default function LetterBloomGarden({ active }: { active: boolean }) {
   const root = useRef<HTMLDivElement>(null);
   const completed = useRef(new Set<string>());
@@ -24,6 +30,7 @@ export default function LetterBloomGarden({ active }: { active: boolean }) {
   const [inView, setInView] = useState(false);
   const [ready, setReady] = useState(false);
   const [visible, setVisible] = useState(!document.hidden);
+  const [started, setStarted] = useState(false);
   const finish = useCallback((id: string) => {
     completed.current.add(id);
     if (completed.current.size === PINK_BLOOMS.length) setBloomed(true);
@@ -43,8 +50,12 @@ export default function LetterBloomGarden({ active }: { active: boolean }) {
     return () => { cancelled = true; };
   }, []);
   const running = active && inView && visible && ready;
+  useEffect(() => { if (running) setStarted(true); }, [running]);
 
-  return <div ref={root} className="letter-bloom-garden" data-running={running} data-bloomed={bloomed} aria-hidden="true">
+  return <div ref={root} className="letter-bloom-garden" data-running={running} data-started={started} data-bloomed={bloomed} aria-hidden="true">
+    <div className="letter-bloom-garden__pond" data-swans="2">
+      <img src="/assets/flowers/letter-garden/distant-swan-pond.png" width="1774" height="887" decoding="async" alt="" />
+    </div>
     <FlowerAtmosphere isActive={running} />
     <div className="letter-bloom-garden__flowers">
       {PINK_BLOOMS.map(flower => <FlowerBloomCanvas key={flower.id}
@@ -53,6 +64,12 @@ export default function LetterBloomGarden({ active }: { active: boolean }) {
         baseRotation={flower.rotate} delayMs={flower.delay} durationMs={flower.duration}
         style={{ '--bloom-x': `${flower.x}%`, '--bloom-bottom': `${flower.y}%`, '--bloom-scale': flower.scale } as CSSProperties}
         onBloomComplete={() => finish(flower.id)} />)}
+      {ACCENT_BLOOMS.map(flower => <div key={flower.id}
+        className="letter-bloom-garden__accent" data-flower-color={flower.color}
+        style={{ '--bloom-x': `${flower.x}%`, '--bloom-bottom': `${flower.y}%`, '--bloom-scale': flower.scale,
+          '--bloom-rotation': `${flower.rotate}deg`, '--bloom-delay': `${flower.delay}s` } as CSSProperties}>
+        <img src={`/assets/flowers/letter-garden/${flower.asset}.png`} width="1024" height="1536" decoding="async" alt="" />
+      </div>)}
     </div>
     <div className="letter-bloom-garden__meadow">
       <img className="letter-bloom-garden__grass letter-bloom-garden__grass--left" src="/assets/flowers/nature/grass-airy-tall.png" alt="" />

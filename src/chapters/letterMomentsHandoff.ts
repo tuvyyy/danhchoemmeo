@@ -32,7 +32,7 @@ export function letterMomentsHandoff({ letter, moments, letterContent, momentsCo
     choreography.to(letter.querySelector(".letter-atelier__landscape"), {
       scale: 1.055, y: -innerHeight * .025, opacity: 0, duration: .85, ease: "sine.inOut",
     }, .1);
-    choreography.to(letter.querySelectorAll('.letter-bloom-garden__meadow, .letter-bloom-garden > .flower-atmosphere'), {
+    choreography.to(letter.querySelectorAll('.letter-bloom-garden__pond, .letter-bloom-garden__meadow, .letter-bloom-garden > .flower-atmosphere'), {
       opacity: 0, duration: .55, ease: 'sine.inOut',
     }, .15);
     prints.forEach((print, index) => {

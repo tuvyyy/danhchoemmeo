@@ -34,7 +34,8 @@ const snapshots = new WeakMap<HTMLElement, Snapshot>();
 const embeddedAssets = new Map<string, Promise<string>>();
 function snapshotKey(source: HTMLElement) {
   const canvases=[...source.querySelectorAll('canvas')].map(c=>`${c.dataset.bloomFrame}:${c.dataset.bloomStage}`).join(',');
-  return `${source.offsetWidth}:${source.offsetHeight}:${source.closest('.letter-atelier')?.getAttribute('data-open')}:${source.querySelector('[data-page]')?.getAttribute('data-page')}:${canvases}`;
+  const accent=source.matches('.letter-bloom-garden__accent')?getComputedStyle(source.querySelector('img')!):null;
+  return `${source.offsetWidth}:${source.offsetHeight}:${source.closest('.letter-atelier')?.getAttribute('data-open')}:${source.querySelector('[data-page]')?.getAttribute('data-page')}:${source.dataset.bloomFrame}:${source.closest('.letter-bloom-garden')?.getAttribute('data-bloomed')}:${accent?.opacity}:${accent?.transform}:${canvases}`;
 }
 
 /** Prepare one object per idle task while reading, before the scroll handler needs it. */
@@ -116,6 +117,28 @@ function snapshot(source: HTMLElement, defer = false): Promise<HTMLCanvasElement
   const origin=computed.transformOrigin.split(' ').map(parseFloat);
   const corners=[[0,0],[width,0],[width,height],[0,height]].map(([x,y])=>new DOMPoint(x-origin[0],y-origin[1]).matrixTransform(matrix));
   const minX=Math.min(...corners.map(p=>p.x))+origin[0],minY=Math.min(...corners.map(p=>p.y))+origin[1];
+  const image=source.matches('.letter-bloom-garden__accent')?source.querySelector('img'):
+    source.matches('.letter-bloom-garden__bloom')?source.querySelector('canvas'):null;
+  if(image&&(image instanceof HTMLCanvasElement?image.width>0&&image.height>0:image.complete&&image.naturalWidth>0)){
+    // Cutouts and bloom canvases are already decoded. Draw their displayed size
+    // instead of serializing and decoding another PNG/SVG for every flower.
+    const bitmap=document.createElement('canvas');bitmap.width=Math.ceil(rect.width);bitmap.height=Math.ceil(rect.height);
+    const ink=bitmap.getContext('2d')!, imageStyle=getComputedStyle(image);
+    ink.translate(-minX,-minY);ink.translate(origin[0],origin[1]);
+    ink.transform(matrix.a,matrix.b,matrix.c,matrix.d,matrix.e,matrix.f);ink.translate(-origin[0],-origin[1]);
+    ink.save();
+    const imageOrigin=imageStyle.transformOrigin.split(' ').map(parseFloat);
+    const imageMatrix=new DOMMatrix(imageStyle.transform==='none'?undefined:imageStyle.transform);
+    ink.translate(imageOrigin[0],imageOrigin[1]);
+    ink.transform(imageMatrix.a,imageMatrix.b,imageMatrix.c,imageMatrix.d,imageMatrix.e,imageMatrix.f);
+    ink.translate(-imageOrigin[0],-imageOrigin[1]);
+    ink.filter=computed.filter;ink.globalAlpha=Number(computed.opacity)*Number(imageStyle.opacity);
+    ink.drawImage(image,0,0,width,height);ink.restore();
+    // Match the live plant's fade into the grass, in the same rotated coordinates.
+    const fade=ink.createLinearGradient(0,image instanceof HTMLCanvasElement?height-26:height*.92,0,height);fade.addColorStop(0,'#000');fade.addColorStop(1,'#0000');
+    ink.globalCompositeOperation='destination-in';ink.fillStyle=fade;ink.fillRect(0,0,width,height);
+    const promise=Promise.resolve(bitmap);snapshots.set(source,{key,bitmap:promise});return promise;
+  }
   const template=freeze(source);
   Object.assign(template.style,{position:'absolute',margin:'0',width:`${width}px`,height:`${height}px`,minHeight:'0',maxWidth:'none',boxSizing:'border-box',left:`${-minX}px`,top:`${-minY}px`,right:'auto',bottom:'auto',visibility:'visible'});
   const bitmap=rasterize(template,Math.ceil(rect.width),Math.ceil(rect.height));

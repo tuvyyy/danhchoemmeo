@@ -38,12 +38,16 @@ try {
  if (mobile) await p.evaluate(() => document.querySelector('.letter-bloom-garden').scrollIntoView({ block: 'end', behavior: 'instant' }));
  await p.waitForSelector('.letter-bloom-garden[data-running="true"]');
  assert.equal(await p.$$eval('.letter-bloom-garden canvas', es => es.length), 9);
+ await p.waitForFunction(()=>[...document.querySelectorAll('.letter-bloom-garden__accent img,.letter-bloom-garden__pond img')].every(e=>e.complete&&e.naturalWidth>0));
+ const pond=await p.$eval('.letter-bloom-garden__pond',e=>({swans:e.dataset.swans,z:+getComputedStyle(e).zIndex,width:e.getBoundingClientRect().width}));
+ assert.equal(pond.swans,'2');assert(pond.width>200,'The distant pond remains visible at both viewport sizes');
+ assert(await p.$eval('.letter-bloom-garden__accent',e=>+getComputedStyle(e).zIndex>0),'Flowers sit in front of the pond');
  assert.equal(await p.$('.letter-cover'), null, 'The letter is a flat page, without a book cover');
  assert.equal(await p.$$eval('.letter-bloom-garden__grass', es => es.length), 3, 'The original three grass layers return');
  assert(await p.$$eval('.letter-bloom-garden__grass', es => es.every(e => e.complete && e.naturalWidth > 0)), 'Grass assets load');
  assert.equal(await p.$('.letter-atelier__intro'), null, 'Remove the left introduction');
  if (!mobile) assert(await p.evaluate(() => document.querySelector('.letter-keepsake').getBoundingClientRect().right < document.querySelector('[data-flower-main]').getBoundingClientRect().left), 'Letter left, garden right');
- assert.equal(requests.some(url => url.includes('/letter-garden/garden-dusk.webp')), false, 'No scenic background image loads behind the cluster');
+ assert.equal(requests.some(url => url.includes('/letter-garden/garden-dusk.webp')), false, 'The old full-scene background does not replace the flower cluster');
  await capture({ path: `${out}/01-buds.png` });
  if (!reduced && process.argv.includes('--frames')) {
   const started = Date.now();
@@ -61,11 +65,13 @@ try {
  await capture({ path: `${out}/03-bloomed.png` });
  assert.equal(await p.$('.letter-bloom-garden .nature-bloom__tulip'), null, 'Remove the small tinted flower pack');
  assert(await p.$$eval('.letter-bloom-garden [data-bloom-frame]', es => es.every(e => +e.dataset.bloomFrame >= 59)), 'All large pink flowers finish blooming');
+ assert(await p.$$eval('.letter-bloom-garden__accent img',es=>es.length===4&&es.every(e=>+getComputedStyle(e).opacity>.99)),'Blue and ivory additions finish opening alongside the pink flowers');
  if (mobile) await p.evaluate(() => document.querySelector('.letter-desk').scrollIntoView({ block: 'start', behavior: 'instant' }));
  await p.mouse.move(800, 60);
  await capture({ path: `${out}/04-letter-open.png` });
  await p.click('.letter-page__read'); await p.waitForSelector('.letter-reader');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
+ assert(await p.$$eval('.letter-bloom-garden__accent img',es=>es.every(e=>getComputedStyle(e).animationPlayState==='paused'||getComputedStyle(e).animationName==='none')),'Reading pauses the new flowers too');
  await p.keyboard.press('ArrowRight');
  assert.equal(await p.$eval('.letter-reader .letter-page', e => e.dataset.page), '1');
  await p.keyboard.press('Escape'); await p.waitForSelector('.letter-reader', { hidden: true });
@@ -74,5 +80,5 @@ try {
  await p.waitForFunction(() => document.querySelector('#chapter-moments').dataset.chapterState === 'active');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
  assert.deepEqual(errors, []);
- console.log(`${out}: PASS preserved video, 9 large native pink blooms, grass, flat letter left, reader/pagination, pause, next chapter, no overflow/errors`);
+ console.log(`${out}: PASS preserved video, pink blooms plus blue/ivory additions, distant swan pond, grass, flat letter, reader/pagination, pause, next chapter, no overflow/errors`);
 } finally { await browser.close(); }

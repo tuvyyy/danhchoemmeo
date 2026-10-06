@@ -1,11 +1,20 @@
 /* A single meadow to the right of a flat, readable letter. */
 .letter-scene.letter-atelier { grid-template-columns:.8fr 1.2fr;column-gap:60px; }
 .letter-bloom-garden { position:absolute;inset:0;pointer-events:none;z-index:0;overflow:visible; }
+.letter-bloom-garden__pond { position:absolute;right:0;top:7%;width:min(700px,50vw);aspect-ratio:2;z-index:0;opacity:.84;pointer-events:none; }
+.letter-bloom-garden__pond img { display:block;width:100%;height:100%;object-fit:contain;filter:saturate(.78) brightness(.85);mask-image:radial-gradient(ellipse at 52% 59%,#000 34%,#000b 57%,transparent 73%); }
 .letter-bloom-garden__flowers { position:absolute;z-index:1;right:0;bottom:34px;width:min(940px,55vw);height:min(78svh,750px);--pink-bloom-size:min(31vw,48svh); }
 .letter-bloom-garden__bloom { position:absolute;left:calc(var(--bloom-x) - var(--pink-bloom-size) * var(--bloom-scale) / 2);bottom:var(--bloom-bottom);width:calc(var(--pink-bloom-size) * var(--bloom-scale));aspect-ratio:1;transform-origin:center bottom;mask-image:linear-gradient(#000 calc(100% - 26px),transparent); }
 .letter-bloom-garden__bloom--back { z-index:0;filter:brightness(.82) saturate(.92); }
 .letter-bloom-garden__bloom--middle { z-index:1; }
 .letter-bloom-garden__bloom--front { z-index:2; }
+.letter-bloom-garden__accent { position:absolute;z-index:3;left:calc(var(--bloom-x) - var(--pink-bloom-size) * var(--bloom-scale) * .34);bottom:var(--bloom-bottom);width:calc(var(--pink-bloom-size) * var(--bloom-scale) * .68);aspect-ratio:2/3;rotate:var(--bloom-rotation);transform-origin:center bottom;mask-image:linear-gradient(#000 92%,transparent); }
+.letter-bloom-garden__accent img { display:block;width:100%;height:100%;object-fit:contain;transform-origin:50% 90%;opacity:0; }
+.letter-bloom-garden__accent[data-flower-color="slate-blue"] { filter:brightness(.86) saturate(.9); }
+.letter-bloom-garden__accent[data-flower-color="ivory"] { filter:brightness(.92); }
+.letter-bloom-garden[data-started="true"] .letter-bloom-garden__accent img { animation:letter-accent-open 4.4s cubic-bezier(.22,.61,.36,1) var(--bloom-delay) both; }
+.letter-bloom-garden[data-running="false"] .letter-bloom-garden__accent img { animation-play-state:paused; }
+@keyframes letter-accent-open { 0% { opacity:0;transform:translateY(26px) scale(.35,.72); } 22% { opacity:.7; } 100% { opacity:1;transform:translateY(0) scale(1); } }
 .letter-bloom-garden__meadow { position:absolute;z-index:0;left:0;right:0;bottom:-7%;height:48%;overflow:visible; }
 .letter-bloom-garden__meadow::before { content:"";position:absolute;left:0;right:0;bottom:0;height:42%;z-index:4;background:linear-gradient(transparent,#050505); }
 .letter-bloom-garden__grass { position:absolute;bottom:0;max-width:none;transform-origin:center bottom;filter:brightness(.48) saturate(.62); }
@@ -24,7 +33,7 @@
 .letter-atelier__footer { border-color:transparent; }
 @media(max-width:600px) {
  .letter-scene.letter-atelier { min-height:100svh;padding-bottom:38px; }
- .letter-desk { align-self:flex-start;max-width:290px;padding:35px 8px 360px; }
+ .letter-desk { align-self:flex-start;max-width:290px;padding:35px 8px 420px; }
  .letter-desk > .letter-keepsake { --letter-paper-height:380px; }
  .letter-desk .letter-page__note-img { max-height:290px; }
  .letter-desk > .letter-desk__controls { font-size:9px;gap:12px; }
@@ -32,6 +41,8 @@
  .letter-atelier__footer { margin-top:auto; }
  .letter-bloom-garden__flowers { width:100%;height:440px;bottom:58px;--pink-bloom-size:min(71vw,34svh); }
  .letter-bloom-garden__bloom { left:calc(12% + var(--bloom-x) * .76 - var(--pink-bloom-size) * var(--bloom-scale) / 2); }
+ .letter-bloom-garden__accent { left:calc(12% + var(--bloom-x) * .76 - var(--pink-bloom-size) * var(--bloom-scale) * .34); }
+ .letter-bloom-garden__pond { top:auto;bottom:365px;right:-5%;width:110%; }
  .letter-bloom-garden__meadow { height:420px;bottom:-50px; }
  .letter-bloom-garden__grass--strip { min-width:760px; }
  .letter-bloom-garden__grass--left,.letter-bloom-garden__grass--right { width:50vw; }
@@ -39,4 +50,5 @@
 @media(prefers-reduced-motion:reduce) {
  .letter-bloom-garden__grass { animation:none; }
  .letter-bloom-garden__grass--right { transform:scaleX(-1); }
+ .letter-bloom-garden[data-started] .letter-bloom-garden__accent img { animation:none;opacity:1;transform:none; }
 }

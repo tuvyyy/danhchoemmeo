@@ -26,7 +26,7 @@ function createRenderer() {
       // orange pollen without leaving a pink seam on ivory or midnight petals.
       float petal=smoothstep(0.015,0.10,warm)*smoothstep(0.18,0.42,source.b/max(source.r,0.01));
       float light=dot(source.rgb,vec3(0.2126,0.7152,0.0722));
-      vec3 ivory=vec3(0.98,0.98,0.92)*(light*0.72+0.21);
+      vec3 ivory=vec3(1.0,0.99,0.94)*min(0.97,light*0.78+0.32);
       vec3 midnight=vec3(0.035,0.068,0.11)+pow(light,1.15)*vec3(0.18,0.235,0.295);
       // Only pink pigment changes; leaf greens, gold stamens, alpha and petal relief stay intact.
       gl_FragColor=vec4(mix(source.rgb,palette<1.5?ivory:midnight,petal),source.a);

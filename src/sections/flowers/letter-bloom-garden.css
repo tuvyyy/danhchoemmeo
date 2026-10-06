@@ -1,11 +1,11 @@
 /* A single meadow to the right of a flat, readable letter. */
 .letter-scene.letter-atelier { grid-template-columns:.8fr 1.2fr;column-gap:60px; }
 .letter-bloom-garden { position:absolute;inset:0;pointer-events:none;z-index:0;overflow:visible; }
-.letter-bloom-garden__pond { position:absolute;right:-5%;bottom:20%;width:min(1150px,68vw);aspect-ratio:2;z-index:0;opacity:.82;pointer-events:none;filter:blur(.45px);mask-image:linear-gradient(90deg,transparent,#000 20%,#000 88%,transparent),linear-gradient(180deg,transparent 3%,#000 25%,#000 66%,transparent 98%);mask-composite:intersect; }
-.letter-bloom-garden__pond::after { content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,transparent 40%,#12201838 70%,#0a110d99); }
-.letter-bloom-garden__pond .pond-water { display:block;width:100%;height:100%;object-fit:contain;filter:saturate(.64) brightness(.82) contrast(.88); }
-.pond-swimmer { position:absolute;z-index:1;left:57%;top:52%;width:clamp(24px,2.8vw,43px);aspect-ratio:1;--swim-duration:28s;--swim-delay:0s;--swim-range:clamp(30px,7vw,78px);animation:pond-swim var(--swim-duration) ease-in-out var(--swim-delay) infinite; }
-.pond-swimmer--far { left:70%;top:48%;width:clamp(20px,2.3vw,35px);--swim-duration:34s;--swim-delay:-8s;opacity:.8; }
+.letter-bloom-garden__pond { position:absolute;right:-8%;bottom:14%;width:min(1550px,82vw);aspect-ratio:2;z-index:0;opacity:.94;pointer-events:none;mask-image:linear-gradient(90deg,transparent,#000 16%,#000 94%,transparent),linear-gradient(180deg,transparent 2%,#000 22%,#000 81%,transparent);mask-composite:intersect; }
+.letter-bloom-garden__pond::after { content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,transparent 55%,#1220181a 78%,#0a110d55); }
+.letter-bloom-garden__pond .pond-water { display:block;width:100%;height:100%;object-fit:contain;filter:saturate(.94) brightness(1) contrast(1.04); }
+.pond-swimmer { position:absolute;z-index:1;left:57%;top:45%;width:clamp(24px,2.8vw,43px);aspect-ratio:1;--swim-duration:28s;--swim-delay:0s;--swim-range:clamp(30px,7vw,78px);animation:pond-swim var(--swim-duration) ease-in-out var(--swim-delay) infinite; }
+.pond-swimmer--far { left:70%;top:46.5%;width:clamp(20px,2.3vw,35px);--swim-duration:34s;--swim-delay:-8s;opacity:.8; }
 .pond-swan-body { position:relative;width:100%;height:100%;animation:pond-turn var(--swim-duration) linear var(--swim-delay) infinite; }
 .pond-swan-float { width:100%;height:100%;animation:pond-bob 5.5s ease-in-out infinite; }
 .pond-swimmer--far .pond-swan-float { animation-delay:-2s; }
@@ -30,13 +30,13 @@
 .letter-bloom-garden__flowers { position:absolute;z-index:1;right:1%;bottom:64px;width:min(940px,55vw);height:min(70svh,660px);--pink-bloom-size:min(29vw,40svh);--bloom-root-fade:64px; }
 .letter-bloom-garden__flowers::before { content:"";position:absolute;inset:68% 4% -6%;background:radial-gradient(ellipse at 56% 72%,#02070699,transparent 67%); }
 .letter-bloom-garden__bloom { position:absolute;left:calc(var(--bloom-x) - var(--pink-bloom-size) * var(--bloom-scale) / 2);bottom:var(--bloom-bottom);width:calc(var(--pink-bloom-size) * var(--bloom-scale));aspect-ratio:1;transform-origin:center bottom;mask-image:linear-gradient(#000 calc(100% - var(--bloom-root-fade)),transparent); }
-.letter-bloom-garden__bloom--back { z-index:0;filter:brightness(.54) saturate(.56) contrast(.88) blur(.65px); }
-.letter-bloom-garden__bloom--middle { z-index:1;filter:brightness(.74) saturate(.64) contrast(.94); }
-.letter-bloom-garden__bloom--front { z-index:2;filter:brightness(.67) saturate(.6) contrast(.96); }
+.letter-bloom-garden__bloom--back { z-index:0;filter:brightness(.91) saturate(1.02) contrast(1.01); }
+.letter-bloom-garden__bloom--middle { z-index:1;filter:brightness(.98) saturate(1.1) contrast(1.03); }
+.letter-bloom-garden__bloom--front { z-index:2;filter:brightness(1) saturate(1.14) contrast(1.04); }
 /* Foreground grass crosses the stem bases; no plant sits above the ground plane. */
 .letter-bloom-garden__meadow { position:absolute;z-index:2;left:0;right:0;bottom:-6%;height:40%;overflow:hidden;mask-image:linear-gradient(transparent,#000 26%); }
 .letter-bloom-garden__meadow::before { content:"";position:absolute;left:0;right:0;bottom:0;height:42%;z-index:4;background:linear-gradient(transparent,#050908); }
-.letter-bloom-garden__grass { position:absolute;bottom:0;max-width:none;transform-origin:center bottom;filter:brightness(.63) saturate(.5); }
+.letter-bloom-garden__grass { position:absolute;bottom:0;max-width:none;transform-origin:center bottom;filter:brightness(.72) saturate(.78); }
 .letter-bloom-garden__grass--strip { z-index:3;right:-3%;bottom:0;width:106%;min-width:1000px;opacity:.82; }
 .letter-bloom-garden__grass--left { z-index:4;left:-5%;width:min(30vw,420px);opacity:.4;animation:letter-grass-left 8s ease-in-out infinite alternate; }
 .letter-bloom-garden__grass--right { z-index:4;right:-7%;width:min(30vw,420px);opacity:.46;animation:letter-grass-right 9.5s ease-in-out infinite alternate; }
@@ -44,7 +44,7 @@
 .letter-bloom-garden .flower-atmosphere__warm-glow { z-index:0;left:76%;top:52%;opacity:.08;background:radial-gradient(ellipse,#b8cbd6,transparent 70%); }
 .letter-bloom-garden .flower-atmosphere__warm-glow--secondary { display:none; }
 .letter-bloom-garden .flower-atmosphere__mist--high { left:43%;width:55%;bottom:32%;height:80px;--mist-opacity:.075;background:radial-gradient(ellipse at 52% 64%,#a9bec4,transparent 70%); }
-.letter-bloom-garden .flower-atmosphere__mist--low { --mist-opacity:.07;background:radial-gradient(ellipse at 58% 64%,#aab8ab,transparent 70%); }
+.letter-bloom-garden .flower-atmosphere__mist--low { display:none; }
 .letter-bloom-garden .flower-atmosphere__fireflies { opacity:.22; }
 .letter-bloom-garden .flower-atmosphere__firefly[data-depth="near"] { display:none; }
 .letter-bloom-garden .flower-atmosphere__petal { display:none; }
@@ -65,7 +65,7 @@
  .letter-atelier__footer { margin-top:auto; }
  .letter-bloom-garden__flowers { width:100%;height:440px;bottom:64px;right:0;--pink-bloom-size:min(68vw,31svh);--bloom-root-fade:42px; }
  .letter-bloom-garden__bloom { left:calc(12% + var(--bloom-x) * .76 - var(--pink-bloom-size) * var(--bloom-scale) / 2); }
- .letter-bloom-garden__pond { bottom:250px;right:-12%;width:125%; }
+ .letter-bloom-garden__pond { bottom:245px;right:-25%;width:152%; }
  .letter-bloom-garden__meadow { height:310px;bottom:-35px; }
  .letter-bloom-garden .flower-atmosphere__mist--high { left:0;width:100%;bottom:270px;height:60px; }
  .letter-bloom-garden__grass--strip { min-width:760px; }

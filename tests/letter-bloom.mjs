@@ -41,7 +41,9 @@ try {
  await p.waitForFunction(() => document.querySelector('#chapter-letter').dataset.chapterState === 'active' && !document.documentElement.dataset.voucherLetterHandoff);
  if (mobile) await p.evaluate(() => document.querySelector('.letter-bloom-garden').scrollIntoView({ block: 'end', behavior: 'instant' }));
  await p.waitForSelector('.letter-bloom-garden[data-running="true"]');
- assert.equal(await p.$$eval('.letter-bloom-garden canvas', es => es.length), 7);
+ assert.equal(await p.$$eval('.letter-bloom-garden__flowers canvas', es => es.length), 9);
+ assert.equal(await p.$eval('.letter-vines', e => e.dataset.visible), 'true', 'Vines remain hanging after the chapter transition settles');
+ await p.waitForSelector('.letter-bloom-garden__pond[data-water-ready="true"]');
  await p.waitForFunction(()=>[...document.querySelectorAll('.letter-bloom-garden__pond img')].every(e=>e.complete&&e.naturalWidth>0));
  const pond=await p.$eval('.letter-bloom-garden__pond',e=>({swans:e.dataset.swans,z:+getComputedStyle(e).zIndex,width:e.getBoundingClientRect().width}));
  assert.equal(pond.swans,'2');assert(pond.width>200,'The distant pond remains visible at both viewport sizes');
@@ -75,7 +77,7 @@ try {
  await capture({ path: `${out}/03-bloomed.png` });
  assert.equal(await p.$('.letter-bloom-garden .nature-bloom__tulip'), null, 'Remove the small tinted flower pack');
  assert(await p.$$eval('.letter-bloom-garden [data-bloom-frame]', es => es.every(e => +e.dataset.bloomFrame >= 59)), 'All three colors finish their petal sequence');
- assert.deepEqual(await p.$$eval('[data-flower-color]',es=>Object.fromEntries(['pink','ivory','midnight'].map(color=>[color,es.filter(e=>e.dataset.flowerColor===color).length]))),{pink:2,ivory:2,midnight:3});
+ assert.deepEqual(await p.$$eval('[data-flower-color]',es=>Object.fromEntries(['pink','ivory','midnight'].map(color=>[color,es.filter(e=>e.dataset.flowerColor===color).length]))),{pink:3,ivory:3,midnight:3});
  assert(await p.$$eval('[data-flower-color="ivory"]',es=>es.every(e=>e.dataset.paletteRenderer==='webgl')),'The ivory pigment mask keeps stem colors intact');
  assert(await p.$$eval('[data-flower-color="midnight"]',es=>es.length===3&&es.every(e=>e.dataset.bloomSequence==='blue'&&e.dataset.paletteRenderer==='original')),'All three blue flowers use the native blue sequence without recoloring');
  assert.equal(new Set(requests.filter(url=>url.includes('/flowers/lily-blue-bloom/')&&url.endsWith('.webp'))).size,60,'The complete blue sequence loads once and is shared by three flowers');
@@ -101,14 +103,49 @@ try {
  assert(pigment.petals>20&&pigment.green>10&&pigment.ivoryLift>15&&pigment.leafError<12,`Ivory petals change while the real green stem stays green: ${JSON.stringify(pigment)}`);
  assert(pigment.throats>5&&pigment.ivorySeam<12,`The ivory petal throat has no leftover pink stripe: ${JSON.stringify(pigment)}`);
  assert(pigment.blueError<4,`The blue flower matches the new source artwork: ${JSON.stringify(pigment)}`);
- const swimBefore=await p.$$eval('.pond-swimmer',es=>es.map(e=>getComputedStyle(e).transform));
- if(!reduced){await wait(700);assert(await p.$$eval('.pond-swimmer', (es,before)=>es.length===2&&es.every((e,i)=>getComputedStyle(e).transform!==before[i]),swimBefore),'Both swans swim independently');}
- else assert(await p.$$eval('.pond-swimmer',es=>es.every(e=>getComputedStyle(e).animationName==='none')),'Reduced motion keeps both swans still');
+ if(!reduced){
+  const encounters=await p.evaluate(()=>{
+   const pond=document.querySelector('.letter-bloom-garden__pond'),birds=[...pond.querySelectorAll('.pond-swimmer')],heart=pond.querySelector('.pond-heart');
+   const animations=[...birds.flatMap(e=>e.getAnimations({subtree:true})),...heart.getAnimations()];
+   const saved=animations.map(a=>({time:a.currentTime,state:a.playState}));
+   animations.forEach(a=>a.pause());
+   const samples=[.05,.45,.75,.95].map(phase=>{
+    animations.forEach(a=>a.currentTime=phase*30000);
+    const bounds=pond.getBoundingClientRect();
+    const feet=birds.map(bird=>{const b=bird.getBoundingClientRect();return{x:(b.left+b.width*.52-bounds.left)/bounds.width,y:(b.top+b.height*.84-bounds.top)/bounds.height};});
+    return{phase,feet,separation:Math.abs(feet[0].x-feet[1].x),heart:+getComputedStyle(heart).opacity};
+   });
+   animations.forEach((a,i)=>{a.currentTime=saved[i].time;if(saved[i].state==='running')a.play();});
+   return samples;
+  });
+  assert(encounters.every(s=>s.feet.every(f=>f.x>.42&&f.x<.75&&f.y>.54&&f.y<.7)),`Both swans stay on central open water: ${JSON.stringify(encounters)}`);
+  assert(encounters[1].separation<encounters[0].separation*.5,'The swans approach each other instead of swimming unrelated loops');
+  assert(encounters[1].heart>.25&&encounters.filter(s=>s.phase!==.45).every(s=>s.heart<.01),'A faint heart appears only while the pair meet');
+ } else {
+  assert(await p.$$eval('.pond-swimmer',es=>es.every(e=>getComputedStyle(e).animationName==='none')),'Reduced motion keeps both swans still');
+  assert.equal(await p.$eval('.pond-heart',e=>+getComputedStyle(e).opacity),0);
+ }
+ const waterSnapshot=()=>p.$eval('.pond-water-canvas',e=>e.toDataURL());
+ const waterBefore=await waterSnapshot();
+ await wait(400);
+ assert.equal((await waterSnapshot())!==waterBefore,!reduced,'Water refracts while active and remains still with reduced motion');
+ assert.equal(await p.$eval('.pond-water-canvas',e=>e.dataset.running),String(!reduced));
+ if(process.argv.includes('--water-frames')) {
+  const started=Date.now();
+  for(const percent of [0,20,40,50,60,80,100]) {
+   await wait(Math.max(0,percent/100*5800-(Date.now()-started)));
+   await capture({path:`${out}/water-${String(percent).padStart(3,'0')}.png`});
+  }
+ }
  if (mobile) await p.evaluate(() => document.querySelector('.letter-desk').scrollIntoView({ block: 'start', behavior: 'instant' }));
  await p.mouse.move(800, 60);
  await capture({ path: `${out}/04-letter-open.png` });
  await p.click('.letter-page__read'); await p.waitForSelector('.letter-reader');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
+ assert(await p.$$eval('.letter-vines__sway',es=>es.every(e=>getComputedStyle(e).animationPlayState==='paused'||getComputedStyle(e).animationName==='none')),'Reading pauses the hanging vines');
+ assert.equal(await p.$eval('.pond-water-canvas',e=>e.dataset.running),'false','Reading pauses the water renderer');
+ const pausedWater=await waterSnapshot();await wait(250);
+ assert.equal(await waterSnapshot(),pausedWater,'The water freezes while reading instead of running a hidden animation');
  assert(await p.$$eval('.pond-swimmer,.pond-wake',es=>es.every(e=>getComputedStyle(e).animationPlayState==='paused'||getComputedStyle(e).animationName==='none')),'Reading pauses the swans and their wakes');
  await p.keyboard.press('ArrowRight');
  assert.equal(await p.$eval('.letter-reader .letter-page', e => e.dataset.page), '1');
@@ -117,6 +154,7 @@ try {
  await p.click('.letter-next');
  await p.waitForFunction(() => document.querySelector('#chapter-moments').dataset.chapterState === 'active');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
+ assert.equal(await p.$eval('.letter-vines',e=>e.dataset.visible),'false','Vines leave with chapter three');
  assert.deepEqual(errors, []);
- console.log(`${out}: PASS 2 pink + 2 ivory + 3 native blue petal sequences, two swimming swans, reading pause, preserved video, no overflow/errors`);
+ console.log(`${out}: PASS 3 pink + 3 ivory + 3 native blue petal sequences, paired swans on open water, conditional heart, hanging vines, reading pause, preserved video, no overflow/errors`);
 } catch(error){console.error('Letter garden check failed:',error);throw error;} finally { await browser.close(); }

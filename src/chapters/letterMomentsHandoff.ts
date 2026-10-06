@@ -8,6 +8,8 @@ export function letterMomentsHandoff({ letter, moments, letterContent, momentsCo
 }) {
   const scene = moments.querySelector<HTMLElement>(".memory-table")!;
   const paper = letter.querySelector<HTMLElement>(".letter-keepsake")!;
+  const vines = letter.querySelector<HTMLElement>('.letter-vines');
+  let lastProgress = reverse ? 1 : 0;
   const prints = [...moments.querySelectorAll<HTMLElement>(".memory-print")];
   const letterHeight = letter.offsetHeight, momentsHeight = moments.offsetHeight;
   const oldCopy = letter.querySelectorAll<HTMLElement>(".letter-atelier__intro > *, .letter-atelier__header, .letter-atelier__footer, .letter-desk__annotation, .letter-desk__controls");
@@ -35,6 +37,9 @@ export function letterMomentsHandoff({ letter, moments, letterContent, momentsCo
     choreography.to(letter.querySelectorAll('.letter-bloom-garden__pond, .letter-bloom-garden__meadow, .letter-bloom-garden__flowers, .letter-bloom-garden > .flower-atmosphere'), {
       opacity: 0, duration: .55, ease: 'sine.inOut',
     }, .15);
+    choreography.fromTo(letter.querySelectorAll('.letter-vines__strand'), { yPercent: 0, y: 0, opacity: .85 }, {
+      yPercent: -105, opacity: 0, duration: .5, stagger: .025, ease: 'power2.in',
+    }, .12);
     prints.forEach((print, index) => {
       const angle = parseFloat(getComputedStyle(print).getPropertyValue("--print-angle"));
       const bounds = print.getBoundingClientRect();
@@ -52,9 +57,10 @@ export function letterMomentsHandoff({ letter, moments, letterContent, momentsCo
   return scrollMotionDriver({
     reverse, scrollDelta, finish,
     paint: progress => {
+      lastProgress = progress;
       choreography.progress(progress); fragments.paint(progress);
       scene.dataset.handoffProgress = progress.toFixed(4);
     },
-    cleanup: () => { fragments.dispose(); context.revert(); backdrop.remove(); delete document.documentElement.dataset.letterMomentsHandoff; delete scene.dataset.handoffProgress; },
+    cleanup: () => { fragments.dispose(); context.revert(); if (vines) vines.dataset.visible = String(lastProgress < .5); backdrop.remove(); delete document.documentElement.dataset.letterMomentsHandoff; delete scene.dataset.handoffProgress; },
   });
 }

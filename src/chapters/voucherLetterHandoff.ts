@@ -8,6 +8,9 @@ export function voucherLetterHandoff({ voucher, letter, voucherContent, letterCo
 }) {
   // Measure before changing positioning; preserve both chapters' native geometry.
   const scene = letter.querySelector<HTMLElement>(".letter-atelier")!;
+  const vines = letter.querySelector<HTMLElement>('.letter-vines');
+  const strands = letter.querySelectorAll<HTMLElement>('.letter-vines__strand');
+  let lastProgress = reverse ? 1 : 0;
   const voucherHeight = voucher.offsetHeight, letterHeight = letter.offsetHeight;
   const voucherTop = reverse ? 0 : voucherContent.getBoundingClientRect().top;
   const shade = document.createElement('div');
@@ -31,14 +34,19 @@ export function voucherLetterHandoff({ voucher, letter, voucherContent, letterCo
     }, 0)
       .fromTo(shade, { opacity: 0 }, { opacity: .72, duration: .75, ease: 'sine.in' }, .05)
       .fromTo(voucherContent, { opacity: 1 }, { opacity: 0, duration: .16, ease: 'sine.inOut' }, .84);
+    choreography.fromTo(strands, { yPercent: -105, y: 0, opacity: 0 }, {
+      yPercent: 0, opacity: .85, duration: .5, stagger: .035, ease: 'power2.out',
+    }, .35);
   });
   return scrollMotionDriver({ reverse, scrollDelta, finish, response: 16, autoDuration: 1650,
     paint: progress => {
+      lastProgress = progress;
       choreography.progress(progress);
       scene.dataset.handoffProgress = progress.toFixed(4);
     },
     cleanup: () => {
       context.revert(); shade.remove();
+      if (vines) vines.dataset.visible = String(lastProgress >= .5);
       delete document.documentElement.dataset.voucherLetterHandoff;
       delete scene.dataset.handoffProgress;
     },

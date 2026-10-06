@@ -20,7 +20,8 @@ try{
    const subject=document.querySelector('[data-handoff-progress]'),progress=+(subject?.dataset.handoffProgress??-1),label=window.audit.label;
    if(progress>=.4&&progress<=.7&&!sampled.has(label)&&label!=='idle'){
     sampled.add(label);const paper=document.querySelector('.letter-keepsake'),page=document.querySelector('[data-chapter-content="wallet"]'),fragments=document.querySelector('.letter-fragments');
-    window.audit.samples.push({label,progress,paperDepth:paper?new DOMMatrix(getComputedStyle(paper).transform).m13:0,pageDepth:page?new DOMMatrix(getComputedStyle(page).transform).m13:0,fragments:fragments?{ready:fragments.dataset.ready,count:+fragments.dataset.count,flying:+fragments.dataset.flying}:null});
+    const vines=[...document.querySelectorAll('.letter-vines__strand')].filter(e=>e.offsetHeight>0).map(e=>({offset:new DOMMatrix(getComputedStyle(e).transform).m42/e.offsetHeight,opacity:+getComputedStyle(e).opacity}));
+    window.audit.samples.push({label,progress,vines,paperDepth:paper?new DOMMatrix(getComputedStyle(paper).transform).m13:0,pageDepth:page?new DOMMatrix(getComputedStyle(page).transform).m13:0,fragments:fragments?{ready:fragments.dataset.ready,count:+fragments.dataset.count,flying:+fragments.dataset.flying}:null});
    }
    requestAnimationFrame(tick);
   };requestAnimationFrame(tick);
@@ -62,6 +63,7 @@ try{
   assert(Math.abs(reverse&&pair!==0?endpoint.bottom-height:endpoint.top)<2,'Arrival lands on the exact chapter edge');
   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   assert.equal(await p.$('.garden-video-fold,.letter-fragments,.chapter-page-turn-shade'),null,'Temporary transition layers are released');
+  assert.equal(await p.evaluate(()=>document.querySelector('.letter-vines')?.dataset.visible??'false'),String(destination===3),'Vine visibility settles correctly when entering or leaving chapter three');
   assert.equal(await p.$eval(`[data-chapter-content="${ids[destination]}"]`,e=>getComputedStyle(e).position),'relative','Native document geometry is restored');
   const elapsed=Date.now()-began;
   if(!reduced)assert(elapsed>=1800,'The full chapter handoff gives the viewer time to see its choreography');
@@ -99,6 +101,9 @@ try{
  const audit=await p.evaluate(()=>window.audit),summary={};
  if(!reduced){
   const turns=audit.samples.filter(s=>s.label.startsWith('2-'));assert(turns.length>=2);assert(turns.every(s=>Math.abs(s.paperDepth)<.0001&&Math.abs(s.pageDepth)>.01),'The chapter turns as a page while the letter stays flat');
+  assert(turns.every(s=>s.vines.some(v=>v.offset> -1.05&&v.offset< -.001&&v.opacity>0)),'Vines fall during the page turn and retract during reverse scrolling');
+  const vineReturns=audit.samples.filter(s=>s.label==='3-reverse');
+  assert(vineReturns.length&&vineReturns.every(s=>s.vines.some(v=>v.offset> -1.05&&v.offset< -.001&&v.opacity>0)),'Returning from chapter four drops the vines again');
   assert(audit.samples.some(s=>s.label==='3-forward'&&s.fragments?.count>100&&s.fragments.flying>50),'The dissolve still uses individual flying fragments');
  }
  for(const label of new Set(landings.map(l=>l.label))){const frames=audit.frames.filter(f=>f.label===label).map(f=>f.ms).sort((a,b)=>a-b);summary[label]={frames:frames.length,p95Ms:+(frames[Math.floor(frames.length*.95)]||0).toFixed(1),maxMs:+(frames.at(-1)||0).toFixed(1),over50:frames.filter(f=>f>50).length,longTasks:audit.tasks.filter(t=>t.label===label)};}

@@ -1,32 +1,44 @@
 /* A single meadow to the right of a flat, readable letter. */
 .letter-scene.letter-atelier { grid-template-columns:.8fr 1.2fr;column-gap:60px; }
 .letter-bloom-garden { position:absolute;inset:0;pointer-events:none;z-index:0;overflow:visible; }
-.letter-bloom-garden__pond { position:absolute;right:-8%;bottom:14%;width:min(1550px,82vw);aspect-ratio:2;z-index:0;opacity:.94;pointer-events:none;mask-image:linear-gradient(90deg,transparent,#000 16%,#000 94%,transparent),linear-gradient(180deg,transparent 2%,#000 22%,#000 81%,transparent);mask-composite:intersect; }
+.letter-bloom-garden__pond { position:absolute;right:-8%;bottom:12%;width:min(1550px,82vw);aspect-ratio:1.7;container-type:inline-size;z-index:0;opacity:.94;pointer-events:none;mask-image:linear-gradient(90deg,transparent,#000 16%,#000 94%,transparent),linear-gradient(180deg,transparent 2%,#000 22%,#000 81%,transparent);mask-composite:intersect; }
 .letter-bloom-garden__pond::after { content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,transparent 55%,#1220181a 78%,#0a110d55); }
-.letter-bloom-garden__pond .pond-water { display:block;width:100%;height:100%;object-fit:contain;filter:saturate(.94) brightness(1) contrast(1.04); }
-.pond-swimmer { position:absolute;z-index:1;left:57%;top:45%;width:clamp(24px,2.8vw,43px);aspect-ratio:1;--swim-duration:28s;--swim-delay:0s;--swim-range:clamp(30px,7vw,78px);animation:pond-swim var(--swim-duration) ease-in-out var(--swim-delay) infinite; }
-.pond-swimmer--far { left:70%;top:46.5%;width:clamp(20px,2.3vw,35px);--swim-duration:34s;--swim-delay:-8s;opacity:.8; }
-.pond-swan-body { position:relative;width:100%;height:100%;animation:pond-turn var(--swim-duration) linear var(--swim-delay) infinite; }
+.letter-bloom-garden__pond .pond-water { display:block;width:100%;height:100%;object-fit:fill;filter:saturate(.94) brightness(1) contrast(1.04); }
+.pond-water-canvas { position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;filter:saturate(.94) brightness(1) contrast(1.04); }
+.letter-bloom-garden__pond[data-water-ready="true"] .pond-water { opacity:0; }
+.pond-swimmer { position:absolute;z-index:1;left:57%;top:55%;width:clamp(24px,2.8vw,43px);aspect-ratio:1;--swim-duration:30s;animation:pond-swim-near var(--swim-duration) ease-in-out infinite; }
+.pond-swimmer--far { top:55.8%;width:clamp(20px,2.3vw,35px);animation-name:pond-swim-far;opacity:.86; }
+.pond-swan-body { position:relative;width:100%;height:100%;animation:pond-turn-near var(--swim-duration) linear infinite; }
+.pond-swimmer--far .pond-swan-body { animation-name:pond-turn-far; }
 .pond-swan-float { width:100%;height:100%;animation:pond-bob 5.5s ease-in-out infinite; }
 .pond-swimmer--far .pond-swan-float { animation-delay:-2s; }
 .pond-swan,.pond-swan-reflection img { display:block;width:100%;height:100%;object-fit:contain; }
 .pond-swan { filter:brightness(.78) saturate(.55); }
 .pond-swan-reflection { position:absolute;left:0;top:77%;width:100%;height:42%;transform:scaleY(-1);opacity:.22;filter:blur(.6px);mask-image:linear-gradient(transparent,#000 80%); }
 .pond-swan-reflection img { object-fit:fill; }
-.pond-wake { position:absolute;left:-20%;top:80%;width:140%;height:16%;border:1px solid #b6c9da40;border-radius:50%;animation:pond-wake 3.4s ease-out infinite; }
-.pond-wake--late { animation-delay:-1.7s; }
-.letter-bloom-garden[data-running="false"] :is(.pond-swimmer,.pond-swan-body,.pond-swan-float,.pond-wake) { animation-play-state:paused; }
-@keyframes pond-swim {
- 0%,100% { transform:translate(24px,0); }
- 45% { transform:translate(calc(-1 * var(--swim-range)),4px); }
- 50% { transform:translate(calc(-1 * var(--swim-range) - 4px),8px); }
- 55% { transform:translate(calc(-1 * var(--swim-range)),12px); }
- 95% { transform:translate(24px,12px); }
- 98% { transform:translate(28px,6px); }
+.pond-heart { position:absolute;z-index:1;left:calc(57% + 16px);top:49%;width:clamp(26px,2.4vw,38px);color:#e9d6bf;opacity:0;animation:pond-heart 30s ease-in-out infinite; }
+.letter-bloom-garden[data-running="false"] :is(.pond-swimmer,.pond-swan-body,.pond-swan-float,.pond-heart) { animation-play-state:paused; }
+/* Shared phase: approach in open water, linger together, then turn outward. */
+@keyframes pond-swim-near {
+ 0%,100% { transform:translate(-12cqw,0); }
+ 38%,51% { transform:translate(-24px,4px); }
+ 58% { transform:translate(-30px,8px); }
+ 92% { transform:translate(-12cqw,10px); }
 }
-@keyframes pond-turn { 0%,45% { transform:rotateY(0deg); } 55%,95% { transform:rotateY(180deg); } 100% { transform:rotateY(360deg); } }
+@keyframes pond-swim-far {
+ 0%,100% { transform:translate(12cqw,8px); }
+ 38%,51% { transform:translate(14px,4px); }
+ 58% { transform:translate(20px,8px); }
+ 92% { transform:translate(12cqw,0); }
+}
+@keyframes pond-turn-near { 0%,51%,100% { transform:rotateY(180deg); } 60%,94% { transform:rotateY(0deg); } }
+@keyframes pond-turn-far { 0%,51%,100% { transform:rotateY(0deg); } 60%,94% { transform:rotateY(180deg); } }
+@keyframes pond-heart {
+ 0%,38% { opacity:0;transform:translate(-50%,8px) scale(.85); }
+ 42%,48% { opacity:.42;transform:translate(-50%,0) scale(1); }
+ 54%,100% { opacity:0;transform:translate(-50%,-14px) scale(1.02); }
+}
 @keyframes pond-bob { 0%,100% { transform:translateY(0) rotate(-.5deg); } 50% { transform:translateY(1px) rotate(.5deg); } }
-@keyframes pond-wake { from { transform:scale(.4);opacity:.4; } to { transform:scale(1.5);opacity:0; } }
 .letter-bloom-garden__flowers { position:absolute;z-index:1;right:1%;bottom:64px;width:min(940px,55vw);height:min(70svh,660px);--pink-bloom-size:min(29vw,40svh);--bloom-root-fade:64px; }
 .letter-bloom-garden__flowers::before { content:"";position:absolute;inset:68% 4% -6%;background:radial-gradient(ellipse at 56% 72%,#02070699,transparent 67%); }
 .letter-bloom-garden__bloom { position:absolute;left:calc(var(--bloom-x) - var(--pink-bloom-size) * var(--bloom-scale) / 2);bottom:var(--bloom-bottom);width:calc(var(--pink-bloom-size) * var(--bloom-scale));aspect-ratio:1;transform-origin:center bottom;mask-image:linear-gradient(#000 calc(100% - var(--bloom-root-fade)),transparent); }
@@ -34,7 +46,7 @@
 .letter-bloom-garden__bloom--middle { z-index:1;filter:brightness(.98) saturate(1.1) contrast(1.03); }
 .letter-bloom-garden__bloom--front { z-index:2;filter:brightness(1) saturate(1.14) contrast(1.04); }
 /* Foreground grass crosses the stem bases; no plant sits above the ground plane. */
-.letter-bloom-garden__meadow { position:absolute;z-index:2;left:0;right:0;bottom:-6%;height:40%;overflow:hidden;mask-image:linear-gradient(transparent,#000 26%); }
+.letter-bloom-garden__meadow { position:absolute;z-index:2;left:0;right:0;bottom:-7%;height:30%;overflow:hidden;mask-image:linear-gradient(transparent,#000 30%); }
 .letter-bloom-garden__meadow::before { content:"";position:absolute;left:0;right:0;bottom:0;height:42%;z-index:4;background:linear-gradient(transparent,#050908); }
 .letter-bloom-garden__grass { position:absolute;bottom:0;max-width:none;transform-origin:center bottom;filter:brightness(.72) saturate(.78); }
 .letter-bloom-garden__grass--strip { z-index:3;right:-3%;bottom:0;width:106%;min-width:1000px;opacity:.82; }
@@ -65,8 +77,8 @@
  .letter-atelier__footer { margin-top:auto; }
  .letter-bloom-garden__flowers { width:100%;height:440px;bottom:64px;right:0;--pink-bloom-size:min(68vw,31svh);--bloom-root-fade:42px; }
  .letter-bloom-garden__bloom { left:calc(12% + var(--bloom-x) * .76 - var(--pink-bloom-size) * var(--bloom-scale) / 2); }
- .letter-bloom-garden__pond { bottom:245px;right:-25%;width:152%; }
- .letter-bloom-garden__meadow { height:310px;bottom:-35px; }
+ .letter-bloom-garden__pond { bottom:185px;right:-25%;width:152%; }
+ .letter-bloom-garden__meadow { height:230px;bottom:-35px; }
  .letter-bloom-garden .flower-atmosphere__mist--high { left:0;width:100%;bottom:270px;height:60px; }
  .letter-bloom-garden__grass--strip { min-width:760px; }
  .letter-bloom-garden__grass--left,.letter-bloom-garden__grass--right { width:50vw; }
@@ -74,6 +86,8 @@
 @media(prefers-reduced-motion:reduce) {
  .letter-bloom-garden__grass { animation:none; }
  .letter-bloom-garden__grass--right { transform:scaleX(-1); }
- .letter-bloom-garden :is(.pond-swimmer,.pond-swan-body,.pond-swan-float,.pond-wake) { animation:none; }
- .pond-wake { display:none; }
+ .letter-bloom-garden :is(.pond-swimmer,.pond-swan-body,.pond-swan-float,.pond-heart) { animation:none; }
+ .pond-swimmer { transform:translate(-8cqw,0); }
+ .pond-swimmer--far { transform:translate(8cqw,0); }
+ .pond-heart { opacity:0; }
 }

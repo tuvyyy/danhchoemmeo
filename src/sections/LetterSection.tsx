@@ -7,6 +7,7 @@ import { useChapterLifecycle } from "@/chapters/useChapterLifecycle";
 import { useChapterFlowContext } from "@/chapters/ChapterFlowContext";
 import { ENVELOPE_ASSETS } from "./voucher/voucherConfig";
 import LetterBloomGarden from "./flowers/LetterBloomGarden";
+import LetterVines from "./flowers/LetterVines";
 import { prepareLetterFragments } from "@/chapters/letterFragments";
 import "./letter-scene.css";
 import "./flowers/letter-bloom-garden.css";
@@ -80,6 +81,7 @@ export default function LetterSection({ onComplete }: { onComplete: () => void }
     <div className="letter-atelier__light" aria-hidden="true"/>
     <div className="letter-atelier__landscape" aria-hidden="true"/>
     <LetterBloomGarden active={isActive && !isTransitioning && !reading}/>
+    <LetterVines active={isActive} running={isActive && !isTransitioning && !reading}/>
     <header className="letter-atelier__header"><span>CHƯƠNG 03 / LÁ THƯ</span></header>
     <div className="letter-desk">
       <div className="letter-keepsake">

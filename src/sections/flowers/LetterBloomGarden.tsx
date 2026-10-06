@@ -2,20 +2,24 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from 're
 import FlowerBloomCanvas from './FlowerBloomCanvas';
 import { preloadBloomSequence } from '@/lib/assets/preloadBloomSequence';
 import FlowerAtmosphere from './FlowerAtmosphere';
+import PondWaterCanvas from './PondWaterCanvas';
 
-// Native blue blooms surround two pink anchors, with ivory between them.
+// Tall blossoms form the canopy; smaller blooms fill the gaps above the stems.
 const BLOOMS = [
-  { id: 'blue-back', palette: 'midnight', x: 21, y: 15, scale: .38, rotate: -6, delay: 1200, duration: 4800, depth: 'back' },
-  { id: 'pink-main', palette: 'pink', x: 56, y: 8, scale: .93, rotate: -2, delay: 0, duration: 5200, depth: 'middle' },
-  { id: 'pink-front', palette: 'pink', x: 61, y: -1, scale: .55, rotate: 3, delay: 2650, duration: 4200, depth: 'front' },
-  { id: 'blue-tall', palette: 'midnight', x: 34, y: 4, scale: .86, rotate: -6, delay: 350, duration: 5300, depth: 'middle' },
-  { id: 'ivory-tall', palette: 'ivory', x: 77, y: 3, scale: .78, rotate: 5, delay: 950, duration: 5100, depth: 'middle' },
-  { id: 'ivory-front', palette: 'ivory', x: 21, y: 0, scale: .47, rotate: -11, delay: 1650, duration: 4500, depth: 'front' },
-  { id: 'blue-front', palette: 'midnight', x: 89, y: -2, scale: .53, rotate: 7, delay: 2200, duration: 4800, depth: 'front' },
+  { id: 'blue-back', palette: 'midnight', x: 13, y: 17, scale: .36, rotate: -6, delay: 1200, duration: 4800, depth: 'back' },
+  { id: 'pink-main', palette: 'pink', x: 56, y: 11, scale: 1, rotate: -2, delay: 0, duration: 5200, depth: 'middle' },
+  { id: 'pink-front', palette: 'pink', x: 67, y: 3, scale: .57, rotate: 3, delay: 2650, duration: 4200, depth: 'front' },
+  { id: 'blue-tall', palette: 'midnight', x: 33, y: 7, scale: .82, rotate: -6, delay: 350, duration: 5300, depth: 'middle' },
+  { id: 'ivory-tall', palette: 'ivory', x: 79, y: 5, scale: .79, rotate: 5, delay: 950, duration: 5100, depth: 'middle' },
+  { id: 'ivory-front', palette: 'ivory', x: 20, y: 7, scale: .49, rotate: -11, delay: 1650, duration: 4500, depth: 'front' },
+  { id: 'blue-front', palette: 'midnight', x: 92, y: 0, scale: .50, rotate: 7, delay: 2200, duration: 4800, depth: 'front' },
+  { id: 'pink-fill', palette: 'pink', x: 44, y: 4, scale: .43, rotate: -4, delay: 3100, duration: 4300, depth: 'front' },
+  { id: 'ivory-fill', palette: 'ivory', x: 54, y: 8, scale: .42, rotate: 6, delay: 3500, duration: 4200, depth: 'front' },
 ] as const;
 
 export default function LetterBloomGarden({ active }: { active: boolean }) {
   const root = useRef<HTMLDivElement>(null);
+  const pond = useRef<HTMLDivElement>(null);
   const completed = useRef(new Set<string>());
   const [bloomed, setBloomed] = useState(false);
   const [inView, setInView] = useState(false);
@@ -42,15 +46,18 @@ export default function LetterBloomGarden({ active }: { active: boolean }) {
   const running = active && inView && visible && ready;
 
   return <div ref={root} className="letter-bloom-garden" data-running={running} data-bloomed={bloomed} aria-hidden="true">
-    <div className="letter-bloom-garden__pond" data-swans="2">
+    <div ref={pond} className="letter-bloom-garden__pond" data-swans="2" data-swan-interaction="paired">
       <img className="pond-water" src="/assets/flowers/letter-garden/moonlit-pond.png" width="1774" height="887" decoding="async" alt="" />
+      <PondWaterCanvas running={running} pond={pond} />
       {[0,1].map(index=><div key={index} className={`pond-swimmer${index?' pond-swimmer--far':''}`} data-swan={index+1}>
-        <i className="pond-wake"/><i className="pond-wake pond-wake--late"/>
         <div className="pond-swan-body">
           <div className="pond-swan-float"><img className="pond-swan" src="/assets/flowers/letter-garden/swimming-swan.png" width="1254" height="1254" decoding="async" alt=""/></div>
           <div className="pond-swan-reflection"><img src="/assets/flowers/letter-garden/swimming-swan.png" width="1254" height="1254" decoding="async" alt=""/></div>
         </div>
       </div>)}
+      <svg className="pond-heart" viewBox="0 0 40 36" fill="none" aria-hidden="true">
+        <path d="M20 31C15 26 3 18 3 10C3 1 15 0 20 9C25 0 37 1 37 10C37 18 25 26 20 31Z" stroke="currentColor" strokeWidth="1" />
+      </svg>
     </div>
     <FlowerAtmosphere isActive={running} />
     <div className="letter-bloom-garden__flowers">

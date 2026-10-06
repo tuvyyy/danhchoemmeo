@@ -5,7 +5,7 @@ export interface MotionClock {
 }
 
 /** One frame loop for a gesture. New input changes the destination, not the clock. */
-export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finish, distance, clock, autoDuration, response = 24 }: {
+export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finish, distance, clock, autoDuration, response = 10, maxSpeed = .5 }: {
   reverse: boolean;
   scrollDelta?: number;
   paint: (progress: number) => void;
@@ -17,6 +17,8 @@ export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finis
   autoDuration?: number;
   /** Critically damped response rate; lower values give a heavier page turn. */
   response?: number;
+  /** Maximum chapter progress per second, including strong wheel/trackpad input. */
+  maxSpeed?: number;
 }) {
   const timing = clock ?? {
     now: () => performance.now(),
@@ -60,8 +62,13 @@ export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finis
       const error = position - target;
       const impulse = (velocity + omega * error) * dt;
       const decay = Math.exp(-omega * dt);
-      position = target + (error + impulse) * decay;
+      const next = target + (error + impulse) * decay;
       velocity = (velocity - omega * impulse) * decay;
+      const change = Math.max(-maxSpeed * dt, Math.min(maxSpeed * dt, next - position));
+      // Pace the visible handoff, not just its target. A large wheel delta or
+      // endpoint release cannot skip the choreography in a handful of frames.
+      if (Math.abs(next - position) > maxSpeed * dt) velocity = change / dt;
+      position += change;
       if (position < 0 || position > 1) { position = clamp(position); velocity = 0; }
     }
     const settled = !automatic && Math.abs(position - target) < .00008 && Math.abs(velocity) < .003;

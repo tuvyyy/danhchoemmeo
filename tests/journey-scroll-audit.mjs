@@ -63,7 +63,9 @@ try{
   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   assert.equal(await p.$('.garden-video-fold,.letter-fragments,.chapter-page-turn-shade'),null,'Temporary transition layers are released');
   assert.equal(await p.$eval(`[data-chapter-content="${ids[destination]}"]`,e=>getComputedStyle(e).position),'relative','Native document geometry is restored');
-  landings.push({label,ms:Date.now()-began,burst,endpoint});
+  const elapsed=Date.now()-began;
+  if(!reduced)assert(elapsed>=1800,'The full chapter handoff gives the viewer time to see its choreography');
+  landings.push({label,ms:elapsed,burst,endpoint});
   await p.evaluate(()=>window.audit.label='idle');
  };
  await edge('hero',true);

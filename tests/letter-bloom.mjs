@@ -75,22 +75,32 @@ try {
  await capture({ path: `${out}/03-bloomed.png` });
  assert.equal(await p.$('.letter-bloom-garden .nature-bloom__tulip'), null, 'Remove the small tinted flower pack');
  assert(await p.$$eval('.letter-bloom-garden [data-bloom-frame]', es => es.every(e => +e.dataset.bloomFrame >= 59)), 'All three colors finish their petal sequence');
- assert.deepEqual(await p.$$eval('[data-flower-color]',es=>Object.fromEntries(['pink','ivory','midnight'].map(color=>[color,es.filter(e=>e.dataset.flowerColor===color).length]))),{pink:3,ivory:2,midnight:2});
- assert(await p.$$eval('[data-flower-color="ivory"],[data-flower-color="midnight"]',es=>es.every(e=>e.dataset.paletteRenderer==='webgl')),'The GPU pigment mask keeps stem colors intact');
+ assert.deepEqual(await p.$$eval('[data-flower-color]',es=>Object.fromEntries(['pink','ivory','midnight'].map(color=>[color,es.filter(e=>e.dataset.flowerColor===color).length]))),{pink:2,ivory:2,midnight:3});
+ assert(await p.$$eval('[data-flower-color="ivory"]',es=>es.every(e=>e.dataset.paletteRenderer==='webgl')),'The ivory pigment mask keeps stem colors intact');
+ assert(await p.$$eval('[data-flower-color="midnight"]',es=>es.length===3&&es.every(e=>e.dataset.bloomSequence==='blue'&&e.dataset.paletteRenderer==='original')),'All three blue flowers use the native blue sequence without recoloring');
+ assert.equal(new Set(requests.filter(url=>url.includes('/flowers/lily-blue-bloom/')&&url.endsWith('.webp'))).size,60,'The complete blue sequence loads once and is shared by three flowers');
  const pigment=await p.evaluate(async()=>{
   const image=new Image();image.src='/assets/flowers/lily-bloom-hd/lily_bloom_060.webp';await image.decode();
   const pixels=subject=>{const canvas=document.createElement('canvas');canvas.width=canvas.height=64;const c=canvas.getContext('2d');c.drawImage(subject,0,0,64,64);return c.getImageData(0,0,64,64).data;};
-  const original=pixels(image),ivory=pixels(document.querySelector('[data-flower-color="ivory"] canvas')),blue=pixels(document.querySelector('[data-flower-color="midnight"] canvas'));
-  let petals=0,green=0,ivoryLift=0,blueShift=0,leafError=0,throats=0,ivorySeam=0,blueSeam=0;
+  const original=pixels(image),ivory=pixels(document.querySelector('[data-flower-color="ivory"] canvas'));
+  const blueImage=new Image();blueImage.src='/assets/flowers/lily-blue-bloom/lily_blue_060.webp';await blueImage.decode();
+  const blueCanvas=document.querySelector('[data-flower-color="midnight"] canvas');
+  // Match the displayed raster size before comparing, including the small back bloom.
+  const expectedBlue=document.createElement('canvas');expectedBlue.width=blueCanvas.width;expectedBlue.height=blueCanvas.height;
+  const expectedContext=expectedBlue.getContext('2d');expectedContext.imageSmoothingQuality='high';expectedContext.drawImage(blueImage,0,0,expectedBlue.width,expectedBlue.height);
+  const blueSource=pixels(expectedBlue),blue=pixels(blueCanvas);
+  const blueError=blue.reduce((sum,value,i)=>sum+Math.abs(value-blueSource[i]),0)/blue.length;
+  let petals=0,green=0,ivoryLift=0,leafError=0,throats=0,ivorySeam=0;
   for(let i=0;i<original.length;i+=4){const [r,g,b,a]=original.slice(i,i+4);if(a<200)continue;
-   if(r>Math.max(g,b)+20&&b>g+8){petals++;ivoryLift+=ivory[i+1]-g;blueShift+=blue[i+2]-blue[i];}
-   if(g>r+8&&g>b+10){green++;leafError+=(Math.abs(ivory[i]-r)+Math.abs(ivory[i+1]-g)+Math.abs(blue[i]-r)+Math.abs(blue[i+1]-g))/4;}
-   if(r>g+35&&g>=b&&b/r>.45){throats++;ivorySeam+=Math.abs(ivory[i]-ivory[i+1]);blueSeam+=blue[i+2]-blue[i];}
+   if(r>Math.max(g,b)+20&&b>g+8){petals++;ivoryLift+=ivory[i+1]-g;}
+   if(g>r+8&&g>b+10){green++;leafError+=(Math.abs(ivory[i]-r)+Math.abs(ivory[i+1]-g))/2;}
+   if(r>g+35&&g>=b&&b/r>.45){throats++;ivorySeam+=Math.abs(ivory[i]-ivory[i+1]);}
   }
-  return{petals,green,ivoryLift:ivoryLift/petals,blueShift:blueShift/petals,leafError:leafError/green,throats,ivorySeam:ivorySeam/throats,blueSeam:blueSeam/throats};
+  return{petals,green,ivoryLift:ivoryLift/petals,leafError:leafError/green,throats,ivorySeam:ivorySeam/throats,blueError};
  });
- assert(pigment.petals>20&&pigment.green>10&&pigment.ivoryLift>15&&pigment.blueShift>15&&pigment.leafError<12,`Petal pigments change while the real green stem stays green: ${JSON.stringify(pigment)}`);
- assert(pigment.throats>5&&pigment.ivorySeam<12&&pigment.blueSeam>8,`The petal throat has no leftover pink stripe: ${JSON.stringify(pigment)}`);
+ assert(pigment.petals>20&&pigment.green>10&&pigment.ivoryLift>15&&pigment.leafError<12,`Ivory petals change while the real green stem stays green: ${JSON.stringify(pigment)}`);
+ assert(pigment.throats>5&&pigment.ivorySeam<12,`The ivory petal throat has no leftover pink stripe: ${JSON.stringify(pigment)}`);
+ assert(pigment.blueError<4,`The blue flower matches the new source artwork: ${JSON.stringify(pigment)}`);
  const swimBefore=await p.$$eval('.pond-swimmer',es=>es.map(e=>getComputedStyle(e).transform));
  if(!reduced){await wait(700);assert(await p.$$eval('.pond-swimmer', (es,before)=>es.length===2&&es.every((e,i)=>getComputedStyle(e).transform!==before[i]),swimBefore),'Both swans swim independently');}
  else assert(await p.$$eval('.pond-swimmer',es=>es.every(e=>getComputedStyle(e).animationName==='none')),'Reduced motion keeps both swans still');
@@ -108,5 +118,5 @@ try {
  await p.waitForFunction(() => document.querySelector('#chapter-moments').dataset.chapterState === 'active');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
  assert.deepEqual(errors, []);
- console.log(`${out}: PASS 3 pink + 2 ivory + 2 midnight real petal sequences, two swimming swans, reflections/wakes, reading pause, preserved video, no overflow/errors`);
+ console.log(`${out}: PASS 2 pink + 2 ivory + 3 native blue petal sequences, two swimming swans, reading pause, preserved video, no overflow/errors`);
 } catch(error){console.error('Letter garden check failed:',error);throw error;} finally { await browser.close(); }

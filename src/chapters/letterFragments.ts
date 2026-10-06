@@ -34,7 +34,7 @@ const snapshots = new WeakMap<HTMLElement, Snapshot>();
 const embeddedAssets = new Map<string, Promise<string>>();
 function snapshotKey(source: HTMLElement) {
   const canvases=[...source.querySelectorAll('canvas')].map(c=>`${c.dataset.bloomFrame}:${c.dataset.bloomStage}`).join(',');
-  return `${source.offsetWidth}:${source.offsetHeight}:${source.closest('.letter-atelier')?.getAttribute('data-open')}:${source.querySelector('[data-page]')?.getAttribute('data-page')}:${source.dataset.bloomFrame}:${source.dataset.flowerColor}:${source.closest('.letter-bloom-garden')?.getAttribute('data-bloomed')}:${canvases}`;
+  return `${source.offsetWidth}:${source.offsetHeight}:${source.closest('.letter-atelier')?.getAttribute('data-open')}:${source.querySelector('[data-page]')?.getAttribute('data-page')}:${source.dataset.bloomFrame}:${source.dataset.flowerColor}:${source.dataset.bloomSequence}:${source.closest('.letter-bloom-garden')?.getAttribute('data-bloomed')}:${canvases}`;
 }
 
 /** Prepare one object per idle task while reading, before the scroll handler needs it. */

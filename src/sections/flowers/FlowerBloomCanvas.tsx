@@ -8,6 +8,7 @@ import {
   getBloomFrameUrl,
   createKeyedBloomFrame,
   type BloomCanvasFrame,
+  type BloomSequence,
 } from "@/lib/assets/preloadBloomSequence";
 
 interface FlowerBloomCanvasProps {
@@ -23,6 +24,7 @@ interface FlowerBloomCanvasProps {
   className?: string;
   style?: React.CSSProperties;
   palette?: BloomPalette;
+  sequence?: BloomSequence;
 }
 
 const DEFAULT_BLOOM_DURATION_MS = 5000; // ~12 FPS across 60 frames = 5.0 seconds
@@ -40,6 +42,7 @@ export default function FlowerBloomCanvas({
   className,
   style,
   palette = 'pink',
+  sequence = 'pink',
 }: FlowerBloomCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -68,7 +71,7 @@ export default function FlowerBloomCanvas({
   });
 
   // Image cache refs
-  const cachedFramesRef = useRef<BloomCanvasFrame[] | null>(getCachedBloomFrames());
+  const cachedFramesRef = useRef<BloomCanvasFrame[] | null>(getCachedBloomFrames(sequence));
   const initialFrameImgRef = useRef<BloomCanvasFrame | null>(null);
   const finalFrameImgRef = useRef<BloomCanvasFrame | null>(null);
   const [framesReady, setFramesReady] = useState<boolean>(
@@ -114,7 +117,8 @@ export default function FlowerBloomCanvas({
 
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    const renderer = drawBloomFrame(ctx, targetImg, palette, displayWidth, displayHeight);
+    // The blue artwork has its own pigment; draw it without recoloring.
+    const renderer = drawBloomFrame(ctx, targetImg, sequence === 'blue' ? 'pink' : palette, displayWidth, displayHeight);
     if (containerRef.current) containerRef.current.dataset.paletteRenderer = renderer;
 
     ctx.restore();
@@ -157,9 +161,13 @@ export default function FlowerBloomCanvas({
   // ── 2. Ensure initial frame (001) and final frame (060) are quickly ready ──
   useEffect(() => {
     let cancelled = false;
+    cachedFramesRef.current = getCachedBloomFrames(sequence);
+    initialFrameImgRef.current = null;
+    finalFrameImgRef.current = null;
+    setFramesReady(!!cachedFramesRef.current);
     // Standalone preloading for instant placeholder and instant reduced motion
     const img001 = new Image();
-    img001.src = getBloomFrameUrl(1);
+    img001.src = getBloomFrameUrl(1, sequence);
     img001.onload = () => {
       if (cancelled) return;
       try {
@@ -173,7 +181,7 @@ export default function FlowerBloomCanvas({
     };
 
     const img060 = new Image();
-    img060.src = getBloomFrameUrl(60);
+    img060.src = getBloomFrameUrl(60, sequence);
     img060.onload = () => {
       if (cancelled) return;
       try {
@@ -187,7 +195,7 @@ export default function FlowerBloomCanvas({
     };
 
     // Preload full sequence
-    preloadBloomSequence().then((images) => {
+    preloadBloomSequence(sequence).then((images) => {
       if (cancelled) return;
       cachedFramesRef.current = images;
       setFramesReady(true);
@@ -196,13 +204,13 @@ export default function FlowerBloomCanvas({
       } else if (currentFrameIndexRef.current === 0) {
         drawFrame(0);
       }
-    });
+    }).catch((error: unknown) => { if (!cancelled) console.error('Flower frames unavailable', error); });
     return () => {
       cancelled = true;
       img001.onload = null;
       img060.onload = null;
     };
-  }, [hasBloomed, palette]);
+  }, [hasBloomed, palette, sequence]);
 
   // ── 3. Chapter Lifecycle, RAF Playback & Timing ──
   useEffect(() => {
@@ -362,7 +370,7 @@ export default function FlowerBloomCanvas({
       }
       isPlayingRef.current = false;
     };
-  }, [isActive, hasBloomed, framesReady, delayMs, durationMs, palette]);
+  }, [isActive, hasBloomed, framesReady, delayMs, durationMs, palette, sequence]);
 
   // Window resize handler to maintain Retina crispness
   useEffect(() => {
@@ -371,7 +379,7 @@ export default function FlowerBloomCanvas({
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [palette, sequence]);
 
   const defaultClass = isSecondary
     ? "absolute bottom-[-4vh] sm:bottom-[-6vh] left-[22%] sm:left-[26%] z-[2] w-[20vw] max-w-[280px] min-w-[150px] aspect-square origin-bottom select-none"
@@ -386,6 +394,7 @@ export default function FlowerBloomCanvas({
       data-flower-secondary={isSecondary ? "true" : undefined}
       data-bloom-mode="canvas-sequence"
       data-flower-color={palette}
+      data-bloom-sequence={sequence}
       data-bloom-frame={String(currentFrameIndexRef.current + 1)}
       className={className || defaultClass}
       style={{

@@ -3,15 +3,15 @@ import FlowerBloomCanvas from './FlowerBloomCanvas';
 import { preloadBloomSequence } from '@/lib/assets/preloadBloomSequence';
 import FlowerAtmosphere from './FlowerAtmosphere';
 
-// Seven real frame sequences: three pink anchors, two ivory, two midnight blue.
+// Native blue blooms surround two pink anchors, with ivory between them.
 const BLOOMS = [
-  { id: 'pink-back', palette: 'pink', x: 19, y: 13, scale: .46, rotate: -7, delay: 850, duration: 4400, depth: 'back' },
+  { id: 'blue-back', palette: 'midnight', x: 21, y: 15, scale: .38, rotate: -6, delay: 1200, duration: 4800, depth: 'back' },
   { id: 'pink-main', palette: 'pink', x: 56, y: 8, scale: .93, rotate: -2, delay: 0, duration: 5200, depth: 'middle' },
   { id: 'pink-front', palette: 'pink', x: 61, y: -1, scale: .55, rotate: 3, delay: 2650, duration: 4200, depth: 'front' },
-  { id: 'blue-tall', palette: 'midnight', x: 34, y: 6, scale: .75, rotate: -7, delay: 350, duration: 5000, depth: 'middle' },
+  { id: 'blue-tall', palette: 'midnight', x: 34, y: 4, scale: .86, rotate: -6, delay: 350, duration: 5300, depth: 'middle' },
   { id: 'ivory-tall', palette: 'ivory', x: 77, y: 3, scale: .78, rotate: 5, delay: 950, duration: 5100, depth: 'middle' },
   { id: 'ivory-front', palette: 'ivory', x: 21, y: 0, scale: .47, rotate: -11, delay: 1650, duration: 4500, depth: 'front' },
-  { id: 'blue-front', palette: 'midnight', x: 87, y: -2, scale: .5, rotate: 8, delay: 2200, duration: 4400, depth: 'front' },
+  { id: 'blue-front', palette: 'midnight', x: 89, y: -2, scale: .53, rotate: 7, delay: 2200, duration: 4800, depth: 'front' },
 ] as const;
 
 export default function LetterBloomGarden({ active }: { active: boolean }) {
@@ -34,7 +34,7 @@ export default function LetterBloomGarden({ active }: { active: boolean }) {
   }, []);
   useEffect(() => {
     let cancelled = false;
-    preloadBloomSequence()
+    Promise.all([preloadBloomSequence(), preloadBloomSequence('blue')])
       .then(() => { if (!cancelled) setReady(true); })
       .catch((error: unknown) => console.error('Letter garden failed to load', error));
     return () => { cancelled = true; };
@@ -54,7 +54,7 @@ export default function LetterBloomGarden({ active }: { active: boolean }) {
     </div>
     <FlowerAtmosphere isActive={running} />
     <div className="letter-bloom-garden__flowers">
-      {BLOOMS.map(flower => <FlowerBloomCanvas key={flower.id} palette={flower.palette}
+      {BLOOMS.map(flower => <FlowerBloomCanvas key={flower.id} palette={flower.palette} sequence={flower.palette === 'midnight' ? 'blue' : 'pink'}
         className={`letter-bloom-garden__bloom letter-bloom-garden__bloom--${flower.depth}`}
         isActive={running} hasBloomed={bloomed} isSecondary={flower.id !== 'pink-main'}
         baseRotation={flower.rotate} delayMs={flower.delay} durationMs={flower.duration}

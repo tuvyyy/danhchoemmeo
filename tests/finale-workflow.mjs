@@ -59,17 +59,11 @@ try {
   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();
  };
  const boundary=async reverse=>{
-  const direction=reverse?'reverse':'forward',height=mobile?844:900;
-  await capture({path:`${out}/${direction}-000.png`});let last=0;
-  for(const percent of [20,40,50,60,80,100]){
-   await input((percent-last)/100*height*(reverse?-1:1));
-   if(percent<100){
-    await p.waitForFunction(target=>Math.abs(+(document.querySelector('.celebration-scene')?.dataset.handoffProgress??-1)-target)<.003,{},(reverse?100-percent:percent)/100);
-    assert.equal(await p.$eval('.butterfly-wing',e=>getComputedStyle(e).animationPlayState),'paused','butterflies pause while scrubbing');
-    if(percent===50){const pose=await p.$eval('.butterfly-wing',e=>getComputedStyle(e).transform);await wait(350);assert.equal(await p.$eval('.butterfly-wing',e=>getComputedStyle(e).transform),pose,'stopped scroll holds the wing pose');}
-   }else await stable(reverse?'anniversary':'finale');
-   await capture({path:`${out}/${direction}-${String(percent).padStart(3,'0')}.png`});last=percent;
-  }
+  const direction=reverse?'reverse':'forward';
+  await capture({path:`${out}/${direction}-000.png`});
+  await input((reverse?-1:1)*(mobile?90:120));
+  await stable(reverse?'anniversary':'finale');
+  await capture({path:`${out}/${direction}-100.png`});
  };
  await p.goto(journeyURL,{waitUntil:'networkidle2'});
  await p.waitForSelector('.gallery-loader',{hidden:true});await p.click('.garden-gate__enter');await p.waitForSelector('.entrance-gate',{hidden:true});

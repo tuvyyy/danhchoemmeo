@@ -14,7 +14,8 @@ export function smoothChapterScroll({ bounds, handoff, blocked }: {
     if (blocked()) { cancel(); return; }
     const dt = Math.min(.05, Math.max(.001, (time - previous) / 1000)); previous = time;
     position += (target - position) * (1 - Math.exp(-22 * dt));
-    const settled = Math.abs(target - position) < .45;
+    // Do not wait for the last subpixel of reading easing before the next scene moves.
+    const settled = Math.abs(target - position) < (remainder ? 2 : .45);
     if (settled) position = target;
     window.scrollTo({ top: position, behavior: 'instant' });
     if (settled) {
@@ -25,7 +26,7 @@ export function smoothChapterScroll({ bounds, handoff, blocked }: {
     frame = requestAnimationFrame(tick);
   };
   return {
-    move(delta: number) {
+    move(delta: number, immediate = false) {
       const limits = bounds();
       if (!limits || !Number.isFinite(delta)) return false;
       if (!frame) { target = position = scrollY; previous = performance.now(); }
@@ -35,7 +36,8 @@ export function smoothChapterScroll({ bounds, handoff, blocked }: {
       const requested = target + delta;
       target = Math.max(limits.top, Math.min(limits.bottom, requested));
       remainder += requested - target;
-      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (immediate || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        cancelAnimationFrame(frame); frame = 0;
         position = target; window.scrollTo({top:target,behavior:'instant'});
         const rest = remainder; remainder = 0; if (rest) handoff(rest);
       } else if (!frame) frame = requestAnimationFrame(tick);

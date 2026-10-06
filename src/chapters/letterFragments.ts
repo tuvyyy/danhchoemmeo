@@ -103,9 +103,12 @@ async function rasterize(template: HTMLElement, width: number, height: number) {
   return bitmap;
 }
 
-function snapshot(source: HTMLElement) {
+function snapshot(source: HTMLElement, defer = false): Promise<HTMLCanvasElement> {
   const key=snapshotKey(source), cached=snapshots.get(source);
   if(cached?.key===key)return cached.bitmap;
+  // A cold cache must not serialize all flower canvases inside the wheel handler.
+  // Separate tasks let the browser process input between uncached objects.
+  if(defer)return new Promise((resolve,reject)=>window.setTimeout(()=>{snapshot(source).then(resolve,reject);},0));
   const rect=source.getBoundingClientRect(), computed=getComputedStyle(source);
   const width=source.offsetWidth,height=source.offsetHeight;
   const matrix=new DOMMatrix(computed.transform==='none'?undefined:computed.transform);
@@ -140,11 +143,11 @@ export function letterFragments(sources: HTMLElement[]) {
     const computed = getComputedStyle(source);
     if (rect.width < 2 || rect.height < 2 || rect.bottom < 0 || rect.top > innerHeight || computed.display === 'none') continue;
     const sprite: Sprite = { image: null };
-    loading.push(snapshot(source).then(image => { sprite.image = image; }));
+    loading.push(snapshot(source,true).then(image => { sprite.image = image; }));
     const mobile = innerWidth < 600;
     const inGarden = !!source.closest('.letter-bloom-garden');
     const isPaper = source.classList.contains('letter-keepsake');
-    const size = isPaper ? (mobile ? 13 : 16) : inGarden ? (mobile ? 20 : 26) : (mobile ? 19 : 24);
+    const size = isPaper ? (mobile ? 16 : 20) : inGarden ? (mobile ? 26 : 32) : (mobile ? 24 : 28);
     const columns = Math.max(1, Math.ceil(rect.width / size)), rows = Math.max(1, Math.ceil(rect.height / size));
     const cellW = rect.width / columns, cellH = rect.height / rows;
     const points = Array.from({ length: rows + 1 }, (_, y) => Array.from({ length: columns + 1 }, (_, x) => ({
@@ -193,21 +196,25 @@ export function letterFragments(sources: HTMLElement[]) {
     layer.dataset.flying = String(flying);
     layer.dataset.progress = value.toFixed(4);
   }
-  Promise.all(loading).then(() => {
+  Promise.all(loading).then(async () => {
     if (disposed) return;
     // Bake the irregular edge once; each scrolling frame only transforms a small bitmap.
     const unit=Math.ceil(Math.max(1,...fragments.map(p=>Math.max(p.width,p.height))))+2;
     const columns=Math.max(1,Math.floor(2048/unit));
     atlas.width=columns*unit;atlas.height=Math.ceil(fragments.length/columns)*unit;
     const ink=atlas.getContext('2d')!;
-    fragments.forEach((part,index)=>{
+    for(let index=0;index<fragments.length;index++){
+      // Give input and the spring a turn between batches instead of blocking
+      // the first scroll frame while thousands of irregular pieces are baked.
+      if(index>0&&index%128===0){await new Promise<void>(resolve=>window.setTimeout(resolve,0));if(disposed)return;}
+      const part=fragments[index];
       part.atlasX=(index%columns)*unit+1;part.atlasY=Math.floor(index/columns)*unit+1;
       ink.save();ink.translate(part.atlasX,part.atlasY);ink.beginPath();
       part.polygon.forEach((p,i)=>{if(i===0)ink.moveTo(p.x-part.left,p.y-part.top);else ink.lineTo(p.x-part.left,p.y-part.top);});
       ink.closePath();ink.clip();
       if(part.sprite.image)ink.drawImage(part.sprite.image,part.left,part.top,part.width,part.height,0,0,part.width,part.height);
       ink.restore();
-    });
+    }
     ready = true; layer.dataset.ready = 'true';
     layer.dataset.rasterMs = (performance.now() - started).toFixed(1);
     paint(progress);

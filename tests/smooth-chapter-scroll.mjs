@@ -28,4 +28,5 @@ blocked=false;scrollY=200;scroll.move(40);settle();assert.equal(scrollY,240,'ext
 scroll.move(50);scroll.cancel();assert.equal(frames.size,0);assert.equal(scrollY,240);
 reduced=true;scroll.move(-300);assert.equal(scrollY,100);assert.equal(handoffs.at(-1),-160);assert.equal(frames.size,0);
 scroll.move(NaN);scroll.move(Infinity);assert.equal(frames.size,0);
+reduced=false;scrollY=200;scroll.move(60,true);assert.equal(scrollY,260,'A captured touch follows the finger without a second easing loop');assert.equal(frames.size,0);
 console.log('PASS: gradual reading, edge distance, rapid reversals, dialog isolation, external jumps, cancellation and reduced motion');

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import { useChapterLifecycle } from "@/chapters/useChapterLifecycle";
 import gardenVideo from "@/assets/Cats_nuzzling_in_night_garden_20260927145203.mp4";
@@ -96,13 +96,11 @@ export default function FlowersSection({ onComplete }: { onComplete: () => void 
       </div>
 
       <div className="nature-bloom__message" aria-live="polite">
-        <AnimatePresence mode="wait">
-          <motion.div key={message.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }} transition={{ duration: .35 }}>
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: .35 }}>
 
             <p>{message.line1}<br /><em>{message.line2}</em></p>
           </motion.div>
-        </AnimatePresence>
       </div>
 
       <div className="nature-bloom__footer">

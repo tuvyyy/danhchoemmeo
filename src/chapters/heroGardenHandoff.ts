@@ -13,7 +13,9 @@ export function heroGardenHandoff({ hero, garden, heroContent, gardenContent, re
   const heroUI = hero.querySelectorAll('.hero-gallery__header,.hero-gallery__center,.hero-gallery__footer');
   const gardenUI = garden.querySelectorAll('.nature-bloom__header,.nature-bloom__intro,.nature-bloom__message,.nature-bloom__footer');
   const heroWasInert = heroContent.inert, gardenWasInert = gardenContent.inert;
-  heroContent.inert = true; gardenContent.inert = true;
+  // Keep the original touch target alive until the gesture ends.
+  heroContent.inert = reverse ? true : heroWasInert;
+  gardenContent.inert = reverse ? gardenWasInert : true;
   document.documentElement.dataset.heroGardenHandoff = reverse ? 'reverse' : 'forward';
   let timeline: gsap.core.Timeline;
   let progress = reverse ? 1 : 0;

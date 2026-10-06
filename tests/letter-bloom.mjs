@@ -30,14 +30,9 @@ try {
  if (process.argv.includes('--handoff') && !reduced) {
   await p.evaluate(() => document.querySelector('#chapter-wallet').scrollIntoView({ behavior: 'instant' }));
   await capture({ path: `${out}/handoff-000.png` });
-  let previous = 0;
-  for (const percent of [20, 40, 50, 60, 80, 100]) {
-   await p.mouse.wheel({ deltaY: (percent - previous) / 100 * (mobile ? 844 : 900) });
-   if (percent < 100) await p.waitForFunction(value => Math.abs(+document.querySelector('.letter-atelier').dataset.handoffProgress - value) < .002, {}, percent / 100);
-   else await p.waitForFunction(() => !document.documentElement.dataset.voucherLetterHandoff);
-   await capture({ path: `${out}/handoff-${String(percent).padStart(3,'0')}.png` });
-   previous = percent;
-  }
+  await p.mouse.wheel({ deltaY: 120 });
+  await p.waitForFunction(() => !document.documentElement.dataset.voucherLetterHandoff && ['active','completing'].includes(document.querySelector('#chapter-letter').dataset.chapterState));
+  await capture({ path: `${out}/handoff-100.png` });
  } else await p.click('.scene-next');
  await p.waitForFunction(() => document.querySelector('#chapter-letter').dataset.chapterState === 'active' && !document.documentElement.dataset.voucherLetterHandoff);
  if (mobile) await p.evaluate(() => document.querySelector('.letter-bloom-garden').scrollIntoView({ block: 'end', behavior: 'instant' }));

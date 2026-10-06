@@ -24,6 +24,8 @@ $env:TEST_URL='http://127.0.0.1:3334'
 node tests/finale-workflow.mjs smoke
 node tests/finale-workflow.mjs smoke --mobile
 node tests/letter-bloom.mjs
+node tests/journey-scroll-audit.mjs
+node tests/journey-scroll-audit.mjs --mobile
 ```
 
 `node_modules/`, `dist/` và `docs/` là thư viện hoặc kết quả được sinh lại, không đưa vào Git.

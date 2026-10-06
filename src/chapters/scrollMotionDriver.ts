@@ -31,6 +31,7 @@ export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finis
   let previousTime = timing.now();
   let disposed = false;
   let automatic: { start: number; from: number; duration: number } | null = null;
+  let direction = 0, directionalTravel = 0, intent = 0;
   const clamp = (n: number) => Math.max(0, Math.min(1, n));
   const dispose = () => {
     if (disposed) return;
@@ -89,8 +90,19 @@ export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finis
   const driver = {
     move: (delta: number) => {
       if (disposed || !Number.isFinite(delta)) return;
+      if (!delta) return;
+      const sign = Math.sign(delta);
+      directionalTravel = sign === direction ? directionalTravel + Math.abs(delta) : Math.abs(delta);
+      direction = sign;
+      // Ignore tiny direction noise, but honor a deliberate reversal immediately.
+      if (directionalTravel >= 40) intent = sign;
       const next = (automatic ? position : target) + delta / travel;
       seek(next, false);
+    },
+    release: () => {
+      if (disposed || automatic) return;
+      // Keep the spring's velocity so releasing the wheel/finger does not restart motion.
+      seek(intent ? (intent > 0 ? 1 : 0) : (target < .5 ? 0 : 1), false);
     },
     seek,
     cancel: () => seek(reverse ? 1 : 0),

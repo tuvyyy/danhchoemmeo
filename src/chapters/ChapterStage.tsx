@@ -21,13 +21,15 @@ export default function ChapterStage({ meta, children, className = "" }: Chapter
       data-scene-effect={CHAPTER_EFFECTS[meta.id]}
       data-chapter-state={state}
       tabIndex={-1}
+      style={{ touchAction: 'pan-x pinch-zoom' }}
       ref={(el) => registerStageRef(meta.index, el)}
       className={`relative min-h-screen min-h-[100svh] w-full outline-none transition-colors ${className}`}
       aria-label={`${meta.label} (Chương ${meta.index + 1})`}
     >
       <div
         data-chapter-content={meta.id}
-        inert={state !== 'active' && state !== 'completing'}
+        inert={state !== 'active' && state !== 'completing' && state !== 'leaving'}
+        onClickCapture={event => { if (state === 'leaving') { event.preventDefault(); event.stopPropagation(); } }}
         ref={(el) => registerContentRef(meta.index, el)}
         className="relative h-full min-h-[100svh] w-full"
       >

@@ -10,8 +10,9 @@ import { momentsAnniversaryHandoff } from "./momentsAnniversaryHandoff";
 import { anniversaryFinaleHandoff } from "./anniversaryFinaleHandoff";
 import { heroGardenHandoff } from "./heroGardenHandoff";
 import { smoothChapterScroll } from "./smoothChapterScroll";
+import { chapterScrollGesture } from "./chapterScrollGesture";
 
-type Driver = { move:(delta:number)=>void; cancel:()=>void; settle:()=>void; dispose:()=>void };
+type Driver = { move:(delta:number)=>void; release?:()=>void; cancel:()=>void; settle:()=>void; dispose:()=>void };
 const ChapterFlowContext = createContext<ChapterFlowContextValue | null>(null);
 export function ChapterFlowProvider({children}:{children:ReactNode}) {
  const [unlockedThrough,setUnlockedThrough]=useState(0);
@@ -20,6 +21,7 @@ export function ChapterFlowProvider({children}:{children:ReactNode}) {
  const [isTransitioning,setIsTransitioning]=useState(false);
  const busy=useRef(false),destination=useRef<number|null>(null),current=useRef(0),unlocked=useRef(0);
  const driver=useRef<Driver|null>(null);
+ const gesture=useRef<ReturnType<typeof chapterScrollGesture>|null>(null);
  const cancelReadingScroll=useRef<(()=>void)|null>(null);
  const stageRefs=useRef<(HTMLElement|null)[]>([]),contentRefs=useRef<(HTMLElement|null)[]>([]);
  current.current=currentChapter;unlocked.current=unlockedThrough;
@@ -44,6 +46,7 @@ export function ChapterFlowProvider({children}:{children:ReactNode}) {
   const finish=(atPrevious=reverse)=>{
    const index=adjacent?(atPrevious?pair:pair+1):targetIndex;
    const stage=stageRefs.current[index];driver.current=null;
+   gesture.current?.landed();
    if(stage)window.scrollTo({top:index===pair&&(pair===1||pair>=3)?stage.offsetTop+Math.max(0,stage.offsetHeight-innerHeight):stage.offsetTop,behavior:"instant"});
    current.current=index;setCurrentChapter(index);stage?.focus({preventScroll:true});busy.current=false;destination.current=null;setIsTransitioning(false);
   };
@@ -76,7 +79,9 @@ export function ChapterFlowProvider({children}:{children:ReactNode}) {
   window.addEventListener('resize',resize);return()=>{window.removeEventListener('resize',resize);driver.current?.dispose();};
  },[]);
  useEffect(()=>{
-  let touchY=0,touchX=0;
+  let touchId=-1,touchY=0,touchStartY=0,touchStartX=0,touchTime=0,touchSpeed=0,touchVertical=false,touchTransitioned=false;
+  const inputGesture=chapterScrollGesture(()=>driver.current?.release?.());
+  gesture.current=inputGesture;
   const blocked=()=>!!document.querySelector('[role="dialog"],[aria-modal="true"],.ticket-inspection-backdrop,.spider-split')||document.body.style.overflow==='hidden';
   const editable=(target:EventTarget|null)=>target instanceof Element&&!!target.closest('input,textarea,select,[contenteditable="true"]');
   const boundary=(delta:number)=>{
@@ -87,9 +92,9 @@ export function ChapterFlowProvider({children}:{children:ReactNode}) {
     if(index===2&&!stage.querySelector('.chapter-envelope-scene[data-state="open"]'))return true;
     if(index===3&&!stage.querySelector('.letter-atelier[data-open="true"]'))return true;
     if(index===4&&!stage.querySelector('.memory-table[data-seen="4"]'))return true;
-    executeTransition(index+1,{scrollDelta:delta});return true;
+    executeTransition(index+1,{scrollDelta:delta});inputGesture.settleIfReleased();return true;
    }
-   if(delta<0&&rect.top>=-2&&index>0){executeTransition(index-1,{scrollDelta:delta});return true;}
+   if(delta<0&&rect.top>=-2&&index>0){executeTransition(index-1,{scrollDelta:delta});inputGesture.settleIfReleased();return true;}
    return false;
   };
   const readingScroll=smoothChapterScroll({
@@ -105,17 +110,37 @@ export function ChapterFlowProvider({children}:{children:ReactNode}) {
    }
    return false;
   };
-  const clampEdge=(delta:number)=>{
-   const stage=stageRefs.current[current.current];if(!stage)return false;
-   const r=stage.getBoundingClientRect(),remaining=delta>0?r.bottom-innerHeight:-r.top;
-   if(remaining>0&&Math.abs(delta)>remaining){const travel=delta>0?remaining:-remaining;scrollBy(0,travel);boundary(delta-travel);return true;}return false;
+  const wheel=(e:WheelEvent)=>{if(e.ctrlKey||blocked()||editable(e.target)||nestedScroll(e.target)||Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;const d=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?innerHeight:1);if(!inputGesture.input('wheel',false,e.timeStamp)){e.preventDefault();return;}if(driver.current){driver.current.move(d);e.preventDefault();}else if(!busy.current&&readingScroll.move(d))e.preventDefault();};
+  const start=(e:PointerEvent)=>{
+   if(e.pointerType!=='touch'||!e.isPrimary||blocked()||editable(e.target)||nestedScroll(e.target))return;
+   readingScroll.cancel();inputGesture.startTouch();touchId=e.pointerId;
+   touchY=touchStartY=e.clientY;touchStartX=e.clientX;touchTime=e.timeStamp;touchSpeed=0;touchVertical=false;touchTransitioned=!!driver.current;
   };
-  const wheel=(e:WheelEvent)=>{if(e.ctrlKey||blocked()||editable(e.target)||nestedScroll(e.target)||Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;const d=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?innerHeight:1);if(driver.current){driver.current.move(d);e.preventDefault();}else if(!busy.current&&readingScroll.move(d))e.preventDefault();};
-  const start=(e:TouchEvent)=>{readingScroll.cancel();if(e.touches.length!==1)return;touchY=e.touches[0].clientY;touchX=e.touches[0].clientX;};
-  const move=(e:TouchEvent)=>{if(e.touches.length!==1||blocked()||editable(e.target))return;const y=e.touches[0].clientY,x=e.touches[0].clientX,d=touchY-y;const vertical=Math.abs(d)>Math.max(1,Math.abs(touchX-x));touchY=y;touchX=x;if(vertical&&(boundary(d)||clampEdge(d))&&e.cancelable)e.preventDefault();};
-  const key=(e:KeyboardEvent)=>{if(blocked()||editable(e.target)||nestedScroll(e.target))return;if(e.key==='Escape'&&driver.current){driver.current.cancel();e.preventDefault();return;}if((e.target as Element).closest('button,a'))return;const d=['ArrowDown','PageDown',' '].includes(e.key)?130:['ArrowUp','PageUp'].includes(e.key)?-130:0;if(d){if(driver.current){driver.current.move(d);e.preventDefault();}else if(!busy.current&&readingScroll.move(d))e.preventDefault();}};
-  window.addEventListener('wheel',wheel,{passive:false});window.addEventListener('touchstart',start,{passive:true});window.addEventListener('touchmove',move,{passive:false});window.addEventListener('keydown',key);
-  return()=>{readingScroll.cancel();cancelReadingScroll.current=null;window.removeEventListener('wheel',wheel);window.removeEventListener('touchstart',start);window.removeEventListener('touchmove',move);window.removeEventListener('keydown',key);};
+  const move=(e:PointerEvent)=>{
+   if(e.pointerType!=='touch'||e.pointerId!==touchId||blocked())return;
+   if(!touchVertical){
+    if(Math.abs(touchStartY-e.clientY)<=Math.max(8,Math.abs(touchStartX-e.clientX)*1.15))return;
+    touchVertical=true;
+    // Capture on a stable root: video captions and transformed children can be replaced mid-gesture.
+    document.documentElement.setPointerCapture(e.pointerId);
+   }
+   const delta=touchY-e.clientY,dt=Math.max(8,e.timeStamp-touchTime);
+   touchSpeed=touchSpeed*.4+delta/dt*1000*.6;touchY=e.clientY;touchTime=e.timeStamp;
+   e.preventDefault();
+   if(!inputGesture.input('touch'))return;
+   if(driver.current){touchTransitioned=true;driver.current.move(delta);}
+   else if(!busy.current){readingScroll.move(delta,true);if(driver.current)touchTransitioned=true;}
+  };
+  const end=(e:PointerEvent)=>{
+   if(e.pointerId!==touchId)return;touchId=-1;
+   // A short, bounded glide stays inside the reading chapter; handoff owns the remaining distance.
+   if(e.type==='pointerup'&&touchVertical&&!touchTransitioned&&!blocked()&&e.timeStamp-touchTime<80&&Math.abs(touchSpeed)>200)
+    readingScroll.move(Math.max(-180,Math.min(180,touchSpeed*.08)));
+   inputGesture.end();
+  };
+  const key=(e:KeyboardEvent)=>{if(blocked()||editable(e.target)||nestedScroll(e.target))return;if(e.key==='Escape'&&driver.current){inputGesture.cancel();driver.current.cancel();e.preventDefault();return;}if((e.target as Element).closest('button,a'))return;const d=['ArrowDown','PageDown',' '].includes(e.key)?130:['ArrowUp','PageUp'].includes(e.key)?-130:0;if(d){if(!inputGesture.input('key',e.repeat)){e.preventDefault();return;}if(driver.current){driver.current.move(d);e.preventDefault();}else if(!busy.current&&readingScroll.move(d))e.preventDefault();}};
+  window.addEventListener('wheel',wheel,{passive:false});window.addEventListener('pointerdown',start,{passive:true});window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',end,{passive:true});window.addEventListener('pointercancel',end,{passive:true});window.addEventListener('keydown',key);
+  return()=>{readingScroll.cancel();inputGesture.cancel();gesture.current=null;cancelReadingScroll.current=null;window.removeEventListener('wheel',wheel);window.removeEventListener('pointerdown',start);window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',end);window.removeEventListener('pointercancel',end);window.removeEventListener('keydown',key);};
  },[executeTransition]);
  useEffect(()=>{
   const observer=new IntersectionObserver(()=>{

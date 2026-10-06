@@ -7,4 +7,9 @@ h.driver.move(9999);for(let i=0;i<100;i++)h.step();assert.deepEqual(h.finishes,[
 const e=harness();e.driver.move(399);for(let i=0;i<30;i++)e.step();e.driver.cancel();for(let i=0;i<100;i++)e.step();assert.deepEqual(e.finishes,[true]);
 const r=harness(true);r.driver.move(-199);for(let i=0;i<100;i++)r.step();r.driver.cancel();for(let i=0;i<100;i++)r.step();assert.deepEqual(r.finishes,[false]);
 const d=harness();d.driver.move(NaN);d.driver.move(Infinity);d.step(20000);assert(d.values.every(Number.isFinite));d.driver.dispose();assert.equal(d.callbacks.size,0);
+const short=harness();short.driver.move(119);for(let i=0;i<8;i++)short.step();short.driver.release();for(let i=0;i<100;i++)short.step();assert.deepEqual(short.finishes,[false],'A short intentional wheel gesture completes the chapter');assert.equal(short.callbacks.size,0);
+const tiny=harness();tiny.driver.move(5);tiny.driver.release();for(let i=0;i<100;i++)tiny.step();assert.deepEqual(tiny.finishes,[true],'Tiny accidental motion returns to the starting chapter');
+const backwards=harness(true);backwards.driver.move(-119);backwards.driver.release();for(let i=0;i<100;i++)backwards.step();assert.deepEqual(backwards.finishes,[true],'A short reverse gesture reaches the previous chapter');
+const turn=harness();turn.driver.move(399);for(let i=0;i<8;i++)turn.step();turn.driver.move(-80);turn.driver.release();for(let i=0;i<100;i++)turn.step();assert.deepEqual(turn.finishes,[true],'Deliberately reversing before release returns to the outgoing chapter');
+const noise=harness();noise.driver.move(119);noise.driver.move(-2);noise.driver.release();for(let i=0;i<100;i++)noise.step();assert.deepEqual(noise.finishes,[false],'Small trackpad direction noise does not cancel an intentional gesture');
 console.log('PASS: 180 reversals, one frame loop, idle sleep, bounded progress, endpoint once, Escape both directions, suspended frames and disposal');

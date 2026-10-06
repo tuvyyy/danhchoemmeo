@@ -1,0 +1,16 @@
+.chapter-cursor__shape {
+  position:relative;
+  color:var(--cursor-accent);
+  transform-origin:6px 4px;
+  transition:transform .15s ease-out,filter .18s ease-out;
+  filter:drop-shadow(0 2px 4px #0009);
+}
+.chapter-cursor__shape svg { display:block; }
+.custom-cursor-enabled .hero-gallery__cursor { display:none; }
+.chapter-cursor__shape[data-hovering="true"] { filter:drop-shadow(0 0 6px var(--cursor-accent)) drop-shadow(0 2px 4px #0009); }
+.chapter-cursor__art { animation:chapter-cursor-arrive .22s ease-out both;transform-origin:6px 4px; }
+@keyframes chapter-cursor-arrive { from { opacity:0;transform:scale(.8); } to { opacity:1;transform:scale(1); } }
+@media(prefers-reduced-motion:reduce) {
+  .chapter-cursor__shape { transition:none; }
+  .chapter-cursor__art { animation:none; }
+}

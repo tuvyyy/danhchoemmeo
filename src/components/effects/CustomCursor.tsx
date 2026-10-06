@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useChapterFlow } from "@/chapters/useChapterFlow";
 import { useSceneExperience } from "./SceneExperience";
+import ChapterCursorShape, { CHAPTER_CURSOR_THEMES } from "./ChapterCursorShape";
+import "./chapter-cursor.css";
 
 interface TrailParticle {
   x: number;
@@ -16,15 +18,10 @@ interface TrailParticle {
   rotSpeed: number;
 }
 
-const TRAIL_COLORS = [
-  "rgba(244, 143, 177, ", // rose pink
-  "rgba(231, 185, 106, ", // warm gold
-  "rgba(255, 182, 193, ", // light pink
-  "rgba(255, 235, 180, ", // pale gold
-];
-
 export default function CustomCursor() {
-  const { isTransitioning } = useChapterFlow();
+  const { currentChapter, isTransitioning } = useChapterFlow();
+  const theme = CHAPTER_CURSOR_THEMES[currentChapter] ?? CHAPTER_CURSOR_THEMES[0];
+  const themeRef = useRef(theme); themeRef.current = theme;
   const { overlayOpen } = useSceneExperience();
   const paused = isTransitioning || overlayOpen;
   const pausedRef = useRef(paused); pausedRef.current = paused;
@@ -45,12 +42,7 @@ export default function CustomCursor() {
 
   useEffect(() => {
     // Only enable for desktop pointer devices with fine control (mouse / trackpad)
-    const isTouch =
-      window.matchMedia("(pointer: coarse)").matches ||
-      "ontouchstart" in window ||
-      navigator.maxTouchPoints > 0;
-
-    if (isTouch) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
     setEnabled(true);
 
@@ -90,15 +82,8 @@ export default function CustomCursor() {
         // Spawn 1 or 2 gentle trail sparkles / hearts
         const count = Math.random() > 0.6 ? 2 : 1;
         for (let k = 0; k < count; k++) {
-          const colorBase =
-            TRAIL_COLORS[Math.floor(Math.random() * TRAIL_COLORS.length)];
-          const types: ("heart" | "star" | "bubble")[] = [
-            "star",
-            "heart",
-            "star",
-            "bubble",
-          ];
-          const type = types[Math.floor(Math.random() * types.length)];
+          const colorBase = themeRef.current.trail;
+          const type = themeRef.current.particle;
 
           particles.current.push({
             x: e.clientX + (Math.random() * 12 - 6),
@@ -132,8 +117,7 @@ export default function CustomCursor() {
       for (let i = 0; i < 10; i++) {
         const angle = (i / 10) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
         const speed = 2.4 + Math.random() * 2.8;
-        const colorBase =
-          TRAIL_COLORS[Math.floor(Math.random() * TRAIL_COLORS.length)];
+        const colorBase = themeRef.current.trail;
 
         particles.current.push({
           x: e.clientX,
@@ -144,7 +128,7 @@ export default function CustomCursor() {
           alpha: 1,
           decay: 0.02 + Math.random() * 0.01,
           color: colorBase,
-          type: Math.random() > 0.35 ? "heart" : "star",
+          type: themeRef.current.particle,
           rotation: Math.random() * Math.PI * 2,
           rotSpeed: (Math.random() - 0.5) * 0.15,
         });
@@ -181,9 +165,19 @@ export default function CustomCursor() {
   }, []);
 
   useEffect(() => {
-    document.body.classList.toggle("custom-cursor-enabled", enabled && !paused);
+    document.body.classList.toggle("custom-cursor-enabled", enabled && !paused && isVisible);
     return () => document.body.classList.remove("custom-cursor-enabled");
-  }, [enabled, paused]);
+  }, [enabled, paused, isVisible]);
+
+  useEffect(() => {
+    // Discard the previous chapter's trail and resume at the actual pointer.
+    particles.current = [];
+    lastSpawnPos.current = { ...mousePos.current };
+    currentPos.current = { ...mousePos.current };
+    setIsHovering(false);
+    setIsClicking(false);
+    wakeRef.current();
+  }, [currentChapter]);
 
   // Sleep when the pointer settles, and release the canvas during scene changes.
   useEffect(() => {
@@ -361,163 +355,23 @@ export default function CustomCursor() {
         className="pointer-events-none fixed inset-0 z-[9998]"
       />
 
-      {/* Interactive Cat Paw Cursor */}
       <div
         ref={cursorRef}
-        data-custom-cursor
+        data-custom-cursor={theme.shape}
+        data-cursor-chapter={currentChapter}
         aria-hidden
         className="pointer-events-none fixed left-0 top-0 z-[9999] will-change-transform"
         style={{
           opacity: isVisible && !paused ? 1 : 0,
-          transition: "opacity 0.25s ease-out",
-        }}
+          transition: "opacity 0.2s ease-out",
+          '--cursor-accent': theme.accent,
+        } as CSSProperties}
       >
-        <div
-          className="relative select-none transition-transform duration-150 ease-out"
-          style={{
-            // Hotspot adjustment: top-left pointing toe pad touches exact click coordinate (0, 0)
-            transform: `translate(-7px, -5px) scale(${
-              isClicking ? 0.84 : isHovering ? 1.22 : 1
-            }) rotate(${isClicking ? -22 : isHovering ? -6 : -14}deg)`,
-            transformOrigin: "7px 5px",
-            filter: isHovering
-              ? "drop-shadow(0 0 14px rgba(255,105,180,0.85)) drop-shadow(0 0 4px rgba(255,215,0,0.6))"
-              : isClicking
-              ? "drop-shadow(0 0 16px rgba(255,64,129,0.9))"
-              : "drop-shadow(0 3px 8px rgba(0,0,0,0.45)) drop-shadow(0 1px 4px rgba(244,143,177,0.5))",
-          }}
-        >
-          <svg
-            width="34"
-            height="34"
-            viewBox="0 0 34 34"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Outer Paw Cushion Silhouette (Warm white cream with strawberry glow) */}
-            <path
-              d="M7 15C5 18 4 23 6 27C8 31 13 33 18 33C23 33 28 31 30 27C32 23 31 18 29 15C27 12 24 11 21 12C19 9 15 9 13 12C10 11 8 12 7 15Z"
-              fill="#fffafc"
-              stroke="#ffb6c1"
-              strokeWidth="1.6"
-              strokeLinejoin="round"
-            />
-
-            {/* Central Heart Palm Pad (Đệm thịt chính giữa) */}
-            <path
-              d="M18 28.5C14.5 28.5 12 25.5 12 22.5C12 19.8 14.5 17.8 18 19.2C21.5 17.8 24 19.8 24 22.5C24 25.5 21.5 28.5 18 28.5Z"
-              fill="url(#catPadGrad)"
-            />
-            {/* Heart highlight shine */}
-            <path
-              d="M15.5 21C14.5 21.5 13.5 23 13.5 24"
-              stroke="#ffffff"
-              strokeWidth="0.8"
-              strokeLinecap="round"
-              opacity="0.65"
-            />
-
-            {/* 4 Little Toe Beans (4 đệm ngón xinh) */}
-            {/* Toe 1: Top-Left Pointing Toe (Tâm điểm bấm chuột) */}
-            <ellipse
-              cx="9"
-              cy="10.5"
-              rx="3.2"
-              ry="4"
-              transform="rotate(-22 9 10.5)"
-              fill="url(#catPadGrad)"
-            />
-            <ellipse
-              cx="8.2"
-              cy="9.8"
-              rx="1.2"
-              ry="1.8"
-              transform="rotate(-22 8.2 9.8)"
-              fill="#ffffff"
-              opacity="0.65"
-            />
-
-            {/* Toe 2: Middle-Left */}
-            <ellipse
-              cx="14.5"
-              cy="6.8"
-              rx="3.2"
-              ry="4.2"
-              transform="rotate(-6 14.5 6.8)"
-              fill="url(#catPadGrad)"
-            />
-            <ellipse
-              cx="13.8"
-              cy="6"
-              rx="1.2"
-              ry="1.8"
-              transform="rotate(-6 13.8 6)"
-              fill="#ffffff"
-              opacity="0.65"
-            />
-
-            {/* Toe 3: Middle-Right */}
-            <ellipse
-              cx="21"
-              cy="6.8"
-              rx="3.2"
-              ry="4.2"
-              transform="rotate(6 21 6.8)"
-              fill="url(#catPadGrad)"
-            />
-            <ellipse
-              cx="20.3"
-              cy="6"
-              rx="1.2"
-              ry="1.8"
-              transform="rotate(6 20.3 6)"
-              fill="#ffffff"
-              opacity="0.65"
-            />
-
-            {/* Toe 4: Right */}
-            <ellipse
-              cx="26.5"
-              cy="10.5"
-              rx="3.2"
-              ry="4"
-              transform="rotate(22 26.5 10.5)"
-              fill="url(#catPadGrad)"
-            />
-            <ellipse
-              cx="25.8"
-              cy="9.8"
-              rx="1.2"
-              ry="1.8"
-              transform="rotate(22 25.8 9.8)"
-              fill="#ffffff"
-              opacity="0.65"
-            />
-
-            {/* Gradient definition */}
-            <defs>
-              <linearGradient
-                id="catPadGrad"
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-              >
-                <stop offset="0%" stopColor="#ff7597" />
-                <stop offset="100%" stopColor="#e84a6f" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          {/* Tiny spark dot when hovering */}
-          {isHovering && (
-            <span
-              aria-hidden
-              className="absolute -top-1 -right-1 flex h-2 w-2 items-center justify-center text-[10px] text-gold animate-ping"
-            >
-              ✦
-            </span>
-          )}
+        <div className="chapter-cursor__shape" data-hovering={isHovering}
+          style={{ transform: `translate(-6px, -4px) scale(${isClicking ? .86 : isHovering ? 1.12 : 1})` }}>
+          <div key={theme.shape} className="chapter-cursor__art">
+            <ChapterCursorShape shape={theme.shape} />
+          </div>
         </div>
       </div>
     </>

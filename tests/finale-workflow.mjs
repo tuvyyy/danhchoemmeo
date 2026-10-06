@@ -18,6 +18,21 @@ try {
  const stable=id=>p.waitForFunction(id=>['active','completing'].includes(document.querySelector(`#chapter-${id}`)?.dataset.chapterState)&&!Object.keys(document.documentElement.dataset).some(k=>k.endsWith('Handoff')),{},id);
  const edge=id=>p.evaluate(id=>{const s=document.querySelector(`#chapter-${id}`);scrollTo({top:s.offsetTop+Math.max(0,s.offsetHeight-innerHeight),behavior:'instant'});},id);
  const click=selector=>p.$eval(selector,e=>e.click());
+ const cursorShapes=new Set();
+ const expectCursor=async (chapter,shape)=>{
+  if(mobile||chapter===6){
+   assert.equal(await p.$('[data-custom-cursor]'),null,'Touch devices and the finale keep their native cursor');
+   assert.equal(await p.evaluate(()=>document.body.classList.contains('custom-cursor-enabled')),false);
+   return;
+  }
+  await p.mouse.move(70,100);
+  await p.waitForFunction(({chapter,shape})=>{
+   const cursor=document.querySelector('[data-custom-cursor]');
+   return cursor?.dataset.customCursor===shape&&+cursor.dataset.cursorChapter===chapter&&+getComputedStyle(cursor).opacity===1&&document.body.classList.contains('custom-cursor-enabled');
+  },{},{chapter,shape});
+  cursorShapes.add(await p.$$eval('[data-custom-cursor] svg path',paths=>paths.map(path=>path.getAttribute('d')).join('|')));
+  assert.equal(await p.$eval('[data-custom-cursor]',e=>getComputedStyle(e).pointerEvents),'none','The cursor never blocks clicks');
+ };
  const lightingSheet=async name=>{
   if(name==='flicker'){
    await p.evaluate(()=>{window.fireStyles=[...document.querySelectorAll('.candle-flame,.candle-room-glow i')].map(element=>({element,style:element.getAttribute('style')}));for(const {element} of window.fireStyles){element.style.animationName='none';element.style.animationPlayState='paused';}document.querySelector('.candle-flame').getBoundingClientRect();});
@@ -56,14 +71,23 @@ try {
  };
  await p.goto(process.env.JOURNEY_URL||'http://127.0.0.1:3334',{waitUntil:'networkidle2'});
  await p.waitForSelector('.gallery-loader',{hidden:true});await p.click('.garden-gate__enter');await p.waitForSelector('.entrance-gate',{hidden:true});
- await click('.cinematic-hero__cta');await stable('flowers');await edge('flowers');await click('.nature-bloom__footer button');
- await stable('wallet');await p.waitForFunction(()=>document.querySelector('.envelope__seal')?.disabled===false);await p.click('.envelope__seal');
+ await expectCursor(0,'paw');
+ await click('.cinematic-hero__cta');await stable('flowers');await expectCursor(1,'tulip');await edge('flowers');await click('.nature-bloom__footer button');
+ await stable('wallet');await expectCursor(2,'gift');await p.waitForFunction(()=>document.querySelector('.envelope__seal')?.disabled===false);await p.click('.envelope__seal');
  await p.waitForSelector('.chapter-envelope-scene[data-state="open"]');await click('.scene-next');await stable('letter');
  assert.equal(await p.$eval('.letter-atelier',e=>e.dataset.open),'true','the book handoff arrives with the letter open');
- await edge('letter');await click('.letter-next');await stable('moments');
+ await expectCursor(3,'quill');
+ if(!mobile){
+  await p.click('.letter-page__read');await p.waitForSelector('.letter-reader');
+  await p.waitForFunction(()=>!document.body.classList.contains('custom-cursor-enabled')&&+getComputedStyle(document.querySelector('[data-custom-cursor]')).opacity===0);
+  await p.keyboard.press('Escape');await p.waitForSelector('.letter-reader',{hidden:true});await expectCursor(3,'quill');
+ }
+ await edge('letter');await click('.letter-next');await stable('moments');await expectCursor(4,'camera');
  for(let i=0;i<4;i++)await click(`.memory-print[data-index="${i}"]`);
  await wait(reduced?100:950);await edge('moments');await click('.moments-next');await stable('anniversary');
+ await expectCursor(5,'heart');if(!mobile)assert.equal(cursorShapes.size,6,'Each chapter has a distinct silhouette');
  await edge('anniversary');if(transitions)await boundary(false);else {await click('.together-next');await stable('finale');}
+ await expectCursor(6,'wind');
  await p.waitForFunction(()=>document.querySelector('.birthday-cake img')?.complete&&document.querySelector('.birthday-cake img')?.naturalWidth>0);
  await p.waitForFunction(()=>[...document.querySelectorAll('.butterfly-wing img')].every(e=>e.complete&&e.naturalWidth>0));
  assert.equal(await p.$$eval('.butterfly-flight',es=>es.length),6,'Add two butterflies');
@@ -126,10 +150,12 @@ try {
  await p.evaluate(()=>scrollTo({top:document.querySelector('#chapter-finale').offsetTop,behavior:'instant'}));
  if(transitions)await boundary(true);else {await p.mouse.wheel({deltaY:-(mobile?844:900)});await stable('anniversary');}
  assert.equal(await p.$eval('.butterfly-flight',e=>getComputedStyle(e).animationPlayState),'paused','flight stops after leaving the finale');
+ await expectCursor(5,'heart');
  await click('.together-next');await stable('finale');
  assert.equal(await p.$eval('.celebration-scene',e=>e.dataset.blown),'true','the wish persists across chapter re-entry');
  assert.equal(await p.$eval('.candle-flame',e=>+getComputedStyle(e).opacity),0);
  await p.click('.revisit-btn');await stable('hero');assert.equal(await p.evaluate(()=>document.activeElement.id),'chapter-hero');
+ await expectCursor(0,'paw');
  assert.deepEqual(errors,[]);
- console.log(`${out}: PASS wind gesture, harmless motion, anchored candle, keyboard focus, relight, retained wish, replay and reduced=${reduced}`);
+ console.log(`${out}: PASS chapter cursor routing, overlay restoration, wind gesture, anchored candle, keyboard focus, relight, retained wish, replay and reduced=${reduced}`);
 }finally{await browser.close();}

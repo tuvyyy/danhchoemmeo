@@ -287,7 +287,7 @@ html {
   }
 }
 
-/* Custom Cat Paw Cursor: Hide default mouse pointer on desktop fine devices */
+/* Chapter cursor replaces the default pointer only while it is visible and active. */
 @media (pointer: fine) {
   body.custom-cursor-enabled,
   body.custom-cursor-enabled * {

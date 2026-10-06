@@ -16,6 +16,8 @@ try {
  await p.click('.garden-gate__enter'); await p.waitForSelector('.entrance-gate', { hidden: true });
  await p.click('.hero-gallery .cinematic-hero__cta');
  await p.waitForFunction(() => document.querySelector('#chapter-flowers').dataset.chapterState === 'active');
+ await p.waitForFunction(() => { const video = document.querySelector('#chapter-flowers .garden-video'); return video && video.videoWidth > 0 && !video.paused; });
+ assert.equal(await p.$('#chapter-flowers .letter-bloom-garden'), null, 'Keep the video chapter separate from the restored garden');
  await p.evaluate(() => document.querySelector('.nature-bloom__footer button').scrollIntoView({block:'center',behavior:'instant'}));
  await wait(300);
  await p.click('.nature-bloom__footer button');
@@ -40,13 +42,16 @@ try {
  if (mobile) await p.evaluate(() => document.querySelector('.letter-bloom-garden').scrollIntoView({ block: 'end', behavior: 'instant' }));
  await p.waitForSelector('.letter-bloom-garden[data-running="true"]');
  assert.equal(await p.$$eval('.letter-bloom-garden canvas', es => es.length), 15);
- assert.equal(await p.$('.letter-bloom-garden__grass'), null, 'The flowers are cutouts without a meadow behind them');
+ assert.equal(await p.$$eval('.letter-bloom-garden__grass', es => es.length), 3, 'The original three grass layers return');
+ assert(await p.$$eval('.letter-bloom-garden__grass', es => es.every(e => e.complete && e.naturalWidth > 0)), 'Grass assets load');
+ assert.equal(await p.$('.letter-atelier__intro'), null, 'Remove the left introduction');
+ if (!mobile) assert(await p.evaluate(() => document.querySelector('.letter-keepsake').getBoundingClientRect().right < document.querySelector('[data-flower-main]').getBoundingClientRect().left), 'Letter left, garden right');
  assert.equal(requests.some(url => url.includes('/letter-garden/garden-dusk.webp')), false, 'No scenic background image loads behind the cluster');
  await p.screenshot({ path: `${out}/01-buds.png` });
  if (!reduced && process.argv.includes('--frames')) {
   const started = Date.now();
   for (const percent of [0, 20, 40, 50, 60, 80, 100]) {
-   await wait(Math.max(0, percent / 100 * 7600 - (Date.now() - started)));
+   await wait(Math.max(0, percent / 100 * 5000 - (Date.now() - started)));
    await p.screenshot({ path: `${out}/bloom-${String(percent).padStart(3, '0')}.png` });
   }
  } else if (!reduced) {
@@ -58,6 +63,7 @@ try {
  await p.waitForSelector('.letter-bloom-garden[data-bloomed="true"]', { timeout: 20000 });
  await p.screenshot({ path: `${out}/03-bloomed.png` });
  assert.equal(await p.$$eval('.letter-bloom-garden canvas[data-bloom-stage="6"]', es => es.length), 13);
+ if (mobile) await p.evaluate(() => document.querySelector('.letter-desk').scrollIntoView({ block: 'start', behavior: 'instant' }));
  await p.click('.letter-desk__controls button:last-child');
  await wait(reduced ? 30 : 1150);
  await p.screenshot({ path: `${out}/03-cover-closed.png` });
@@ -73,5 +79,5 @@ try {
  await p.waitForFunction(() => document.querySelector('#chapter-moments').dataset.chapterState === 'active');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
  assert.deepEqual(errors, []);
- console.log(`${out}: PASS 15 blooms, delayed animation, no premature playback, reader/pagination, pause, next chapter, no overflow/errors`);
+ console.log(`${out}: PASS preserved video, 15 staggered blooms, original grass, letter left, no premature playback, reader/pagination, pause, next chapter, no overflow/errors`);
 } finally { await browser.close(); }

@@ -1,23 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import FlowerBloomCanvas from './FlowerBloomCanvas';
-import TulipBloom from './TulipBloom';
-import './letter-bloom-garden.css';
+import TulipBloom, { preloadTulipSequence } from './TulipBloom';
+import { preloadBloomSequence } from '@/lib/assets/preloadBloomSequence';
+import FlowerAtmosphere from './FlowerAtmosphere';
 
-// The original bloom sequences, gathered into a fan-shaped cluster at the letter.
+// Restored from the pre-video garden in 624a0c0; preserve its planting and bloom order.
 const TULIPS = [
-  { id: 'letter-ivory-left', x: 24, y: 2, scale: 0.86, rotate: -25, delay: 1000, depth: 'foreground' },
-  { id: 'letter-ivory-right', x: 71, y: 1, scale: 1.03, rotate: 20, delay: 1800, depth: 'foreground' },
-  { id: 'letter-ivory-back', x: 41, y: 8, scale: 0.96, rotate: -9, delay: 2600, depth: 'background' },
-  { id: 'letter-butter-left', x: 33, y: 0, scale: 0.77, rotate: -19, delay: 1400, depth: 'foreground', color: 'butter' },
-  { id: 'letter-lavender-left', x: 35, y: 10, scale: 0.95, rotate: -16, delay: 2200, depth: 'background', color: 'lavender' },
-  { id: 'letter-coral-left', x: 40, y: 0, scale: 0.71, rotate: -12, delay: 1700, depth: 'foreground', color: 'coral' },
-  { id: 'letter-butter-middle', x: 49, y: 6, scale: 0.94, rotate: -4, delay: 2800, depth: 'midground', color: 'butter' },
-  { id: 'letter-coral-right', x: 65, y: 2, scale: 0.84, rotate: 16, delay: 2400, depth: 'foreground', color: 'coral' },
-  { id: 'letter-lavender-right', x: 66, y: 11, scale: 1.04, rotate: 14, delay: 3400, depth: 'background', color: 'lavender' },
-  { id: 'letter-butter-edge', x: 76, y: 0, scale: 0.72, rotate: 27, delay: 3100, depth: 'foreground', color: 'butter' },
-  { id: 'letter-lavender-front', x: 59, y: 0, scale: 0.65, rotate: 7, delay: 3800, depth: 'foreground', color: 'lavender' },
-  { id: 'letter-coral-front', x: 53, y: 0, scale: 0.7, rotate: -6, delay: 4100, depth: 'foreground', color: 'coral' },
-  { id: 'letter-butter-right', x: 81, y: 0, scale: 0.8, rotate: 29, delay: 3000, depth: 'foreground', color: 'butter' },
+  { id: "tulip-1", x: 43, y: 1, scale: 0.48, rotate: -6, delay: 1400, depth: "foreground" },
+  { id: "tulip-2", x: 79, y: -5, scale: 0.53, rotate: 5, delay: 1950, depth: "foreground" },
+  { id: "tulip-3", x: 88, y: 11, scale: 0.43, rotate: -3, delay: 2500, depth: "background" },
+  { id: "tulip-gold-left", x: 38, y: -3, scale: 0.44, rotate: -9, delay: 1700, depth: "foreground", color: "butter" },
+  { id: "tulip-lavender-left", x: 47, y: 12, scale: 0.34, rotate: 7, delay: 2250, depth: "background", color: "lavender" },
+  { id: "tulip-coral-low", x: 59, y: -4, scale: 0.42, rotate: -7, delay: 1850, depth: "foreground", color: "coral" },
+  { id: "tulip-gold-low", x: 64, y: 3, scale: 0.32, rotate: 5, delay: 2350, depth: "midground", color: "butter" },
+  { id: "tulip-coral-right", x: 85, y: 3, scale: 0.4, rotate: -5, delay: 2050, depth: "foreground", color: "coral" },
+  { id: "tulip-lavender-right", x: 93, y: 10, scale: 0.32, rotate: 8, delay: 2600, depth: "background", color: "lavender" },
+  { id: "tulip-gold-edge", x: 33, y: -6, scale: 0.36, rotate: 6, delay: 2150, depth: "foreground", color: "butter" },
+  { id: "tulip-lavender-front", x: 46, y: -8, scale: 0.43, rotate: -4, delay: 2450, depth: "foreground", color: "lavender" },
+  { id: "tulip-coral-front", x: 73, y: -4, scale: 0.35, rotate: 8, delay: 2750, depth: "foreground", color: "coral" },
+  { id: "tulip-gold-right", x: 91, y: -2, scale: 0.38, rotate: -6, delay: 2300, depth: "foreground", color: "butter" },
 ] as const;
 
 export default function LetterBloomGarden({ active }: { active: boolean }) {
@@ -25,6 +26,7 @@ export default function LetterBloomGarden({ active }: { active: boolean }) {
   const completed = useRef(new Set<string>());
   const [bloomed, setBloomed] = useState(false);
   const [inView, setInView] = useState(false);
+  const [ready, setReady] = useState(false);
   const [visible, setVisible] = useState(!document.hidden);
   const finish = useCallback((id: string) => {
     completed.current.add(id);
@@ -37,16 +39,31 @@ export default function LetterBloomGarden({ active }: { active: boolean }) {
     document.addEventListener('visibilitychange', visibility);
     return () => { observer.disconnect(); document.removeEventListener('visibilitychange', visibility); };
   }, []);
-  const running = active && inView && visible;
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([preloadBloomSequence(), preloadTulipSequence()])
+      .then(() => { if (!cancelled) setReady(true); })
+      .catch((error: unknown) => console.error('Letter garden failed to load', error));
+    return () => { cancelled = true; };
+  }, []);
+  const running = active && inView && visible && ready;
 
   return <div ref={root} className="letter-bloom-garden" data-running={running} data-bloomed={bloomed} aria-hidden="true">
-    <FlowerBloomCanvas className="letter-bloom-garden__lily letter-bloom-garden__lily--left"
-      isActive={running} hasBloomed={bloomed} isSecondary baseRotation={-13}
-      delayMs={700} durationMs={6500} onBloomComplete={() => finish('lily-left')} />
-    <FlowerBloomCanvas className="letter-bloom-garden__lily letter-bloom-garden__lily--right"
-      isActive={running} hasBloomed={bloomed} baseRotation={10}
-      delayMs={100} durationMs={6200} onBloomComplete={() => finish('lily-right')} />
-    {TULIPS.map(tulip => <TulipBloom key={tulip.id} {...tulip} durationMs={3000}
-      isActive={running} hasBloomed={bloomed} onBloomComplete={() => finish(tulip.id)} />)}
+    <FlowerAtmosphere isActive={running} />
+    <div className="letter-bloom-garden__flowers">
+      {TULIPS.map(tulip => <TulipBloom key={tulip.id} {...tulip}
+        isActive={running} hasBloomed={bloomed} onBloomComplete={() => finish(tulip.id)} />)}
+      <FlowerBloomCanvas className="letter-bloom-garden__lily letter-bloom-garden__lily--left"
+        isActive={running} hasBloomed={bloomed} isSecondary baseRotation={-4}
+        delayMs={700} durationMs={4300} onBloomComplete={() => finish('lily-left')} />
+      <FlowerBloomCanvas className="letter-bloom-garden__lily letter-bloom-garden__lily--right"
+        isActive={running} hasBloomed={bloomed} baseRotation={3}
+        delayMs={0} durationMs={4600} onBloomComplete={() => finish('lily-right')} />
+    </div>
+    <div className="letter-bloom-garden__meadow">
+      <img className="letter-bloom-garden__grass letter-bloom-garden__grass--left" src="/assets/flowers/nature/grass-airy-tall.png" alt="" />
+      <img className="letter-bloom-garden__grass letter-bloom-garden__grass--strip" src="/assets/flowers/nature/grass-back-strip.png" alt="" />
+      <img className="letter-bloom-garden__grass letter-bloom-garden__grass--right" src="/assets/flowers/nature/grass-airy-tall.png" alt="" />
+    </div>
   </div>;
 }

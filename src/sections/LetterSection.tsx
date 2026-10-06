@@ -9,6 +9,7 @@ import { ENVELOPE_ASSETS } from "./voucher/voucherConfig";
 import LetterBloomGarden from "./flowers/LetterBloomGarden";
 import { prepareLetterFragments } from "@/chapters/letterFragments";
 import "./letter-scene.css";
+import "./flowers/letter-bloom-garden.css";
 
 function LetterPage({ index }: { index: number }) {
   if (index === 0) {
@@ -85,12 +86,7 @@ export default function LetterSection({ onComplete }: { onComplete: () => void }
     <div className="letter-atelier__light" aria-hidden="true"/>
     <div className="letter-atelier__landscape" aria-hidden="true"/>
     <LetterBloomGarden active={isActive && !isTransitioning && !reading}/>
-    <svg className="letter-atelier__thread" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M-40 710C220 720 280 500 520 535S1100 790 1210 440S1440 180 1500 170"/></svg>
     <header className="letter-atelier__header"><span>CHƯƠNG 03 / LÁ THƯ</span></header>
-    <div className="letter-atelier__intro">
-      <h2>Có những điều,<br/>chỉ muốn<br/><em> nói với em.</em></h2>
-      <button className="letter-open-action" onClick={() => { setOpen(true); if (open) setReading(true); }}><span>{open ? "Đọc chậm lại cùng tui" : "Mở lá thư của em"}</span><span aria-hidden="true">↗</span></button>
-    </div>
     <div className="letter-desk">
       <div className="letter-keepsake">
         <div className="letter-keepsake__back" aria-hidden="true"/>

@@ -80,7 +80,7 @@ html[data-voucher-letter-handoff] .letter-keepsake { will-change: transform; }
 @media (max-width: 600px) { .letter-keepsake { --letter-paper-height: 445px; } }
 
 /* A quiet, image-free stage for the letter and transparent flower cluster. */
-.letter-atelier__landscape { position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 72% 62%,#50343c38,transparent 60%),linear-gradient(145deg,#261a20,#171014 70%); }
+.letter-atelier__landscape { position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 72% 68%,#a67d4e0c,transparent 60%),linear-gradient(180deg,#090909,#10110e 70%,#050505); }
 .letter-atelier__light { z-index:0;opacity:.65;background:radial-gradient(ellipse at 71% 35%,#ead5a017,transparent 46%); }
 .letter-atelier__thread { visibility:hidden; }
 .letter-atelier__header { color:#c5ac94;border-color:#c5ac9426;font-size:9px; }

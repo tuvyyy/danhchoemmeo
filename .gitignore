@@ -13,12 +13,10 @@ dist-ssr
 *.sw?
 
 # Generated browser test captures
-docs/screenshots/
+docs/
 split-check.png
 
 # Local visual QA evidence; production assets live in public/assets and src/assets.
-docs/captures/**
-!docs/captures/*.md
 tests/*.png
 tests/*.jpg
 tests/*.mp4

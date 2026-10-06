@@ -1,4 +1,0 @@
-﻿import puppeteer from 'puppeteer-core';
-import fs from 'node:fs/promises';
-const b=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
-try{const p=await b.newPage();await p.setViewport({width:1440,height:900});await p.goto('https://symphonyofvines.unseen.co/',{waitUntil:'networkidle2'});await new Promise(r=>setTimeout(r,8000));await p.click('.cookies__close');await p.mouse.move(100,750);await new Promise(r=>setTimeout(r,1600));await p.screenshot({path:'docs/captures/symphony-live/closed-clean.png'});await p.mouse.move(1010,630);await new Promise(r=>setTimeout(r,2200));await p.screenshot({path:'docs/captures/symphony-live/open-clean.png'});await p.mouse.move(100,750);await new Promise(r=>setTimeout(r,1800));await p.screenshot({path:'docs/captures/symphony-live/reclosed-clean.png'});console.log('Captured clean reference hover cycle');}finally{await b.close();}

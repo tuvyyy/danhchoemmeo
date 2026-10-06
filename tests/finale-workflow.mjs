@@ -12,6 +12,8 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
 try {
  const p=await browser.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ const journeyURL=process.env.JOURNEY_URL||'http://127.0.0.1:3334';
+ p.on('response',response=>{if(response.status()>=400&&new URL(response.url()).origin===new URL(journeyURL).origin)errors.push(`HTTP ${response.status()}: ${response.url()}`);});
  await p.setViewport({width:mobile?390:1440,height:mobile?844:900,isMobile:mobile,hasTouch:mobile});
  if(reduced)await p.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);
  const capture=async options=>{if(process.env.NO_CAPTURE!=='1')await p.screenshot(options);};
@@ -69,7 +71,7 @@ try {
    await capture({path:`${out}/${direction}-${String(percent).padStart(3,'0')}.png`});last=percent;
   }
  };
- await p.goto(process.env.JOURNEY_URL||'http://127.0.0.1:3334',{waitUntil:'networkidle2'});
+ await p.goto(journeyURL,{waitUntil:'networkidle2'});
  await p.waitForSelector('.gallery-loader',{hidden:true});await p.click('.garden-gate__enter');await p.waitForSelector('.entrance-gate',{hidden:true});
  await expectCursor(0,'paw');
  await click('.cinematic-hero__cta');await stable('flowers');await expectCursor(1,'tulip');await edge('flowers');await click('.nature-bloom__footer button');

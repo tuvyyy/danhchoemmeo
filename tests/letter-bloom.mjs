@@ -46,6 +46,13 @@ try {
  const pond=await p.$eval('.letter-bloom-garden__pond',e=>({swans:e.dataset.swans,z:+getComputedStyle(e).zIndex,width:e.getBoundingClientRect().width}));
  assert.equal(pond.swans,'2');assert(pond.width>200,'The distant pond remains visible at both viewport sizes');
  assert(await p.$eval('.letter-bloom-garden__flowers',e=>+getComputedStyle(e).zIndex>0),'Flowers sit in front of the pond');
+ const staging=await p.evaluate(()=>{
+  const pond=document.querySelector('.letter-bloom-garden__pond'),meadow=document.querySelector('.letter-bloom-garden__meadow'),flowers=document.querySelector('.letter-bloom-garden__flowers');
+  const main=document.querySelector('[data-flower-main]'),front=[...document.querySelectorAll('.letter-bloom-garden__bloom--front')];
+  return{shoreOverlap:pond.getBoundingClientRect().bottom-meadow.getBoundingClientRect().top,grassInFront:+getComputedStyle(meadow).zIndex>+getComputedStyle(flowers).zIndex,mainWidth:main.getBoundingClientRect().width,frontWidths:front.map(e=>e.getBoundingClientRect().width)};
+ });
+ assert(staging.shoreOverlap>0&&staging.grassInFront,'The lake shore joins foreground grass, which occludes the flower stems');
+ assert(staging.frontWidths.every(w=>w<staging.mainWidth*.75),'Flower sizes form a cluster around one leading bloom');
  assert.equal(await p.$('.letter-cover'), null, 'The letter is a flat page, without a book cover');
  assert.equal(await p.$$eval('.letter-bloom-garden__grass', es => es.length), 3, 'The original three grass layers return');
  assert(await p.$$eval('.letter-bloom-garden__grass', es => es.every(e => e.complete && e.naturalWidth > 0)), 'Grass assets load');
@@ -74,14 +81,16 @@ try {
   const image=new Image();image.src='/assets/flowers/lily-bloom-hd/lily_bloom_060.webp';await image.decode();
   const pixels=subject=>{const canvas=document.createElement('canvas');canvas.width=canvas.height=64;const c=canvas.getContext('2d');c.drawImage(subject,0,0,64,64);return c.getImageData(0,0,64,64).data;};
   const original=pixels(image),ivory=pixels(document.querySelector('[data-flower-color="ivory"] canvas')),blue=pixels(document.querySelector('[data-flower-color="midnight"] canvas'));
-  let petals=0,green=0,ivoryLift=0,blueShift=0,leafError=0;
+  let petals=0,green=0,ivoryLift=0,blueShift=0,leafError=0,throats=0,ivorySeam=0,blueSeam=0;
   for(let i=0;i<original.length;i+=4){const [r,g,b,a]=original.slice(i,i+4);if(a<200)continue;
    if(r>Math.max(g,b)+20&&b>g+8){petals++;ivoryLift+=ivory[i+1]-g;blueShift+=blue[i+2]-blue[i];}
    if(g>r+8&&g>b+10){green++;leafError+=(Math.abs(ivory[i]-r)+Math.abs(ivory[i+1]-g)+Math.abs(blue[i]-r)+Math.abs(blue[i+1]-g))/4;}
+   if(r>g+35&&g>=b&&b/r>.45){throats++;ivorySeam+=Math.abs(ivory[i]-ivory[i+1]);blueSeam+=blue[i+2]-blue[i];}
   }
-  return{petals,green,ivoryLift:ivoryLift/petals,blueShift:blueShift/petals,leafError:leafError/green};
+  return{petals,green,ivoryLift:ivoryLift/petals,blueShift:blueShift/petals,leafError:leafError/green,throats,ivorySeam:ivorySeam/throats,blueSeam:blueSeam/throats};
  });
  assert(pigment.petals>20&&pigment.green>10&&pigment.ivoryLift>15&&pigment.blueShift>15&&pigment.leafError<12,`Petal pigments change while the real green stem stays green: ${JSON.stringify(pigment)}`);
+ assert(pigment.throats>5&&pigment.ivorySeam<12&&pigment.blueSeam>8,`The petal throat has no leftover pink stripe: ${JSON.stringify(pigment)}`);
  const swimBefore=await p.$$eval('.pond-swimmer',es=>es.map(e=>getComputedStyle(e).transform));
  if(!reduced){await wait(700);assert(await p.$$eval('.pond-swimmer', (es,before)=>es.length===2&&es.every((e,i)=>getComputedStyle(e).transform!==before[i]),swimBefore),'Both swans swim independently');}
  else assert(await p.$$eval('.pond-swimmer',es=>es.every(e=>getComputedStyle(e).animationName==='none')),'Reduced motion keeps both swans still');

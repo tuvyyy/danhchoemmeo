@@ -133,7 +133,8 @@ function snapshot(source: HTMLElement, defer = false): Promise<HTMLCanvasElement
     ink.filter=computed.filter;ink.globalAlpha=Number(computed.opacity)*Number(imageStyle.opacity);
     ink.drawImage(image,0,0,width,height);ink.restore();
     // Match the live plant's fade into the grass, in the same rotated coordinates.
-    const fade=ink.createLinearGradient(0,height-26,0,height);fade.addColorStop(0,'#000');fade.addColorStop(1,'#0000');
+    const rootFade=parseFloat(computed.getPropertyValue('--bloom-root-fade'))||26;
+    const fade=ink.createLinearGradient(0,Math.max(0,height-rootFade),0,height);fade.addColorStop(0,'#000');fade.addColorStop(1,'#0000');
     ink.globalCompositeOperation='destination-in';ink.fillStyle=fade;ink.fillRect(0,0,width,height);
     const promise=Promise.resolve(bitmap);snapshots.set(source,{key,bitmap:promise});return promise;
   }

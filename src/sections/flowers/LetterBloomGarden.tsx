@@ -5,13 +5,13 @@ import FlowerAtmosphere from './FlowerAtmosphere';
 
 // Seven real frame sequences: three pink anchors, two ivory, two midnight blue.
 const BLOOMS = [
-  { id: 'pink-back', palette: 'pink', x: 18, y: 13, scale: .5, rotate: -7, delay: 850, duration: 4400, depth: 'back' },
-  { id: 'pink-main', palette: 'pink', x: 54, y: 20, scale: .96, rotate: -2, delay: 0, duration: 5200, depth: 'middle' },
-  { id: 'pink-front', palette: 'pink', x: 53, y: -1, scale: .60, rotate: 3, delay: 2650, duration: 4200, depth: 'front' },
-  { id: 'blue-tall', palette: 'midnight', x: 31, y: 19, scale: .82, rotate: -7, delay: 350, duration: 5000, depth: 'middle' },
-  { id: 'ivory-tall', palette: 'ivory', x: 77, y: 17, scale: .90, rotate: 5, delay: 950, duration: 5100, depth: 'middle' },
-  { id: 'ivory-front', palette: 'ivory', x: 17, y: 1, scale: .66, rotate: -11, delay: 1650, duration: 4500, depth: 'front' },
-  { id: 'blue-front', palette: 'midnight', x: 90, y: 2, scale: .65, rotate: 8, delay: 2200, duration: 4400, depth: 'front' },
+  { id: 'pink-back', palette: 'pink', x: 19, y: 13, scale: .46, rotate: -7, delay: 850, duration: 4400, depth: 'back' },
+  { id: 'pink-main', palette: 'pink', x: 56, y: 8, scale: .93, rotate: -2, delay: 0, duration: 5200, depth: 'middle' },
+  { id: 'pink-front', palette: 'pink', x: 61, y: -1, scale: .55, rotate: 3, delay: 2650, duration: 4200, depth: 'front' },
+  { id: 'blue-tall', palette: 'midnight', x: 34, y: 6, scale: .75, rotate: -7, delay: 350, duration: 5000, depth: 'middle' },
+  { id: 'ivory-tall', palette: 'ivory', x: 77, y: 3, scale: .78, rotate: 5, delay: 950, duration: 5100, depth: 'middle' },
+  { id: 'ivory-front', palette: 'ivory', x: 21, y: 0, scale: .47, rotate: -11, delay: 1650, duration: 4500, depth: 'front' },
+  { id: 'blue-front', palette: 'midnight', x: 87, y: -2, scale: .5, rotate: 8, delay: 2200, duration: 4400, depth: 'front' },
 ] as const;
 
 export default function LetterBloomGarden({ active }: { active: boolean }) {
@@ -61,7 +61,7 @@ export default function LetterBloomGarden({ active }: { active: boolean }) {
         style={{ '--bloom-x': `${flower.x}%`, '--bloom-bottom': `${flower.y}%`, '--bloom-scale': flower.scale } as CSSProperties}
         onBloomComplete={() => finish(flower.id)} />)}
     </div>
-    <div className="letter-bloom-garden__meadow">
+    <div className="letter-bloom-garden__meadow" data-depth="foreground">
       <img className="letter-bloom-garden__grass letter-bloom-garden__grass--left" src="/assets/flowers/nature/grass-airy-tall.png" alt="" />
       <img className="letter-bloom-garden__grass letter-bloom-garden__grass--strip" src="/assets/flowers/nature/grass-back-strip.png" alt="" />
       <img className="letter-bloom-garden__grass letter-bloom-garden__grass--right" src="/assets/flowers/nature/grass-airy-tall.png" alt="" />

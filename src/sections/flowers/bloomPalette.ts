@@ -21,11 +21,13 @@ function createRenderer() {
     precision mediump float;uniform sampler2D flower;uniform float palette;varying vec2 uv;
     void main(){
       vec4 source=texture2D(flower,uv);
-      float warm=max(0.0,source.r-max(source.g,source.b));
-      float petal=smoothstep(0.018,0.11,warm)*smoothstep(-0.015,0.07,source.b-source.g);
+      float warm=max(0.0,source.r-source.g);
+      // Coral at the petal throat is pigment too. Blue/red separates it from
+      // orange pollen without leaving a pink seam on ivory or midnight petals.
+      float petal=smoothstep(0.015,0.10,warm)*smoothstep(0.18,0.42,source.b/max(source.r,0.01));
       float light=dot(source.rgb,vec3(0.2126,0.7152,0.0722));
-      vec3 ivory=vec3(1.0,0.98,0.91)*min(1.0,light*0.85+0.35);
-      vec3 midnight=vec3(0.065,0.125,0.20)+pow(light,0.9)*vec3(0.28,0.36,0.43);
+      vec3 ivory=vec3(0.98,0.98,0.92)*(light*0.72+0.21);
+      vec3 midnight=vec3(0.035,0.068,0.11)+pow(light,1.15)*vec3(0.18,0.235,0.295);
       // Only pink pigment changes; leaf greens, gold stamens, alpha and petal relief stay intact.
       gl_FragColor=vec4(mix(source.rgb,palette<1.5?ivory:midnight,petal),source.a);
     }

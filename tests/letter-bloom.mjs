@@ -8,6 +8,7 @@ const browser = await puppeteer.launch({ executablePath: 'C:/Program Files/Googl
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 try {
  const p = await browser.newPage(), errors = [], requests = [];
+ const capture = async options => { if (process.env.NO_CAPTURE !== '1') await p.screenshot(options); };
  p.on('request', request => requests.push(request.url()));
  p.on('pageerror', error => { errors.push(error.message); console.log('PAGE ERROR',error.message); });
  await p.setViewport({ width: mobile ? 390 : 1440, height: mobile ? 844 : 900, isMobile: mobile, hasTouch: mobile });
@@ -28,45 +29,46 @@ try {
  if (reduced) await p.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
  if (process.argv.includes('--handoff') && !reduced) {
   await p.evaluate(() => document.querySelector('#chapter-wallet').scrollIntoView({ behavior: 'instant' }));
-  await p.screenshot({ path: `${out}/handoff-000.png` });
+  await capture({ path: `${out}/handoff-000.png` });
   let previous = 0;
   for (const percent of [20, 40, 50, 60, 80, 100]) {
    await p.mouse.wheel({ deltaY: (percent - previous) / 100 * (mobile ? 844 : 900) });
    if (percent < 100) await p.waitForFunction(value => Math.abs(+document.querySelector('.letter-atelier').dataset.handoffProgress - value) < .002, {}, percent / 100);
    else await p.waitForFunction(() => !document.documentElement.dataset.voucherLetterHandoff);
-   await p.screenshot({ path: `${out}/handoff-${String(percent).padStart(3,'0')}.png` });
+   await capture({ path: `${out}/handoff-${String(percent).padStart(3,'0')}.png` });
    previous = percent;
   }
  } else await p.click('.scene-next');
  await p.waitForFunction(() => document.querySelector('#chapter-letter').dataset.chapterState === 'active' && !document.documentElement.dataset.voucherLetterHandoff);
  if (mobile) await p.evaluate(() => document.querySelector('.letter-bloom-garden').scrollIntoView({ block: 'end', behavior: 'instant' }));
  await p.waitForSelector('.letter-bloom-garden[data-running="true"]');
- assert.equal(await p.$$eval('.letter-bloom-garden canvas', es => es.length), 33);
+ assert.equal(await p.$$eval('.letter-bloom-garden canvas', es => es.length), 9);
  assert.equal(await p.$('.letter-cover'), null, 'The letter is a flat page, without a book cover');
  assert.equal(await p.$$eval('.letter-bloom-garden__grass', es => es.length), 3, 'The original three grass layers return');
  assert(await p.$$eval('.letter-bloom-garden__grass', es => es.every(e => e.complete && e.naturalWidth > 0)), 'Grass assets load');
  assert.equal(await p.$('.letter-atelier__intro'), null, 'Remove the left introduction');
  if (!mobile) assert(await p.evaluate(() => document.querySelector('.letter-keepsake').getBoundingClientRect().right < document.querySelector('[data-flower-main]').getBoundingClientRect().left), 'Letter left, garden right');
  assert.equal(requests.some(url => url.includes('/letter-garden/garden-dusk.webp')), false, 'No scenic background image loads behind the cluster');
- await p.screenshot({ path: `${out}/01-buds.png` });
+ await capture({ path: `${out}/01-buds.png` });
  if (!reduced && process.argv.includes('--frames')) {
   const started = Date.now();
   for (const percent of [0, 20, 40, 50, 60, 80, 100]) {
    await wait(Math.max(0, percent / 100 * 5000 - (Date.now() - started)));
-   await p.screenshot({ path: `${out}/bloom-${String(percent).padStart(3, '0')}.png` });
+   await capture({ path: `${out}/bloom-${String(percent).padStart(3, '0')}.png` });
   }
  } else if (!reduced) {
   await wait(2600);
   const frame = await p.$eval('.letter-bloom-garden [data-flower-main]', e => +e.dataset.bloomFrame);
   assert(frame > 1 && frame < 60, 'Lily gradually opens');
-  await p.screenshot({ path: `${out}/02-opening.png` });
+  await capture({ path: `${out}/02-opening.png` });
  }
  await p.waitForSelector('.letter-bloom-garden[data-bloomed="true"]', { timeout: 20000 });
- await p.screenshot({ path: `${out}/03-bloomed.png` });
- assert.equal(await p.$$eval('.letter-bloom-garden canvas[data-bloom-stage="6"]', es => es.length), 31);
+ await capture({ path: `${out}/03-bloomed.png` });
+ assert.equal(await p.$('.letter-bloom-garden .nature-bloom__tulip'), null, 'Remove the small tinted flower pack');
+ assert(await p.$$eval('.letter-bloom-garden [data-bloom-frame]', es => es.every(e => +e.dataset.bloomFrame >= 59)), 'All large pink flowers finish blooming');
  if (mobile) await p.evaluate(() => document.querySelector('.letter-desk').scrollIntoView({ block: 'start', behavior: 'instant' }));
  await p.mouse.move(800, 60);
- await p.screenshot({ path: `${out}/04-letter-open.png` });
+ await capture({ path: `${out}/04-letter-open.png` });
  await p.click('.letter-page__read'); await p.waitForSelector('.letter-reader');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
  await p.keyboard.press('ArrowRight');
@@ -77,5 +79,5 @@ try {
  await p.waitForFunction(() => document.querySelector('#chapter-moments').dataset.chapterState === 'active');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
  assert.deepEqual(errors, []);
- console.log(`${out}: PASS preserved video, 31 tulips + 2 lilies, grass, flat letter left, reader/pagination, pause, next chapter, no overflow/errors`);
+ console.log(`${out}: PASS preserved video, 9 large native pink blooms, grass, flat letter left, reader/pagination, pause, next chapter, no overflow/errors`);
 } finally { await browser.close(); }

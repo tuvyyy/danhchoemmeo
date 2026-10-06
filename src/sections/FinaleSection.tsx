@@ -83,7 +83,6 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
           </>:<div className="blown-actions"><button ref={reigniteButton} className="reignite-btn" onClick={reignite}>Thắp lại nến <span aria-hidden="true">↺</span></button><button className="revisit-btn" onClick={()=>goTo(0)}>Xem lại từ đầu <span aria-hidden="true">↗</span></button></div>}
         </div>
       </div>
-      <FinaleButterflies/>
       <div className="finale-centerpiece">
         <div className="cake-altar" data-mascot-obstacle>
           <div className="candle-aura" aria-hidden="true"/>
@@ -100,6 +99,7 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
         </div>
       </div>
     </div>
+    <FinaleButterflies/>
     <footer className="finale-footer"><span>for you, always.</span></footer>
     <p className="sr-only" role="status" aria-live="polite">{blown?'Nến đã tắt. Chúc mừng sinh nhật em mèo!':'Nến đang sáng. Quơ chuột hoặc vuốt ngang nến để thổi. Bạn cũng có thể dùng nút Thổi nến.'}</p>
   </section>;

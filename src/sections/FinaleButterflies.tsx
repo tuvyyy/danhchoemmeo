@@ -5,6 +5,8 @@ const flights = [
   { route: 'light', size: 65, duration: 25, delay: -13, flap: .20 },
   { route: 'edge', size: 112, duration: 23, delay: -8, flap: .30 },
   { route: 'rose', size: 48, duration: 28, delay: -19, flap: .18 },
+  { route: 'wander', size: 76, duration: 34, delay: -7, flap: .23 },
+  { route: 'roam', size: 86, duration: 39, delay: -24, flap: .27 },
 ];
 
 /** One transparent cutout, two wings hinged at the body. Flight and wing

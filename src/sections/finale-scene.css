@@ -69,6 +69,22 @@
 .butterfly-flight--rose { animation-name:butterfly-rose; }
 .butterfly-flight--light { animation-name:butterfly-light; }
 .butterfly-flight--edge { animation-name:butterfly-edge; }
+.butterfly-flight--wander { animation-name:butterfly-wander;animation-timing-function:linear; }
+.butterfly-flight--roam { animation-name:butterfly-roam;animation-timing-function:linear; }
+@keyframes butterfly-wander {
+ 0%,100% { transform:translate3d(8vw,12svh,0) rotate(-20deg) scale(.78); }
+ 20% { transform:translate3d(48vw,64svh,0) rotate(25deg) scale(.94); }
+ 40% { transform:translate3d(88vw,28svh,0) rotate(-28deg) scale(.82); }
+ 60% { transform:translate3d(66vw,78svh,0) rotate(34deg) scale(.92); }
+ 80% { transform:translate3d(14vw,46svh,0) rotate(-32deg) scale(.86); }
+}
+@keyframes butterfly-roam {
+ 0%,100% { transform:translate3d(82vw,64svh,0) rotate(24deg) scale(.9); }
+ 20% { transform:translate3d(52vw,10svh,0) rotate(-30deg) scale(.75); }
+ 40% { transform:translate3d(10vw,32svh,0) rotate(26deg) scale(.88); }
+ 60% { transform:translate3d(34vw,76svh,0) rotate(-22deg) scale(.96); }
+ 80% { transform:translate3d(88vw,22svh,0) rotate(30deg) scale(.8); }
+}
 .butterfly-lift { width:100%;height:100%;transition:transform 2.8s cubic-bezier(.2,.7,.3,1); }
 .celebration-scene[data-blown="true"] .butterfly-lift { transform:translateY(-55px) rotate(-12deg); }
 .celebration-scene[data-blown="true"] .butterfly-flight--light .butterfly-lift { transform:rotate(-12deg); }
@@ -126,6 +142,8 @@ html[data-anniversary-finale-handoff] .together-scene,html[data-anniversary-fina
  .blown-actions { gap:22px; }.reignite-btn,.revisit-btn { font-size:13px;gap:16px; }
  .butterfly-flight { width:calc(var(--butterfly-size) * .72); }
  .butterfly-flight:nth-child(4) { display:none; }
+ @keyframes butterfly-wander { 0%,100% { transform:translate3d(5vw,7svh,0) rotate(-20deg) scale(.78); }20% { transform:translate3d(43vw,55svh,0) rotate(25deg) scale(.94); }40% { transform:translate3d(80vw,24svh,0) rotate(-28deg) scale(.82); }60% { transform:translate3d(62vw,73svh,0) rotate(34deg) scale(.92); }80% { transform:translate3d(10vw,43svh,0) rotate(-32deg) scale(.86); } }
+ @keyframes butterfly-roam { 0%,100% { transform:translate3d(76vw,61svh,0) rotate(24deg) scale(.9); }20% { transform:translate3d(48vw,7svh,0) rotate(-30deg) scale(.75); }40% { transform:translate3d(6vw,30svh,0) rotate(26deg) scale(.88); }60% { transform:translate3d(30vw,73svh,0) rotate(-22deg) scale(.96); }80% { transform:translate3d(80vw,19svh,0) rotate(30deg) scale(.8); } }
  @keyframes butterfly-rose { 0%,100% { transform:translate3d(9vw,57svh,0) rotate(-28deg) scale(.9); }35% { transform:translate3d(65vw,48svh,0) rotate(22deg) scale(.65); }65% { transform:translate3d(70vw,76svh,0) rotate(35deg) scale(.8); } }
  @keyframes butterfly-light { 0%,100% { transform:translate3d(76vw,9svh,0) rotate(22deg) scale(.8); }45% { transform:translate3d(85vw,36svh,0) rotate(-16deg); }70% { transform:translate3d(82vw,51svh,0) rotate(30deg) scale(.72); } }
  @keyframes butterfly-edge { 0%,100% { transform:translate3d(69vw,82svh,0) rotate(32deg); }35% { transform:translate3d(66vw,68svh,0) rotate(-22deg) scale(.8); }65% { transform:translate3d(31vw,53svh,0) rotate(-35deg) scale(.7); } }
@@ -135,4 +153,5 @@ html[data-anniversary-finale-handoff] .together-scene,html[data-anniversary-fina
 @media(prefers-reduced-motion:reduce) { .candle-flame,.smoke-wisp,.wind-streak,.butterfly-flight,.butterfly-wing { animation:none!important; }.candle-flame,.candle-aura,.butterfly-lift { transition:none!important; }.butterfly-flight--rose { transform:translate(28vw,24svh) rotate(-25deg); }.butterfly-flight--light { transform:translate(86vw,13svh) rotate(25deg); }.butterfly-flight--edge { transform:translate(46vw,68svh) rotate(-12deg); }.butterfly-flight:nth-child(4) { display:none; } }
 @media(prefers-reduced-motion:reduce) and (max-width:600px) { .butterfly-flight--rose { transform:translate(64vw,52svh) rotate(-25deg); }.butterfly-flight--light { transform:translate(76vw,10svh) rotate(25deg); }.butterfly-flight--edge { transform:translate(67vw,77svh) rotate(-12deg); } }
 @media(prefers-reduced-motion:reduce) { .butterfly-lift { transform:none!important; } }
+@media(prefers-reduced-motion:reduce) { .butterfly-flight--wander { transform:translate(17vw,18svh) rotate(-20deg); }.butterfly-flight--roam { transform:translate(76vw,60svh) rotate(24deg); } }
 @media(prefers-reduced-motion:reduce) { .candle-room-glow i { animation:none!important;opacity:.7; }.finale-lighting,.celebration-scene::before,.celebration-scene::after,.birthday-cake img,.candle-room-glow,.finale-scene,.finale-header,.finale-kicker,.finale-copy h2 em,.finale-body,.wind-invitation,.finale-controls button,.finale-footer { transition-duration:.15s; } }

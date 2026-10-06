@@ -14,6 +14,7 @@ try {
  const p=await browser.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.setViewport({width:mobile?390:1440,height:mobile?844:900,isMobile:mobile,hasTouch:mobile});
  if(reduced)await p.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);
+ const capture=async options=>{if(process.env.NO_CAPTURE!=='1')await p.screenshot(options);};
  const stable=id=>p.waitForFunction(id=>['active','completing'].includes(document.querySelector(`#chapter-${id}`)?.dataset.chapterState)&&!Object.keys(document.documentElement.dataset).some(k=>k.endsWith('Handoff')),{},id);
  const edge=id=>p.evaluate(id=>{const s=document.querySelector(`#chapter-${id}`);scrollTo({top:s.offsetTop+Math.max(0,s.offsetHeight-innerHeight),behavior:'instant'});},id);
  const click=selector=>p.$eval(selector,e=>e.click());
@@ -22,14 +23,14 @@ try {
    await p.evaluate(()=>{window.fireStyles=[...document.querySelectorAll('.candle-flame,.candle-room-glow i')].map(element=>({element,style:element.getAttribute('style')}));for(const {element} of window.fireStyles){element.style.animationName='none';element.style.animationPlayState='paused';}document.querySelector('.candle-flame').getBoundingClientRect();});
    for(const percent of [0,20,40,50,60,80,100]){
     await p.evaluate(percent=>{for(const {element} of window.fireStyles){element.style.animationName=element.matches('.candle-flame')?'flame-breathe':'candle-room-flicker';element.style.animationDelay=`${-2.8*percent/100}s`;}},percent);
-    await p.screenshot({path:`${out}/${name}-${String(percent).padStart(3,'0')}.png`});
+    await capture({path:`${out}/${name}-${String(percent).padStart(3,'0')}.png`});
    }
    await p.evaluate(()=>{for(const {element,style} of window.fireStyles){if(style===null)element.removeAttribute('style');else element.setAttribute('style',style);}delete window.fireStyles;});return;
   }
   await p.evaluate(()=>{window.lightingAnimations=document.querySelector('.celebration-scene').getAnimations({subtree:true}).filter(animation=>animation instanceof CSSTransition);window.lightingSpan=Math.max(...window.lightingAnimations.map(animation=>Number(animation.effect.getComputedTiming().duration)));for(const animation of window.lightingAnimations)animation.pause();});
   for(const percent of [0,20,40,50,60,80,100]){
    await p.evaluate(percent=>{for(const animation of window.lightingAnimations)animation.currentTime=Math.min(Number(animation.effect.getComputedTiming().duration),window.lightingSpan*percent/100);},percent);
-   await p.screenshot({path:`${out}/${name}-${String(percent).padStart(3,'0')}.png`});
+   await capture({path:`${out}/${name}-${String(percent).padStart(3,'0')}.png`});
   }
   await p.evaluate(()=>{for(const animation of window.lightingAnimations)animation.finish();delete window.lightingAnimations;delete window.lightingSpan;});
  };
@@ -42,7 +43,7 @@ try {
  };
  const boundary=async reverse=>{
   const direction=reverse?'reverse':'forward',height=mobile?844:900;
-  await p.screenshot({path:`${out}/${direction}-000.png`});let last=0;
+  await capture({path:`${out}/${direction}-000.png`});let last=0;
   for(const percent of [20,40,50,60,80,100]){
    await input((percent-last)/100*height*(reverse?-1:1));
    if(percent<100){
@@ -50,7 +51,7 @@ try {
     assert.equal(await p.$eval('.butterfly-wing',e=>getComputedStyle(e).animationPlayState),'paused','butterflies pause while scrubbing');
     if(percent===50){const pose=await p.$eval('.butterfly-wing',e=>getComputedStyle(e).transform);await wait(350);assert.equal(await p.$eval('.butterfly-wing',e=>getComputedStyle(e).transform),pose,'stopped scroll holds the wing pose');}
    }else await stable(reverse?'anniversary':'finale');
-   await p.screenshot({path:`${out}/${direction}-${String(percent).padStart(3,'0')}.png`});last=percent;
+   await capture({path:`${out}/${direction}-${String(percent).padStart(3,'0')}.png`});last=percent;
   }
  };
  await p.goto(process.env.JOURNEY_URL||'http://127.0.0.1:3334',{waitUntil:'networkidle2'});
@@ -65,7 +66,19 @@ try {
  await edge('anniversary');if(transitions)await boundary(false);else {await click('.together-next');await stable('finale');}
  await p.waitForFunction(()=>document.querySelector('.birthday-cake img')?.complete&&document.querySelector('.birthday-cake img')?.naturalWidth>0);
  await p.waitForFunction(()=>[...document.querySelectorAll('.butterfly-wing img')].every(e=>e.complete&&e.naturalWidth>0));
- await wait(350);await p.screenshot({path:`${out}/lit.png`});
+ assert.equal(await p.$$eval('.butterfly-flight',es=>es.length),6,'Add two butterflies');
+ assert(await p.$eval('.finale-butterflies',e=>e.parentElement.classList.contains('celebration-scene')),'Butterflies span the whole chapter');
+ for(const route of ['wander','roam']){
+  const path=await p.$eval(`.butterfly-flight--${route}`,async e=>{
+   const animation=e.getAnimations()[0];if(!animation)return null;
+   const previous=animation.currentTime;animation.pause();await animation.ready;const timing=animation.effect.getComputedTiming(),duration=Number(timing.duration),points=[];
+   // Sample the second loop so the staggered negative delays never seek before the animation starts.
+   for(const part of [0,.2,.4,.6,.8]){animation.currentTime=Number(timing.delay)+duration*(1+part);const r=e.getBoundingClientRect();points.push({x:r.left,y:r.top});}
+   animation.currentTime=previous;animation.play();return points;
+  });
+  if(!reduced){assert(path,'New butterfly route animates');assert(Math.max(...path.map(p=>p.x))-Math.min(...path.map(p=>p.x))>(mobile?390:1440)*.6,'Route traverses both sides of the page');assert(Math.max(...path.map(p=>p.y))-Math.min(...path.map(p=>p.y))>(mobile?844:900)*.5,'Route traverses top and bottom');}
+ }
+ await wait(350);await capture({path:`${out}/lit.png`});
  assert.equal(await p.$eval('.finale-lighting',e=>+getComputedStyle(e).opacity),1,'lit candles keep the room dark');
  const glowOpacity=()=>p.$eval('.candle-room-glow i',e=>getComputedStyle(e).opacity);
  const glow=await glowOpacity();
@@ -75,7 +88,7 @@ try {
  else assert.notEqual(await butterflyPose(),pose,'butterflies flap rather than merely translating a flat image');
  if(reduced)assert.equal(await glowOpacity(),glow,'reduced motion keeps the light steady');
  else assert.notEqual(await glowOpacity(),glow,'the room light follows the flickering candle');
- await p.screenshot({path:`${out}/flight.png`});
+ await capture({path:`${out}/flight.png`});
  if(lighting&&!reduced)await lightingSheet('flicker');
  assert.equal(await p.$('[data-custom-cursor]'),null,'the wind cursor replaces the pink cursor');
  assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
@@ -96,11 +109,12 @@ try {
   assert.equal(await p.$eval('.celebration-scene',e=>e.dataset.blown),'false','vertical pointer motion is harmless');
   await p.mouse.move(f.x-90,f.y);await wait(220);await p.mouse.move(f.x+90,f.y,{steps:6});
  }
- await p.waitForSelector('.celebration-scene[data-blown="true"]');if(lighting&&!reduced)await lightingSheet('brighten');await wait(500);await p.screenshot({path:`${out}/smoke.png`});
+ await p.waitForSelector('.celebration-scene[data-blown="true"]');if(lighting&&!reduced)await lightingSheet('brighten');await wait(500);await capture({path:`${out}/smoke.png`});
  assert.deepEqual(await position(),before,'the candle stays attached to the cake when the greeting changes');
+ await p.waitForFunction(()=>['.candle-flame','.candle-aura'].every(selector=>+getComputedStyle(document.querySelector(selector)).opacity===0));
  assert.equal(await p.$eval('.candle-flame',e=>+getComputedStyle(e).opacity),0);
  assert.equal(await p.$eval('.candle-aura',e=>+getComputedStyle(e).opacity),0);
- await wait(2000);await p.screenshot({path:`${out}/wish.png`});
+ await wait(2000);await capture({path:`${out}/wish.png`});
  assert.equal(await p.$eval('.finale-lighting',e=>+getComputedStyle(e).opacity),0,'extinguishing the candle reveals the bright room');
  assert.equal(await p.$eval('.candle-room-glow',e=>+getComputedStyle(e).opacity),0,'extinguished candles stop lighting the room');
  await p.focus('.reignite-btn');await p.keyboard.press('Enter');await p.waitForSelector('.celebration-scene[data-blown="false"]');

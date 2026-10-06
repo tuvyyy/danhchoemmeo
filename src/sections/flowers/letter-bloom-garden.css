@@ -1,14 +1,11 @@
 /* A single meadow to the right of a flat, readable letter. */
 .letter-scene.letter-atelier { grid-template-columns:.8fr 1.2fr;column-gap:60px; }
 .letter-bloom-garden { position:absolute;inset:0;pointer-events:none;z-index:0;overflow:visible; }
-.letter-bloom-garden__flowers { position:absolute;z-index:1;right:0;bottom:28px;width:min(1010px,63vw);height:min(60svh,570px);--lily-size:min(23vw,35svh); }
-.letter-bloom-garden__lily { position:absolute;z-index:1;aspect-ratio:1;transform-origin:center bottom;mask-image:linear-gradient(#000 calc(100% - 24px),transparent); }
-.letter-bloom-garden__lily--left { left:calc(31% - var(--lily-size) * .3);bottom:18%;width:calc(var(--lily-size) * .6); }
-.letter-bloom-garden__lily--right { left:calc(61% - var(--lily-size) / 2);bottom:21%;width:var(--lily-size); }
-.letter-bloom-garden .nature-bloom__tulip { left:var(--tulip-x);bottom:var(--tulip-bottom);height:calc(min(38svh,28vw) * var(--tulip-scale)); }
-.letter-bloom-garden .nature-bloom__tulip[data-depth="background"] { z-index:0; }
-.letter-bloom-garden .nature-bloom__tulip[data-depth="midground"] { z-index:2; }
-.letter-bloom-garden .nature-bloom__tulip[data-depth="foreground"] { z-index:3; }
+.letter-bloom-garden__flowers { position:absolute;z-index:1;right:0;bottom:34px;width:min(940px,55vw);height:min(78svh,750px);--pink-bloom-size:min(31vw,48svh); }
+.letter-bloom-garden__bloom { position:absolute;left:calc(var(--bloom-x) - var(--pink-bloom-size) * var(--bloom-scale) / 2);bottom:var(--bloom-bottom);width:calc(var(--pink-bloom-size) * var(--bloom-scale));aspect-ratio:1;transform-origin:center bottom;mask-image:linear-gradient(#000 calc(100% - 26px),transparent); }
+.letter-bloom-garden__bloom--back { z-index:0;filter:brightness(.82) saturate(.92); }
+.letter-bloom-garden__bloom--middle { z-index:1; }
+.letter-bloom-garden__bloom--front { z-index:2; }
 .letter-bloom-garden__meadow { position:absolute;z-index:0;left:0;right:0;bottom:-7%;height:48%;overflow:visible; }
 .letter-bloom-garden__meadow::before { content:"";position:absolute;left:0;right:0;bottom:0;height:42%;z-index:4;background:linear-gradient(transparent,#050505); }
 .letter-bloom-garden__grass { position:absolute;bottom:0;max-width:none;transform-origin:center bottom;filter:brightness(.48) saturate(.62); }
@@ -27,17 +24,15 @@
 .letter-atelier__footer { border-color:transparent; }
 @media(max-width:600px) {
  .letter-scene.letter-atelier { min-height:100svh;padding-bottom:38px; }
- .letter-desk { align-self:flex-start;max-width:290px;padding:35px 8px 225px; }
+ .letter-desk { align-self:flex-start;max-width:290px;padding:35px 8px 360px; }
  .letter-desk > .letter-keepsake { --letter-paper-height:380px; }
  .letter-desk .letter-page__note-img { max-height:290px; }
  .letter-desk > .letter-desk__controls { font-size:9px;gap:12px; }
  .letter-atelier__header { font-size:8px; }
  .letter-atelier__footer { margin-top:auto; }
- .letter-bloom-garden__flowers { width:100%;height:270px;bottom:58px;--lily-size:min(42vw,24svh); }
- .letter-bloom-garden .nature-bloom__tulip { height:calc(min(26svh,54vw) * var(--tulip-scale)); }
- .letter-bloom-garden__lily--right { left:calc(64% - var(--lily-size) / 2);bottom:24%; }
- .letter-bloom-garden__lily--left { left:calc(31% - var(--lily-size) * .3);bottom:22%; }
- .letter-bloom-garden__meadow { height:330px;bottom:-50px; }
+ .letter-bloom-garden__flowers { width:100%;height:440px;bottom:58px;--pink-bloom-size:min(71vw,34svh); }
+ .letter-bloom-garden__bloom { left:calc(12% + var(--bloom-x) * .76 - var(--pink-bloom-size) * var(--bloom-scale) / 2); }
+ .letter-bloom-garden__meadow { height:420px;bottom:-50px; }
  .letter-bloom-garden__grass--strip { min-width:760px; }
  .letter-bloom-garden__grass--left,.letter-bloom-garden__grass--right { width:50vw; }
 }

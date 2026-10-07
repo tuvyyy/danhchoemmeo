@@ -17,7 +17,7 @@ function BirthdayJourney() {
   const { currentChapter, unlockedThrough, isTransitioning, advance, goTo, isUnlocked } = useChapterFlow();
 
   return (
-    <div className="relative min-h-screen min-h-[100svh] w-full bg-ink text-cream">
+    <div data-current-chapter={CHAPTER_REGISTRY[currentChapter].id} className="relative min-h-screen min-h-[100svh] w-full bg-ink text-cream">
       {/* Romantic Preloader */}
       <AnimatePresence mode="wait">
         {isLoading && (
@@ -31,14 +31,15 @@ function BirthdayJourney() {
           <AmbientGlow />
 
           {/* Floating petals and journey companion */}
-          {currentChapter > 0 && <ScrollCompanion />}
-          <div data-journey-ui className="contents">{currentChapter !== 6 && <CustomCursor />}</div>
+          {currentChapter > 0 && CHAPTER_REGISTRY[currentChapter].id !== 'anniversary' && <ScrollCompanion />}
+          <div data-journey-ui className="contents">{CHAPTER_REGISTRY[currentChapter].id !== 'finale' && <CustomCursor />}</div>
 
           {/* Chapter navigation rail */}
           {currentChapter > 2 && (
             <ProgressRail
-              compact={currentChapter >= 3 && currentChapter <= 5}
+              compact={currentChapter >= 3 && CHAPTER_REGISTRY[currentChapter].id !== 'finale'}
               steps={BIRTHDAY_DATA.steps}
+              chapterNumbers={CHAPTER_REGISTRY.map(meta => meta.displayNumber)}
               current={currentChapter}
               unlocked={unlockedThrough + 1}
               onSelect={goTo}
@@ -55,6 +56,7 @@ function BirthdayJourney() {
               ) : null,
             )}
           </main>
+
 
         </>
       )}

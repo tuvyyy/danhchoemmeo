@@ -1,12 +1,13 @@
 interface ProgressRailProps {
   steps: string[];
+  chapterNumbers: number[];
   current: number;
   unlocked: number;
   onSelect?: (index: number) => void;
   compact?: boolean;
 }
 
-export default function ProgressRail({ steps, current, unlocked, onSelect, compact = false }: ProgressRailProps) {
+export default function ProgressRail({ steps, chapterNumbers, current, unlocked, onSelect, compact = false }: ProgressRailProps) {
   return (
     <nav
       aria-label="Tiến trình hành trình"
@@ -23,7 +24,7 @@ export default function ProgressRail({ steps, current, unlocked, onSelect, compa
             disabled={!isUnlocked}
             onClick={() => isUnlocked && onSelect?.(i)}
             aria-current={isCurrent ? "step" : undefined}
-            aria-label={`${step} (Chương ${i + 1})${isUnlocked ? "" : " - Chưa mở"}`}
+            aria-label={`${step} (Chương ${chapterNumbers[i]})${isUnlocked ? "" : " - Chưa mở"}`}
             className={`group flex items-center gap-3 text-left transition-opacity outline-none ${
               isUnlocked ? "cursor-pointer" : "cursor-not-allowed opacity-40"
             }`}

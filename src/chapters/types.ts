@@ -18,14 +18,15 @@ export interface ChapterSectionProps {
 export interface ChapterMeta {
   id: ChapterId;
   index: number;
+  displayNumber: number;
   label: string;
   Component: ComponentType<{ onComplete: (options?: { instant?: boolean }) => void }> | ComponentType<{ onComplete?: (options?: { instant?: boolean }) => void }>;
 }
 
 export interface ChapterFlowContextValue {
-  /** Current chapter index in focus/view (0..6) */
+  /** Current chapter index in focus/view (0..5) */
   currentChapter: number;
-  /** Highest chapter index unlocked (0..6) */
+  /** Highest chapter index unlocked (0..5) */
   unlockedThrough: number;
   /** Chapters the visitor has advanced past through navigation */
   completedChapters: Set<number>;

@@ -10,8 +10,8 @@ export const CHAPTER_CURSOR_THEMES: ReadonlyArray<{
   { shape: 'tulip', accent: '#f0a0ba', trail: 'rgba(240, 160, 186, ', particle: 'bubble' },
   { shape: 'gift', accent: '#e8bf78', trail: 'rgba(232, 191, 120, ', particle: 'star' },
   { shape: 'quill', accent: '#edd5ad', trail: 'rgba(237, 213, 173, ', particle: 'star' },
-  { shape: 'camera', accent: '#c3d3e2', trail: 'rgba(195, 211, 226, ', particle: 'bubble' },
   { shape: 'heart', accent: '#e6a6ac', trail: 'rgba(230, 166, 172, ', particle: 'heart' },
+  { shape: 'heart', accent: '#576785', trail: 'rgba(87, 103, 133, ', particle: 'heart' },
 ];
 
 /** The small star at (6, 4) marks the same click point for every silhouette. */

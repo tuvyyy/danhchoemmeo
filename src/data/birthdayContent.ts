@@ -21,7 +21,7 @@ export const BIRTHDAY_DATA = {
     dateFormatted: "10 · 11 · 2003",
     dateShort: "10.11",
   },
-  steps: ["Mở đầu", "Hoa", "Lì xì", "Lá thư", "Khoảnh khắc", "Tụi mình", "Ước"],
+  steps: ["Mở đầu", "Hoa", "Lì xì", "Lá thư", "Ước", "Tụi mình"],
   hero: {
     quote: "“Tui phi từ Nam ra Bắc, tui mang tình yêu từ Sài Gòn đến meo đây hayyaaaaaa~” 🐷💨",
     headingPrefix: "Chúc mừng",
@@ -122,7 +122,7 @@ export const BIRTHDAY_DATA = {
     zoomBtn: "⤢ phóng to",
     closeBtn: "đóng thư",
     shrinkBtn: "thu nhỏ ✕",
-    cta: "Nhớ lại tụi mình",
+    cta: "Ước một điều nha",
     pages: [
       {
         title: "Gửi em mèo,",
@@ -183,10 +183,10 @@ export const BIRTHDAY_DATA = {
       { label: "Sài Gòn ↔ Hà Nội", copy: "xa một chút, thương nhiều chút" },
       { label: "Hôm nay", copy: "vẫn là em và tui" },
     ],
-    cta: "Còn một cảnh cuối",
+    cta: "Xem lại từ đầu",
   },
   finale: {
-    chapter: "Chương 06 — Ước một điều nha",
+    chapter: "Chương 04 — Ước một điều nha",
     heading: "Thổi nến và ước đi em,",
     subtitle: "năm nay để tui lo phần còn lại.",
     candlePrompt: "chạm để thổi nến ✨",

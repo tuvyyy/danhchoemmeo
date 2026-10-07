@@ -24,7 +24,7 @@ export default function ChapterStage({ meta, children, className = "" }: Chapter
       style={{ touchAction: 'pan-x pinch-zoom' }}
       ref={(el) => registerStageRef(meta.index, el)}
       className={`relative min-h-screen min-h-[100svh] w-full outline-none transition-colors ${className}`}
-      aria-label={`${meta.label} (Chương ${meta.index + 1})`}
+      aria-label={`${meta.label} (Chương ${meta.displayNumber})`}
     >
       <div
         data-chapter-content={meta.id}

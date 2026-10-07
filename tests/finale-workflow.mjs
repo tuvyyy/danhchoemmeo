@@ -22,7 +22,7 @@ try {
  const click=selector=>p.$eval(selector,e=>e.click());
  const cursorShapes=new Set();
  const expectCursor=async (chapter,shape)=>{
-  if(mobile||chapter===6){
+  if(mobile||chapter===4){
    assert.equal(await p.$('[data-custom-cursor]'),null,'Touch devices and the finale keep their native cursor');
    assert.equal(await p.evaluate(()=>document.body.classList.contains('custom-cursor-enabled')),false);
    return;
@@ -62,7 +62,7 @@ try {
   const direction=reverse?'reverse':'forward';
   await capture({path:`${out}/${direction}-000.png`});
   await input((reverse?-1:1)*(mobile?90:120));
-  await stable(reverse?'anniversary':'finale');
+  await stable(reverse?'finale':'anniversary');
   await capture({path:`${out}/${direction}-100.png`});
  };
  await p.goto(journeyURL,{waitUntil:'networkidle2'});
@@ -78,12 +78,9 @@ try {
   await p.waitForFunction(()=>!document.body.classList.contains('custom-cursor-enabled')&&+getComputedStyle(document.querySelector('[data-custom-cursor]')).opacity===0);
   await p.keyboard.press('Escape');await p.waitForSelector('.letter-reader',{hidden:true});await expectCursor(3,'quill');
  }
- await edge('letter');await click('.letter-next');await stable('moments');await expectCursor(4,'camera');
- for(let i=0;i<4;i++)await click(`.memory-print[data-index="${i}"]`);
- await wait(reduced?100:950);await edge('moments');await click('.moments-next');await stable('anniversary');
- await expectCursor(5,'heart');if(!mobile)assert.equal(cursorShapes.size,6,'Each chapter has a distinct silhouette');
- await edge('anniversary');if(transitions)await boundary(false);else {await click('.together-next');await stable('finale');}
- await expectCursor(6,'wind');
+ await edge('letter');await click('.letter-next');await stable('finale');
+ assert.equal(await p.$('#chapter-moments'),null,'The journey skips the removed album');
+ await expectCursor(4,'wind');
  await p.waitForFunction(()=>document.querySelector('.birthday-cake img')?.complete&&document.querySelector('.birthday-cake img')?.naturalWidth>0);
  await p.waitForFunction(()=>[...document.querySelectorAll('.butterfly-wing img')].every(e=>e.complete&&e.naturalWidth>0));
  assert.equal(await p.$$eval('.butterfly-flight',es=>es.length),6,'Add two butterflies');
@@ -143,14 +140,14 @@ try {
  assert(await p.$eval('.candle-blow-action',e=>document.activeElement===e),'keyboard focus returns to the blow control');
  await p.keyboard.press('Space');await p.waitForSelector('.celebration-scene[data-blown="true"]');
  assert(await p.$eval('.reignite-btn',e=>document.activeElement===e),'keyboard focus follows the replacement control');
- await p.evaluate(()=>scrollTo({top:document.querySelector('#chapter-finale').offsetTop,behavior:'instant'}));
- if(transitions)await boundary(true);else {await p.mouse.wheel({deltaY:-(mobile?844:900)});await stable('anniversary');}
- assert.equal(await p.$eval('.butterfly-flight',e=>getComputedStyle(e).animationPlayState),'paused','flight stops after leaving the finale');
- await expectCursor(5,'heart');
- await click('.together-next');await stable('finale');
- assert.equal(await p.$eval('.celebration-scene',e=>e.dataset.blown),'true','the wish persists across chapter re-entry');
+ await edge('finale');if(transitions)await boundary(false);else {await click('.wish-next');await stable('anniversary');}
+ assert.equal(await p.$eval('.butterfly-flight',e=>getComputedStyle(e).animationPlayState),'paused','Flight stops after leaving the wish');
+ await expectCursor(5,'heart');if(!mobile)assert.equal(cursorShapes.size,5,'Each decorated chapter has a distinct silhouette');
+ await p.evaluate(()=>scrollTo({top:document.querySelector('#chapter-anniversary').offsetTop,behavior:'instant'}));
+ if(transitions)await boundary(true);else {await input(-(mobile?90:120));await stable('finale');}
+ assert.equal(await p.$eval('.celebration-scene',e=>e.dataset.blown),'true','The wish persists across chapter re-entry');
  assert.equal(await p.$eval('.candle-flame',e=>+getComputedStyle(e).opacity),0);
- await p.click('.revisit-btn');await stable('hero');assert.equal(await p.evaluate(()=>document.activeElement.id),'chapter-hero');
+ await click('.wish-next');await stable('anniversary');await click('.together-next');await stable('hero');assert.equal(await p.evaluate(()=>document.activeElement.id),'chapter-hero');
  await expectCursor(0,'paw');
  assert.deepEqual(errors,[]);
  console.log(`${out}: PASS chapter cursor routing, overlay restoration, wind gesture, anchored candle, keyboard focus, relight, retained wish, replay and reduced=${reduced}`);

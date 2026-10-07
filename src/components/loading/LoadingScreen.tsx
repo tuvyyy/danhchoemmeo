@@ -9,7 +9,7 @@ export default function LoadingScreen({onFinish}:{onFinish:()=>void}) {
   const started=performance.now();
   const image=(src:string)=>new Promise<void>(resolve=>{const img=new Image();img.onload=()=>resolve();img.onerror=()=>resolve();img.src=src;});
   // The opening artwork comes first; later chapter photographs warm their cache independently.
-  BIRTHDAY_DATA.moments.items.forEach(item=>void image(item.src));
+  void image(BIRTHDAY_DATA.moments.items[3].src);
   Promise.all([document.fonts.ready,image('/assets/garden-gate/estate-sunset.webp'),image('/assets/hero-gallery/ivory-relief.webp'),image('/assets/hero-gallery/night-botanical.webp')]).then(()=>{ready=true;});
   const timer=window.setInterval(()=>{
    if(disposed)return;

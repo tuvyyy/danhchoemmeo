@@ -1,6 +1,7 @@
 import { scrollMotionDriver } from "./scrollMotionDriver";
 import gsap from "gsap";
 import { videoPaperFold } from "./videoPaperFold";
+import { settleEnvelopeArrival } from "@/sections/voucher/envelopeArrival";
 export function flowersVoucherHandoff({flowers,voucher,gardenContent,voucherContent,reverse,scrollDelta,finish}: {
  flowers:HTMLElement;voucher:HTMLElement;gardenContent:HTMLElement;voucherContent:HTMLElement;reverse:boolean;scrollDelta?:number;finish:(atGarden:boolean)=>void;
 }) {
@@ -14,6 +15,7 @@ export function flowersVoucherHandoff({flowers,voucher,gardenContent,voucherCont
  document.documentElement.dataset.flowersVoucherHandoff=reverse?"reverse":"forward";
  const backdrop=document.createElement("div");backdrop.className="flowers-voucher-background";garden.prepend(backdrop);
  let choreography:gsap.core.Timeline;
+ let lastProgress=reverse?1:0;
  let heroTop=0,heroHeight=0,pocketY=0,envelopeCentre=0;
  const context=gsap.context(()=>{
   gsap.set(flowers,{height,zIndex:20});gsap.set(voucher,{height:innerHeight,zIndex:30});
@@ -35,11 +37,17 @@ export function flowersVoucherHandoff({flowers,voucher,gardenContent,voucherCont
    .to(hero,{opacity:0,duration:.78,ease:"sine.inOut"},.12)
    .fromTo(envelope,{y:innerHeight*.58,scale:.78},{y:0,scale:1,duration:.72,ease:"sine.out"},.1)
    .fromTo(envelope,{opacity:0},{opacity:1,duration:.18},.1)
-   .fromTo(voucher.querySelectorAll(".envelope-frame,.envelope-petals,.scene-next"),{opacity:0},{opacity:1,duration:.2},.78);
+   .fromTo(voucher.querySelector(".envelope-frame"),{opacity:0},{opacity:1,duration:.35},.4)
+   .fromTo(voucher.querySelectorAll(".royal-corner"),{autoAlpha:0,scale:.92,filter:"blur(3px)"},{autoAlpha:1,scale:1,filter:"blur(0px)",duration:.32},.48)
+   .fromTo(voucher.querySelectorAll(".corner-line--h"),{scaleX:0},{scaleX:1,duration:.28,ease:"power2.out"},.52)
+   .fromTo(voucher.querySelectorAll(".corner-line--v"),{scaleY:0},{scaleY:1,duration:.28,ease:"power2.out"},.52)
+   .fromTo(voucher.querySelector(".envelope-light"),{opacity:0},{opacity:.6,duration:.55},.22)
+   .fromTo(voucher.querySelectorAll(".envelope-petals,.scene-next"),{opacity:0},{opacity:1,duration:.3},.55);
  });
   return scrollMotionDriver({
-    reverse, scrollDelta, finish,
+    reverse, scrollDelta, finish, commitOnIntent:true,
     paint: progress => {
+      lastProgress=progress;
       choreography.progress(progress); fold?.paint(fabric.amount); garden.dataset.handoffProgress=progress.toFixed(4);
       // The pulled tip disappears inside the pocket, never out through its bottom edge.
       const heroY=Number(gsap.getProperty(hero,"y")),heroScale=Number(gsap.getProperty(hero,"scaleY"));
@@ -49,6 +57,6 @@ export function flowersVoucherHandoff({flowers,voucher,gardenContent,voucherCont
       const cut=(pocketAt-topAt)/Math.max(.01,heroScale);
       hero.style.clipPath=`inset(-200% -200% ${heroHeight-cut}px -200%)`;
     },
-    cleanup: () => { context.revert(); fold?.dispose(); backdrop.remove(); delete garden.dataset.handoffProgress; delete document.documentElement.dataset.flowersVoucherHandoff;  },
+    cleanup: () => { context.revert(); if(lastProgress>=.5)settleEnvelopeArrival(scene);fold?.dispose(); backdrop.remove(); delete garden.dataset.handoffProgress; delete document.documentElement.dataset.flowersVoucherHandoff;  },
   });
 }

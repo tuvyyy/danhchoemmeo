@@ -14,3 +14,15 @@ const turn=harness();turn.driver.move(399);for(let i=0;i<8;i++)turn.step();turn.
 const noise=harness();noise.driver.move(119);noise.driver.move(-2);noise.driver.release();for(let i=0;i<300;i++)noise.step();assert.deepEqual(noise.finishes,[false],'Small trackpad direction noise does not cancel an intentional gesture');
 const paced=harness();paced.driver.move(99999);for(let i=0;i<60;i++)paced.step();assert(paced.values.at(-1)<=.501,'A huge wheel delta respects the half-chapter-per-second speed limit');assert.equal(paced.finishes.length,0);paced.driver.move(-99999);paced.driver.release();for(let i=0;i<300;i++)paced.step();assert.deepEqual(paced.finishes,[true],'Speed-limited motion still reverses and settles');
 console.log('PASS: 180 reversals, one frame loop, idle sleep, bounded progress, endpoint once, Escape both directions, suspended frames and disposal');
+{
+ let time=0,id=0;const callbacks=new Map(),values=[],finishes=[];
+ const clock={now:()=>time,request:cb=>{callbacks.set(++id,cb);return id;},cancel:id=>callbacks.delete(id)};
+ const driver=scrollMotionDriver({reverse:false,scrollDelta:20,distance:1000,commitOnIntent:true,clock,paint:p=>values.push(p),cleanup:()=>{},finish:v=>finishes.push(v)});
+ const step=()=>{time+=1000/60;const pending=[...callbacks.values()];callbacks.clear();pending.forEach(cb=>cb(time));};
+ for(let i=0;i<60;i++)step();
+ assert(values.at(-1)>.4&&values.at(-1)<=.501,'A 20px wheel begins the whole handoff immediately, without release and with the same speed cap');
+ const beforeNoise=values.at(-1);driver.move(-2);for(let i=0;i<4;i++)step();assert(values.at(-1)>beforeNoise,'Tiny reversal noise does not restart arrival');
+ driver.move(-20);for(let i=0;i<300;i++)step();assert.deepEqual(finishes,[true],'A deliberate small reverse remains responsive during the committed handoff');
+ assert.equal(callbacks.size,0);
+ console.log('PASS small voucher intent: starts without idle release, unchanged pacing, direction noise and deliberate reversal');
+}

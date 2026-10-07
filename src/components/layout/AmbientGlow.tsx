@@ -34,11 +34,11 @@ const CHAPTER_GLOWS: Record<
     secondary: "radial-gradient(circle, rgba(217, 119, 6, 0.16) 0%, rgba(146, 64, 14, 0.08) 50%, transparent 70%)",
     accent: "radial-gradient(circle, rgba(254, 243, 199, 0.10) 0%, transparent 65%)",
   },
-  // 4. Moments (Cosmic Deep Sapphire & Starry Cyan)
+  // 4. Anniversary (Champagne & Strawberry Gold)
   4: {
-    primary: "radial-gradient(circle, rgba(14, 165, 233, 0.22) 0%, rgba(2, 132, 199, 0.12) 45%, transparent 70%)",
-    secondary: "radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(67, 56, 202, 0.08) 50%, transparent 70%)",
-    accent: "radial-gradient(circle, rgba(45, 212, 191, 0.14) 0%, transparent 65%)",
+    primary: "radial-gradient(circle, rgba(251, 191, 36, 0.24) 0%, rgba(245, 158, 11, 0.14) 45%, transparent 70%)",
+    secondary: "radial-gradient(circle, rgba(244, 63, 94, 0.20) 0%, rgba(225, 29, 72, 0.10) 50%, transparent 70%)",
+    accent: "radial-gradient(circle, rgba(253, 224, 71, 0.18) 0%, transparent 65%)",
   },
   // 5. Finale (Champagne Celebration & Strawberry Gold)
   5: {

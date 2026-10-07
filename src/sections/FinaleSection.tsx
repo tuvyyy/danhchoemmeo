@@ -2,7 +2,6 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEv
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import { useSceneExperience } from "@/components/effects/SceneExperience";
 import { useScenePreferences } from "@/components/effects/useScenePreferences";
-import { useChapterFlow } from "@/chapters/useChapterFlow";
 import { useChapterLifecycle } from "@/chapters/useChapterLifecycle";
 import { candleWind, type WindPoint } from './candleWind';
 import { FinaleButterflies } from './FinaleButterflies';
@@ -11,8 +10,7 @@ import "./finale-scene.css";
 export default function FinaleSection({ onComplete }: { onComplete?: () => void } = {}) {
   const { celebrate, overlayOpen } = useSceneExperience();
   const { mobile, reducedMotion } = useScenePreferences();
-  const { goTo } = useChapterFlow();
-  const { isActive, isTransitioning } = useChapterLifecycle(6);
+  const { isActive, isTransitioning } = useChapterLifecycle(4);
   const [blown, setBlown] = useState(false);
   const [gusting, setGusting] = useState(false);
   const [visible, setVisible] = useState(() => !document.hidden);
@@ -25,8 +23,8 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
 
   const extinguish=useCallback(()=>{
     if(!lit.current)return;
-    lit.current=false;setBlown(true);celebrate();onComplete?.();
-  },[celebrate,onComplete]);
+    lit.current=false;setBlown(true);celebrate();
+  },[celebrate]);
   const blow=useCallback((event:MouseEvent<HTMLButtonElement>)=>{
     transferFocus.current=document.activeElement===event.currentTarget;extinguish();
   },[extinguish]);
@@ -70,7 +68,7 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
 
   return <section ref={root} className="finale-scene celebration-scene" data-blown={blown} data-gusting={gusting} data-animating={isActive&&!isTransitioning&&!overlayOpen&&visible&&!reducedMotion} aria-label={finale.chapter}>
     <div className="finale-lighting" aria-hidden="true"/>
-    <header className="finale-header"><span>CHƯƠNG 06 / MỘT ĐIỀU ƯỚC</span><span>10 NOVEMBER</span></header>
+    <header className="finale-header"><span>CHƯƠNG 04 / MỘT ĐIỀU ƯỚC</span><span>10 NOVEMBER</span></header>
     <div className="finale-main">
       <div className="finale-copy" data-mascot-obstacle>
         <span className="finale-kicker">DÀNH RIÊNG EM MÈO</span>
@@ -80,7 +78,7 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
           {!blown?<>
             <span className="wind-invitation"><svg viewBox="0 0 48 20" fill="none" aria-hidden="true"><path d="M1 5h31c11 0 11-7 4-7M8 11h33c8 0 8 8 1 8M1 17h22"/></svg>{mobile?'Vuốt ngang ngọn nến để gửi điều ước.':'Quơ chuột ngang ngọn nến để gửi điều ước.'}</span>
             <button ref={blowButton} className="candle-blow-action" onClick={blow}>Thổi nến <span aria-hidden="true">↗</span></button>
-          </>:<div className="blown-actions"><button ref={reigniteButton} className="reignite-btn" onClick={reignite}>Thắp lại nến <span aria-hidden="true">↺</span></button><button className="revisit-btn" onClick={()=>goTo(0)}>Xem lại từ đầu <span aria-hidden="true">↗</span></button></div>}
+          </>:<div className="blown-actions"><button ref={reigniteButton} className="reignite-btn" onClick={reignite}>Thắp lại nến <span aria-hidden="true">↺</span></button><button className="wish-next" onClick={onComplete}>Ngày của tụi mình <span aria-hidden="true">↗</span></button></div>}
         </div>
       </div>
       <div className="finale-centerpiece">

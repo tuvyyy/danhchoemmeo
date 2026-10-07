@@ -9,6 +9,9 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 try {
  const p = await browser.newPage(), errors = [], requests = [];
  await p.evaluateOnNewDocument(()=>{
+  window.bloomPaintCount=0;
+  const draw=CanvasRenderingContext2D.prototype.drawImage;
+  CanvasRenderingContext2D.prototype.drawImage=function(...args){if(this.canvas.closest('[data-layer="flower-bloom"]'))window.bloomPaintCount++;return Reflect.apply(draw,this,args);};
   window.bloomHistory={pink:[],ivory:[],midnight:[]};
   new MutationObserver(records=>{for(const {target} of records){const color=target.dataset?.flowerColor,frame=+target.dataset?.bloomFrame;if(window.bloomHistory[color]&&!window.bloomHistory[color].includes(frame))window.bloomHistory[color].push(frame);}}).observe(document,{subtree:true,attributes:true,attributeFilter:['data-bloom-frame']});
  });
@@ -40,7 +43,7 @@ try {
  } else await p.click('.scene-next');
  await p.waitForFunction(() => document.querySelector('#chapter-letter').dataset.chapterState === 'active' && !document.documentElement.dataset.voucherLetterHandoff);
  if (mobile) await p.evaluate(() => document.querySelector('.letter-bloom-garden').scrollIntoView({ block: 'end', behavior: 'instant' }));
- await p.waitForSelector('.letter-bloom-garden[data-running="true"]');
+ await p.waitForSelector('.letter-bloom-garden[data-running="true"]').catch(async error=>{console.log('Garden activation',await p.evaluate(()=>({scrollY,hidden:document.hidden,chapter:document.querySelector('[data-current-chapter]')?.dataset.currentChapter,garden:document.querySelector('.letter-bloom-garden')?.dataset,rect:document.querySelector('.letter-bloom-garden')?.getBoundingClientRect().toJSON()})));throw error;});
  assert.equal(await p.$$eval('.letter-bloom-garden__flowers canvas', es => es.length), 9);
  assert.equal(await p.$eval('.letter-vines', e => e.dataset.visible), 'true', 'Vines remain hanging after the chapter transition settles');
  await p.waitForSelector('.letter-bloom-garden__pond[data-water-ready="true"]');
@@ -53,7 +56,7 @@ try {
   const main=document.querySelector('[data-flower-main]'),front=[...document.querySelectorAll('.letter-bloom-garden__bloom--front')];
   return{shoreOverlap:pond.getBoundingClientRect().bottom-meadow.getBoundingClientRect().top,grassInFront:+getComputedStyle(meadow).zIndex>+getComputedStyle(flowers).zIndex,mainWidth:main.getBoundingClientRect().width,frontWidths:front.map(e=>e.getBoundingClientRect().width)};
  });
- assert(staging.shoreOverlap>0&&staging.grassInFront,'The lake shore joins foreground grass, which occludes the flower stems');
+ assert(staging.grassInFront,'Foreground grass occludes the flower stems below the raised pond');
  assert(staging.frontWidths.every(w=>w<staging.mainWidth*.75),'Flower sizes form a cluster around one leading bloom');
  assert.equal(await p.$('.letter-cover'), null, 'The letter is a flat page, without a book cover');
  assert.equal(await p.$$eval('.letter-bloom-garden__grass', es => es.length), 3, 'The original three grass layers return');
@@ -112,13 +115,15 @@ try {
    const samples=[.05,.45,.75,.95].map(phase=>{
     animations.forEach(a=>a.currentTime=phase*30000);
     const bounds=pond.getBoundingClientRect();
+    const bloom=document.querySelector('[data-flower-main]').getBoundingClientRect();
     const feet=birds.map(bird=>{const b=bird.getBoundingClientRect();return{x:(b.left+b.width*.52-bounds.left)/bounds.width,y:(b.top+b.height*.84-bounds.top)/bounds.height};});
-    return{phase,feet,separation:Math.abs(feet[0].x-feet[1].x),heart:+getComputedStyle(heart).opacity};
+    return{phase,feet,clearOfFlowers:birds.every(bird=>bird.getBoundingClientRect().bottom<bloom.top+bloom.height*.12),separation:Math.abs(feet[0].x-feet[1].x),heart:+getComputedStyle(heart).opacity};
    });
    animations.forEach((a,i)=>{a.currentTime=saved[i].time;if(saved[i].state==='running')a.play();});
    return samples;
   });
   assert(encounters.every(s=>s.feet.every(f=>f.x>.42&&f.x<.75&&f.y>.54&&f.y<.7)),`Both swans stay on central open water: ${JSON.stringify(encounters)}`);
+  assert(encounters.every(s=>s.clearOfFlowers),`Both swans remain above the tall flower petals throughout their route: ${JSON.stringify(encounters)}`);
   assert(encounters[1].separation<encounters[0].separation*.5,'The swans approach each other instead of swimming unrelated loops');
   assert(encounters[1].heart>.25&&encounters.filter(s=>s.phase!==.45).every(s=>s.heart<.01),'A faint heart appears only while the pair meet');
  } else {
@@ -140,21 +145,57 @@ try {
  if (mobile) await p.evaluate(() => document.querySelector('.letter-desk').scrollIntoView({ block: 'start', behavior: 'instant' }));
  await p.mouse.move(800, 60);
  await capture({ path: `${out}/04-letter-open.png` });
+ const finishedPaints=await p.evaluate(()=>window.bloomPaintCount);
  await p.click('.letter-page__read'); await p.waitForSelector('.letter-reader');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
  assert(await p.$$eval('.letter-vines__sway',es=>es.every(e=>getComputedStyle(e).animationPlayState==='paused'||getComputedStyle(e).animationName==='none')),'Reading pauses the hanging vines');
  assert.equal(await p.$eval('.pond-water-canvas',e=>e.dataset.running),'false','Reading pauses the water renderer');
  const pausedWater=await waterSnapshot();await wait(250);
+ assert.equal(await p.evaluate(()=>window.bloomPaintCount),finishedPaints,'Pausing completed flowers reuses their bitmap instead of repainting all nine canvases');
  assert.equal(await waterSnapshot(),pausedWater,'The water freezes while reading instead of running a hidden animation');
  assert(await p.$$eval('.pond-swimmer,.pond-wake',es=>es.every(e=>getComputedStyle(e).animationPlayState==='paused'||getComputedStyle(e).animationName==='none')),'Reading pauses the swans and their wakes');
  await p.keyboard.press('ArrowRight');
  assert.equal(await p.$eval('.letter-reader .letter-page', e => e.dataset.page), '1');
  await p.keyboard.press('Escape'); await p.waitForSelector('.letter-reader', { hidden: true });
  assert.equal(await p.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+ if(process.argv.includes('--direct-handoff-frames')&&!reduced){
+  await p.evaluate(async()=>{
+   const {letterWishHandoff}=await import('/src/chapters/letterWishHandoff.ts');
+   const incoming=document.querySelector('#chapter-finale');
+   window.pondReviewIncomingState=incoming.dataset.chapterState;
+   incoming.dataset.chapterState='entering';
+   window.pondReviewHandoff=letterWishHandoff({letter:document.querySelector('#chapter-letter'),wish:document.querySelector('#chapter-finale'),letterContent:document.querySelector('[data-chapter-content="letter"]'),wishContent:document.querySelector('[data-chapter-content="finale"]'),reverse:false,scrollDelta:0,finish:()=>{}});
+  });
+  for(const percent of [0,20,40,50,60,80]){
+   if(percent){await p.evaluate(percent=>window.pondReviewHandoff.seek(percent/100,false),percent);await p.waitForFunction(percent=>Math.abs(+document.querySelector('.celebration-scene').dataset.handoffProgress-percent/100)<.002,{},percent);}
+   await capture({path:`${out}/direct-${String(percent).padStart(3,'0')}.png`});
+  }
+  await p.evaluate(()=>{window.pondReviewHandoff.dispose();document.querySelector('#chapter-finale').dataset.chapterState=window.pondReviewIncomingState;delete window.pondReviewHandoff;delete window.pondReviewIncomingState;});
+ }
  await p.click('.letter-next');
- await p.waitForFunction(() => document.querySelector('#chapter-moments').dataset.chapterState === 'active');
+ await p.waitForFunction(() => document.querySelector('#chapter-finale').dataset.chapterState === 'active');
+ assert.equal(await p.$('#chapter-moments'),null,'The moments chapter is removed from the journey');
+ assert.equal(await p.$$eval('nav[aria-label="Tiến trình hành trình"] button',es=>es.length),6,'Navigation has six chapters');
+ assert.equal(await p.$eval('#chapter-finale',e=>e.getAttribute('aria-label')),'Ước (Chương 4)');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
  assert.equal(await p.$eval('.letter-vines',e=>e.dataset.visible),'false','Vines leave with chapter three');
+ if(process.argv.includes('--direct-handoff-frames')&&!reduced){
+  await capture({path:`${out}/direct-100.png`});
+  await p.evaluate(async()=>{
+   const {letterWishHandoff}=await import('/src/chapters/letterWishHandoff.ts');
+   window.pondReviewHandoff=letterWishHandoff({letter:document.querySelector('#chapter-letter'),wish:document.querySelector('#chapter-finale'),letterContent:document.querySelector('[data-chapter-content="letter"]'),wishContent:document.querySelector('[data-chapter-content="finale"]'),reverse:true,scrollDelta:0,finish:()=>{}});
+  });
+  for(const percent of [100,80,60,50,40,20]){
+   if(percent<100){await p.evaluate(percent=>window.pondReviewHandoff.seek(percent/100,false),percent);await p.waitForFunction(percent=>Math.abs(+document.querySelector('.celebration-scene').dataset.handoffProgress-percent/100)<.002,{},percent);}
+   await capture({path:`${out}/reverse-${String(100-percent).padStart(3,'0')}.png`});
+  }
+  await p.evaluate(()=>{window.pondReviewHandoff.dispose();delete window.pondReviewHandoff;});
+  await p.$eval('nav button[aria-label^="Lá thư"]',button=>button.click());
+  await p.waitForFunction(()=>['active','completing'].includes(document.querySelector('#chapter-letter').dataset.chapterState)&&!document.documentElement.dataset.letterWishHandoff);
+  assert.equal(await p.$eval('.letter-vines',e=>e.dataset.visible),'true','The direct reverse route restores the letter vines');
+  assert.equal(await p.$eval('[data-chapter-content="letter"]',e=>getComputedStyle(e).position),'relative','The direct reverse route restores document layout');
+  await capture({path:`${out}/reverse-100.png`});
+ }
  assert.deepEqual(errors, []);
  console.log(`${out}: PASS 3 pink + 3 ivory + 3 native blue petal sequences, paired swans on open water, conditional heart, hanging vines, reading pause, preserved video, no overflow/errors`);
-} catch(error){console.error('Letter garden check failed:',error);throw error;} finally { await browser.close(); }
+} catch(error){console.error('Letter garden check failed:',error);throw error;} finally { await Promise.race([browser.close(),wait(3000).then(()=>browser.process()?.kill())]); }

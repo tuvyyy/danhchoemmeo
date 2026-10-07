@@ -5,12 +5,12 @@ import { TOTAL_CHAPTERS } from "./chapterRegistry";
 import type { ChapterFlowContextValue, ChapterLifecycleState } from "./types";
 import { flowersVoucherHandoff } from "./flowersVoucherHandoff";
 import { voucherLetterHandoff } from "./voucherLetterHandoff";
-import { letterMomentsHandoff } from "./letterMomentsHandoff";
-import { momentsAnniversaryHandoff } from "./momentsAnniversaryHandoff";
-import { anniversaryFinaleHandoff } from "./anniversaryFinaleHandoff";
+import { letterWishHandoff } from "./letterWishHandoff";
+import { wishAnniversaryHandoff } from "./wishAnniversaryHandoff";
 import { heroGardenHandoff } from "./heroGardenHandoff";
 import { smoothChapterScroll } from "./smoothChapterScroll";
 import { chapterScrollGesture } from "./chapterScrollGesture";
+import { chapterScrollRequirement } from "./chapterScrollRequirement";
 
 type Driver = { move:(delta:number)=>void; release?:()=>void; cancel:()=>void; settle:()=>void; dispose:()=>void };
 const ChapterFlowContext = createContext<ChapterFlowContextValue | null>(null);
@@ -60,9 +60,8 @@ export function ChapterFlowProvider({children}:{children:ReactNode}) {
    driver.current=flowersVoucherHandoff({flowers:a,voucher:b,gardenContent:ac,voucherContent:bc,...common});return;
   }
   if(adjacent&&pair===2){driver.current=voucherLetterHandoff({voucher:a,letter:b,voucherContent:ac,letterContent:bc,...common});return;}
-  if(adjacent&&pair===3){driver.current=letterMomentsHandoff({letter:a,moments:b,letterContent:ac,momentsContent:bc,...common});return;}
-  if(adjacent&&pair===4){driver.current=momentsAnniversaryHandoff({moments:a,anniversary:b,momentsContent:ac,anniversaryContent:bc,...common});return;}
-  if(adjacent&&pair===5){driver.current=anniversaryFinaleHandoff({anniversary:a,finale:b,anniversaryContent:ac,finaleContent:bc,...common});return;}
+  if(adjacent&&pair===3){driver.current=letterWishHandoff({letter:a,wish:b,letterContent:ac,wishContent:bc,...common});return;}
+  if(adjacent&&pair===4){driver.current=wishAnniversaryHandoff({wish:a,anniversary:b,wishContent:ac,anniversaryContent:bc,...common});return;}
   // Native chapter geometry stays in place while the opening scene travels.
   const position={y:scrollY};const target=incoming.offsetTop;
   const tween=gsap.to(position,{y:target,duration:.9,ease:"power2.inOut",onUpdate:()=>scrollTo(0,position.y),onComplete:()=>finish()});
@@ -89,12 +88,10 @@ export function ChapterFlowProvider({children}:{children:ReactNode}) {
    const index=current.current,stage=stageRefs.current[index];if(!stage)return false;
    const rect=stage.getBoundingClientRect();
    if(delta>0&&rect.bottom<=innerHeight+2&&index<TOTAL_CHAPTERS-1){
-    if(index===2&&!stage.querySelector('.chapter-envelope-scene[data-state="open"]'))return true;
-    if(index===3&&!stage.querySelector('.letter-atelier[data-open="true"]'))return true;
-    if(index===4&&!stage.querySelector('.memory-table[data-seen="4"]'))return true;
+    if(!inputGesture.canHandoff()||chapterScrollRequirement(index,stage))return true;
     executeTransition(index+1,{scrollDelta:delta});inputGesture.settleIfReleased();return true;
    }
-   if(delta<0&&rect.top>=-2&&index>0){executeTransition(index-1,{scrollDelta:delta});inputGesture.settleIfReleased();return true;}
+   if(delta<0&&rect.top>=-2&&index>0){if(!inputGesture.canHandoff())return true;executeTransition(index-1,{scrollDelta:delta});inputGesture.settleIfReleased();return true;}
    return false;
   };
   const readingScroll=smoothChapterScroll({
@@ -110,7 +107,7 @@ export function ChapterFlowProvider({children}:{children:ReactNode}) {
    }
    return false;
   };
-  const wheel=(e:WheelEvent)=>{if(e.ctrlKey||blocked()||editable(e.target)||nestedScroll(e.target)||Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;const d=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?innerHeight:1);if(!inputGesture.input('wheel',false,e.timeStamp)){e.preventDefault();return;}if(driver.current){driver.current.move(d);e.preventDefault();}else if(!busy.current&&readingScroll.move(d))e.preventDefault();};
+  const wheel=(e:WheelEvent)=>{if(e.ctrlKey||blocked()||editable(e.target)||nestedScroll(e.target)||Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;const d=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?innerHeight:1);if(!inputGesture.input('wheel',false,e.timeStamp,d)){e.preventDefault();return;}if(driver.current){driver.current.move(d);e.preventDefault();}else if(!busy.current&&readingScroll.move(d))e.preventDefault();};
   const start=(e:PointerEvent)=>{
    if(e.pointerType!=='touch'||!e.isPrimary||blocked()||editable(e.target)||nestedScroll(e.target))return;
    readingScroll.cancel();inputGesture.startTouch();touchId=e.pointerId;

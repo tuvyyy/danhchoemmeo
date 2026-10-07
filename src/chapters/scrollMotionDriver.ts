@@ -5,7 +5,7 @@ export interface MotionClock {
 }
 
 /** One frame loop for a gesture. New input changes the destination, not the clock. */
-export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finish, distance, clock, autoDuration, response = 10, maxSpeed = .5 }: {
+export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finish, distance, clock, autoDuration, response = 10, maxSpeed = .5, commitOnIntent = false }: {
   reverse: boolean;
   scrollDelta?: number;
   paint: (progress: number) => void;
@@ -19,6 +19,8 @@ export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finis
   response?: number;
   /** Maximum chapter progress per second, including strong wheel/trackpad input. */
   maxSpeed?: number;
+  /** Start a complete handoff as soon as a deliberate gesture arrives, without an idle/release gap. */
+  commitOnIntent?: boolean;
 }) {
   const timing = clock ?? {
     now: () => performance.now(),
@@ -71,7 +73,9 @@ export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finis
       position += change;
       if (position < 0 || position > 1) { position = clamp(position); velocity = 0; }
     }
-    const settled = !automatic && Math.abs(position - target) < .00008 && Math.abs(velocity) < .003;
+    // Once less than a rendered pixel remains, release ownership immediately.
+    // Waiting for an invisible spring tail makes a finished scene feel frozen.
+    const settled = !automatic && Math.abs(position - target) < Math.min(.002, .75 / travel) && Math.abs(velocity) < .012;
     if (settled) { position = target; velocity = 0; }
     paint(position);
     if (settled) {
@@ -102,9 +106,9 @@ export function scrollMotionDriver({ reverse, scrollDelta, paint, cleanup, finis
       directionalTravel = sign === direction ? directionalTravel + Math.abs(delta) : Math.abs(delta);
       direction = sign;
       // Ignore tiny direction noise, but honor a deliberate reversal immediately.
-      if (directionalTravel >= 40) intent = sign;
+      if (directionalTravel >= (commitOnIntent ? 12 : 40)) intent = sign;
       const next = (automatic ? position : target) + delta / travel;
-      seek(next, false);
+      seek(commitOnIntent && intent ? (intent > 0 ? 1 : 0) : next, false);
     },
     release: () => {
       if (disposed || automatic) return;

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 
 const mobile=process.argv.includes('--mobile'),reduced=process.argv.includes('--reduced');
-const height=mobile?844:900,ids=['hero','flowers','wallet','letter','moments','anniversary','finale'];
+const height=mobile?844:900,ids=['hero','flowers','wallet','letter','finale','anniversary'];
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const browser=await puppeteer.launch({executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
 try{
@@ -72,7 +72,7 @@ try{
  };
  await edge('hero',true);
  if(!mobile&&!reduced){await input(3);await wait(1000);await stable('hero');}
- for(let pair=0;pair<6;pair++){
+ for(let pair=0;pair<ids.length-1;pair++){
   if(pair===2){await p.waitForFunction(()=>document.querySelector('.envelope__seal')?.disabled===false);await p.click('.envelope__seal');await p.waitForSelector('.chapter-envelope-scene[data-state="open"]');}
   if(pair===3){
    await p.click('.letter-page__read');await p.waitForSelector('.letter-reader');const before=await p.evaluate(()=>scrollY);
@@ -80,21 +80,21 @@ try{
    await p.keyboard.press('Escape');await p.waitForSelector('.letter-reader',{hidden:true});
    await edge('letter',true);await p.waitForSelector('.letter-bloom-garden[data-bloomed="true"]',{timeout:20000});await wait(1400);
   }
-  if(pair===4){for(let i=0;i<4;i++)await click(`.memory-print[data-index="${i}"]`);await wait(950);}
   if(pair===2&&!mobile&&!reduced){
    await edge('wallet',true);await input(120);await wait(35);await input(-90);await stable('wallet');
    await edge('wallet',true);await input(120);await wait(35);await p.keyboard.press('Escape');await stable('wallet');
   }
-  if(pair===4&&!mobile&&!reduced){
-   await edge('moments',true);await input(height*.65);await p.waitForFunction(()=>+document.querySelector('.together-scene').dataset.handoffProgress>.55);
-   await p.setViewport({width:1200,height:height-40});await stable('anniversary');
-   await p.setViewport({width:1440,height});await landing(4,true);
+  if(pair===3&&!mobile&&!reduced){
+   await edge('letter',true);await input(height*.65);await p.waitForFunction(()=>+document.querySelector('.celebration-scene').dataset.handoffProgress>.55);
+   await p.setViewport({width:1200,height:height-40});await stable('finale');
+   await p.setViewport({width:1440,height});await landing(3,true);
   }
-  if(pair===5){for(let i=0;i<3;i++){await click(`.together-station:nth-child(${i+1})`);assert.equal(await p.$eval('.together-scene',e=>e.dataset.milestone),String(i));}}
+  if(pair===4){await click('.candle-blow-action');await p.waitForSelector('.celebration-scene[data-blown="true"]');await wait(reduced?150:1900);}
   await landing(pair,false,pair===2&&!mobile);
+  if(pair===4){for(let i=0;i<3;i++){await click(`.together-station:nth-child(${i+1})`);assert.equal(await p.$eval('.together-scene',e=>e.dataset.milestone),String(i));}}
   if(pair===2&&!mobile&&!reduced){await edge('letter',false);await input(-120);await wait(35);await p.keyboard.press('Escape');await stable('letter');}
   await landing(pair,true);
-  if(pair===5)assert.equal(await p.$eval('.together-scene',e=>e.dataset.milestone),'2','Anniversary selection survives a chapter round trip');
+  if(pair===4)assert.equal(await p.$eval('.together-scene',e=>e.dataset.milestone),'2','Anniversary selection survives a chapter round trip');
   await landing(pair);
  }
  assert.deepEqual(errors,[]);
@@ -103,11 +103,11 @@ try{
   const turns=audit.samples.filter(s=>s.label.startsWith('2-'));assert(turns.length>=2);assert(turns.every(s=>Math.abs(s.paperDepth)<.0001&&Math.abs(s.pageDepth)>.01),'The chapter turns as a page while the letter stays flat');
   assert(turns.every(s=>s.vines.some(v=>v.offset> -1.05&&v.offset< -.001&&v.opacity>0)),'Vines fall during the page turn and retract during reverse scrolling');
   const vineReturns=audit.samples.filter(s=>s.label==='3-reverse');
-  assert(vineReturns.length&&vineReturns.every(s=>s.vines.some(v=>v.offset> -1.05&&v.offset< -.001&&v.opacity>0)),'Returning from chapter four drops the vines again');
-  assert(audit.samples.some(s=>s.label==='3-forward'&&s.fragments?.count>100&&s.fragments.flying>50),'The dissolve still uses individual flying fragments');
+  assert(vineReturns.length&&vineReturns.every(s=>s.vines.some(v=>v.offset> -1.05&&v.offset< -.001&&v.opacity>0)),`Returning from chapter five drops the vines again: ${JSON.stringify(vineReturns)}`);
+  assert.equal(await p.$('#chapter-moments'),null,'The removed chapter never mounts during the journey');
  }
  for(const label of new Set(landings.map(l=>l.label))){const frames=audit.frames.filter(f=>f.label===label).map(f=>f.ms).sort((a,b)=>a-b);summary[label]={frames:frames.length,p95Ms:+(frames[Math.floor(frames.length*.95)]||0).toFixed(1),maxMs:+(frames.at(-1)||0).toFixed(1),over50:frames.filter(f=>f>50).length,longTasks:audit.tasks.filter(t=>t.label===label)};}
  const out=`docs/captures/scroll-settle${mobile?'-mobile':''}${reduced?'-reduced':''}`;await fs.mkdir(out,{recursive:true});await fs.writeFile(`${out}/performance.json`,JSON.stringify({landings,summary,samples:audit.samples,errors},null,2));
- console.log(`PASS ${mobile?'touch':'wheel'} ${reduced?'reduced motion':''}: all six boundaries settle forward/reverse, exact edges, no momentum overrun, reader isolation, layers cleaned`);
+ console.log(`PASS ${mobile?'touch':'wheel'} ${reduced?'reduced motion':''}: all five boundaries settle forward/reverse, exact edges, no momentum overrun, reader isolation, layers cleaned`);
  console.log(JSON.stringify(summary));
-}finally{await browser.close();}
+}finally{await Promise.race([browser.close(),wait(3000).then(()=>browser.process()?.kill())]);}

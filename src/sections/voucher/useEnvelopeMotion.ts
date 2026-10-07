@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, type RefObject } from "react";
 import { gsap } from "gsap";
 import { CLOSED_SEAL_Y_PERCENT, VOUCHERS, VOUCHER_PLACEMENTS, type EnvelopeState } from "./voucherConfig";
+import { settleEnvelopeArrival } from "./envelopeArrival";
 
 type Options = {
   root: RefObject<HTMLElement | null>; ready: boolean; running: boolean;
@@ -18,7 +19,7 @@ export function useEnvelopeMotion({ root, ready, running, state, reducedMotion, 
     if (!ready || !root.current) return;
     const ctx = gsap.context(() => {
       timeline.current = gsap.timeline({ id: "chapter02-envelope", paused: true, defaults: { ease: "power2.inOut" } });
-      if (!entered.current && !reducedMotion) {
+      if (!entered.current && !reducedMotion && root.current?.dataset.entered !== "true") {
         // The chapter handoff owns the envelope's entrance position.
         gsap.set(".envelope", { autoAlpha: 1, y: 0 });
         gsap.set(".royal-corner", { autoAlpha: 0, scale: .92, filter: "blur(3px)" });
@@ -35,6 +36,11 @@ export function useEnvelopeMotion({ root, ready, running, state, reducedMotion, 
     if (!ready || !context.current || !timeline.current) return;
     context.current.add(() => {
       const tl = timeline.current!;
+      if (!entered.current && root.current?.dataset.entered === "true") {
+        entered.current = true;
+        settleEnvelopeArrival(root.current);
+        onArrival();
+      }
       if (reducedMotion) {
         tl.pause().clear();
         const open = state === "open" || state === "opening";
@@ -124,6 +130,15 @@ export function useEnvelopeMotion({ root, ready, running, state, reducedMotion, 
       if (!running) tl.pause();
     });
   }, [ready, state, reducedMotion, onFinish, onArrival, root]);
+
+  useLayoutEffect(() => {
+    if (!ready || !running || entered.current || root.current?.dataset.entered !== "true") return;
+    // The shared handoff already revealed the whole scene. Discard the paused
+    // standalone entrance instead of playing another 1.7 seconds after landing.
+    timeline.current?.pause().clear().eventCallback("onComplete", null);
+    entered.current = true;
+    onArrival();
+  }, [ready, running, onArrival, root]);
 
   useLayoutEffect(() => {
     if (running) timeline.current?.resume();

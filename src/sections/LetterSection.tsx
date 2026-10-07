@@ -8,7 +8,6 @@ import { useChapterFlowContext } from "@/chapters/ChapterFlowContext";
 import { ENVELOPE_ASSETS } from "./voucher/voucherConfig";
 import LetterBloomGarden from "./flowers/LetterBloomGarden";
 import LetterVines from "./flowers/LetterVines";
-import { prepareLetterFragments } from "@/chapters/letterFragments";
 import "./letter-scene.css";
 import "./flowers/letter-bloom-garden.css";
 
@@ -54,17 +53,6 @@ export default function LetterSection({ onComplete }: { onComplete: () => void }
   useSceneOverlay(reading);
   const dialogRef = useDialogFocus(reading);
   useEffect(() => { if (!isActive) { setReading(false); if (currentChapter < 3) setPage(0); } }, [isActive, currentChapter]);
-  useEffect(() => {
-    if (!isActive || isTransitioning || reading || !atelier.current) return;
-    let stop: (() => void) | undefined;
-    let timer = 0;
-    const prepare = () => { clearTimeout(timer); timer=window.setTimeout(()=>{stop?.();stop=prepareLetterFragments(atelier.current!);},1250); };
-    prepare();
-    const garden=atelier.current.querySelector('.letter-bloom-garden');
-    const observer=new MutationObserver(prepare);
-    if(garden)observer.observe(garden,{attributes:true,attributeFilter:['data-bloomed']});
-    return()=>{clearTimeout(timer);stop?.();observer.disconnect();};
-  }, [isActive, isTransitioning, page, reading]);
   useEffect(() => {
     if (!reading) return;
     const previous = document.body.style.overflow;

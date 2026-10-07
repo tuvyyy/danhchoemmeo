@@ -77,6 +77,7 @@ export default function FlowerBloomCanvas({
   const [framesReady, setFramesReady] = useState<boolean>(
     () => !!cachedFramesRef.current && cachedFramesRef.current.length === TOTAL_BLOOM_FRAMES
   );
+  const paintedFrameRef = useRef<{ image: BloomCanvasFrame; width: number; height: number; palette: BloomPalette; sequence: BloomSequence } | null>(null);
 
   // ── Draw helper with Retina / High-DPI support ──
   const drawFrame = (frameIdx: number) => {
@@ -99,12 +100,15 @@ export default function FlowerBloomCanvas({
     if ("complete" in targetImg && (!targetImg.complete || targetImg.naturalWidth === 0)) return;
 
     const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
-    const rect = canvas.getBoundingClientRect();
-    const displayWidth = rect.width || 480;
-    const displayHeight = rect.height || 480;
+    // Rasterize the layout box, not its rotating/scaling screen bounds. A page
+    // turn should transform the existing bitmap instead of resizing its buffer.
+    const displayWidth = canvas.clientWidth || 480;
+    const displayHeight = canvas.clientHeight || 480;
 
     const targetWidth = Math.round(displayWidth * dpr);
     const targetHeight = Math.round(displayHeight * dpr);
+    const previous = paintedFrameRef.current;
+    if (previous?.image === targetImg && previous.width === targetWidth && previous.height === targetHeight && previous.palette === palette && previous.sequence === sequence) return;
 
     if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
       canvas.width = targetWidth;
@@ -122,6 +126,7 @@ export default function FlowerBloomCanvas({
     if (containerRef.current) containerRef.current.dataset.paletteRenderer = renderer;
 
     ctx.restore();
+    paintedFrameRef.current = { image: targetImg, width: targetWidth, height: targetHeight, palette, sequence };
   };
 
   // ── 1. Botanical breeze sway on container ──

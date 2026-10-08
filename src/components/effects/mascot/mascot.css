@@ -40,7 +40,7 @@
   .journey-mascot { width: 56px; bottom: max(var(--mascot-bottom, 12px), env(safe-area-inset-bottom)); }
   .journey-mascot[data-side="left"] { left: max(12px, env(safe-area-inset-left)); }
   .journey-mascot[data-side="right"] { right: max(12px, env(safe-area-inset-right)); }
-  .journey-mascot__speech { width: min(230px, calc(100vw - 40px)); font-size: 12px; }
+  .journey-mascot__speech { width: min(230px, calc(100vw - 40px)); font-size: 14px; }
   .journey-mascot__collapse { top: -22px; right: -4px; width: 32px; height: 32px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -49,11 +49,11 @@
 
 /* Chapter 02 (wallet) mascot refinement */
 .journey-mascot[data-chapter="wallet"] {
-  opacity: 0.55;
+  opacity: 1;
   transition: opacity 0.35s ease, left 0.35s ease;
 }
 .journey-mascot[data-chapter="wallet"]:hover {
-  opacity: 0.88;
+  opacity: 1;
 }
 .journey-mascot[data-chapter="wallet"][data-side="left"] {
   left: max(16px, env(safe-area-inset-left));

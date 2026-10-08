@@ -175,7 +175,7 @@ try {
  await p.click('.letter-next');
  await p.waitForFunction(() => document.querySelector('#chapter-finale').dataset.chapterState === 'active');
  assert.equal(await p.$('#chapter-moments'),null,'The moments chapter is removed from the journey');
- assert.equal(await p.$$eval('nav[aria-label="Tiến trình hành trình"] button',es=>es.length),6,'Navigation has six chapters');
+ assert.equal(await p.$('nav[aria-label="Tiến trình hành trình"]'),null,'The chapter progress rail is removed');
  assert.equal(await p.$eval('#chapter-finale',e=>e.getAttribute('aria-label')),'Ước (Chương 4)');
  assert.equal(await p.$eval('.letter-bloom-garden', e => e.dataset.running), 'false');
  assert.equal(await p.$eval('.letter-vines',e=>e.dataset.visible),'false','Vines leave with chapter three');

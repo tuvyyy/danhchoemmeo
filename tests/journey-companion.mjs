@@ -72,7 +72,22 @@ try {
   await page.click('.journey-mascot__character');
   await page.waitForSelector('.journey-mascot__speech', { visible: true });
   await edge('letter');
-  await page.click('.letter-next');
+  if (mobile && !reduced) {
+    await wait(350);
+    const point = await page.$eval('.journey-mascot__speech', element => {
+      const box = element.getBoundingClientRect(); return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    });
+    const cdp = await page.createCDPSession();
+    try {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point] });
+      for (let step = 1; step <= 5; step++) {
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: point.x, y: point.y - step * 18 }] });
+        await wait(20);
+      }
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await stable('finale');
+    } finally { await cdp.detach(); }
+  } else await page.click('.letter-next');
   await checkpoint('finale', '04');
   await page.click('.candle-blow-action');
   await page.waitForFunction(() => document.querySelector('.journey-mascot__speech')?.textContent.includes('Chúc meo tuổi mới'));

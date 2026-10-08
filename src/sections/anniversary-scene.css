@@ -20,7 +20,6 @@
 .together-note__body p { font:400 clamp(22px,1.65vw,25px)/1.55 'Playfair Display',Georgia,serif;letter-spacing:-.01em;margin:0 0 23px;text-wrap:pretty; }
 .together-note__closing { margin:25px 0 0;font:italic 24px/1.4 var(--font-display);color:#334760; }
 .together-signature { display:block;margin-top:20px;font:33px/1.2 var(--font-hand);color:#435a40; }
-.together-note { animation:keepsake-note .5s cubic-bezier(.16,1,.3,1); }
 .together-margin { border-left:1px solid #25334b70;min-width:0;display:flex;flex-direction:column;align-items:center;padding-left:25px; }
 .together-margin h2 { writing-mode:vertical-rl;margin:6px 0 23px;font:500 clamp(46px,3.7vw,56px)/1 var(--font-display);letter-spacing:-.025em; }
 .together-date { margin-top:auto;width:100%; }
@@ -51,7 +50,6 @@
 .anniversary-handoff-backdrop { position:absolute;inset:0;z-index:-2;background:#f0eee6; }
 html[data-wish-anniversary-handoff] .together-scene { background:transparent; }
 html[data-wish-anniversary-handoff] [data-journey-ui],html[data-wish-anniversary-handoff] nav,html[data-letter-wish-handoff] [data-journey-ui],html[data-letter-wish-handoff] nav { visibility:hidden!important;pointer-events:none!important; }
-@keyframes keepsake-note { from { opacity:0;transform:translateY(7px); }to { opacity:1;transform:translateY(0); } }
 @media(min-width:601px) and (max-width:1100px) {
  .anniversary-scene.together-scene { --page-edge:18px;padding:38px 46px 30px; }
  .together-paper { grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) 100px;gap:25px; }
@@ -86,4 +84,4 @@ html[data-wish-anniversary-handoff] [data-journey-ui],html[data-wish-anniversary
  .together-station small { font-size:13px; }.together-station strong { font-size:27px; }.together-station i { font-size:27px; }
  .together-footer { margin-top:24px;flex-wrap:wrap;gap:22px; }.together-footer > span { font-size:24px; }.together-next { font-size:15px;gap:22px; }
 }
-@media(prefers-reduced-motion:reduce) { .together-note { animation:none; }.together-station,.together-station i { transition:none; } }
+@media(prefers-reduced-motion:reduce) { .together-station,.together-station i { transition:none; } }

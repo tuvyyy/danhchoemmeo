@@ -62,10 +62,14 @@ export function videoPaperFold(stage: HTMLElement) {
         vec3 color = vec3(0.063, 0.086, 0.063);
         if (sampleUv.x >= 0.0 && sampleUv.x <= 1.0 && sampleUv.y >= 0.0 && sampleUv.y <= 1.0)
           color = texture2D(film, sampleUv).rgb;
-        color = mix(color, vec3(0.93, 0.86, 0.72), fold * 0.22) * light;
+        color = mix(color, vec3(0.93, 0.86, 0.72), fold * 0.18) * light;
+        // A fine lit edge and deeper gathered tip give the film the weight of paper.
+        float rim = 1.0 - smoothstep(0.006, 0.02, min(min(vUv.x, 1.0-vUv.x), min(vUv.y, 1.0-vUv.y)));
+        color += vec3(0.12, 0.10, 0.07) * rim * fold;
+        color *= 1.0 - fold * 0.12 * pow(1.0-vUv.y, 3.0);
         vec2 edge = abs(vUv - 0.5) - vec2(0.484, 0.475);
         float rounded = length(max(edge, 0.0)) + min(max(edge.x, edge.y), 0.0) - 0.016;
-        float alpha = (1.0 - smoothstep(-0.002, 0.002, rounded)) * (1.0 - fold * 0.18);
+        float alpha = 1.0 - smoothstep(-0.002, 0.002, rounded);
         gl_FragColor = vec4(color, alpha);
       }
     `));

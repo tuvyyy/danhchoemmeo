@@ -23,13 +23,19 @@ export default function AnniversarySection() {
   const [selected, setSelected] = useState(0);
   const copyRef = useRef<HTMLDivElement>(null);
   const selectNote = (index: number) => {
+    const changed = index !== selected;
     setSelected(index);
-    if (window.matchMedia("(max-width: 760px)").matches) {
-      requestAnimationFrame(() => copyRef.current?.scrollIntoView({
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
-        block: "start",
-      }));
-    }
+    requestAnimationFrame(() => {
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      // Only a newly selected note fades in. Chapter arrival owns its own timing.
+      if (!reduced && changed) copyRef.current?.firstElementChild?.animate([
+        { opacity: 0, transform: "translateY(7px)" },
+        { opacity: 1, transform: "translateY(0)" },
+      ], { duration: 500, easing: "cubic-bezier(.16,1,.3,1)" });
+      if (window.matchMedia("(max-width: 760px)").matches) copyRef.current?.scrollIntoView({
+        behavior: reduced ? "instant" : "smooth", block: "start",
+      });
+    });
   };
   const note = notes[selected];
   return <section className="anniversary-scene together-scene" data-milestone={selected} aria-label={anniversary.chapter}>

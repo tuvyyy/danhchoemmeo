@@ -34,9 +34,16 @@ export function voucherLetterHandoff({ voucher, letter, voucherContent, letterCo
     }, 0)
       .fromTo(shade, { opacity: 0 }, { opacity: .72, duration: .75, ease: 'sine.in' }, .05)
       .fromTo(voucherContent, { opacity: 1 }, { opacity: 0, duration: .16, ease: 'sine.inOut' }, .84);
-    choreography.fromTo(strands, { yPercent: -105, y: 0, opacity: 0 }, {
-      yPercent: 0, opacity: .85, duration: .5, stagger: .035, ease: 'power2.out',
-    }, .35);
+    choreography
+      .fromTo(letter.querySelector('.letter-keepsake'), { y: 12, scale: 1.008 }, {
+        y: 0, scale: 1, duration: .52, ease: 'power2.out',
+      }, .18)
+      .fromTo(letter.querySelectorAll('.letter-atelier__header,.letter-desk__controls,.letter-atelier__footer'), { opacity: 0 }, {
+        opacity: 1, duration: .24, stagger: .035, ease: 'sine.out',
+      }, .6)
+      .fromTo(strands, { yPercent: -105, y: 0, opacity: 0 }, {
+        yPercent: 0, opacity: .85, duration: .48, stagger: { amount: .16 }, ease: 'power2.out',
+      }, .25);
   });
   return scrollMotionDriver({ reverse, scrollDelta, finish, response: 16, autoDuration: 1650,
     paint: progress => {

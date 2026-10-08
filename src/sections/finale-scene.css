@@ -118,6 +118,7 @@
 .finale-footer { position:absolute;z-index:3;left:56%;bottom:48px;color:#8b8275; }
 .finale-footer > span { font:italic 26px var(--font-display); }
 .finale-handoff-backdrop { position:absolute;inset:0;z-index:-2;background:#ede9e0; }
+.chapter-light-bridge { position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 42vw 38svh at var(--light-x, 30%) var(--light-y, 35%),var(--light-color, #efbd7d) 0%,transparent 72%);mix-blend-mode:screen; }
 .celebration-scene[data-blown="false"] .finale-handoff-backdrop { background:#0b090c; }
 html[data-letter-wish-handoff] .finale-scene { background:transparent; }
 html[data-letter-wish-handoff] .finale-lighting { transition:none; }

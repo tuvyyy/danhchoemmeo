@@ -1,4 +1,4 @@
-.journey-mascot { position: fixed; z-index: 45; width: 88px; bottom: max(var(--mascot-bottom, 20px), env(safe-area-inset-bottom)); filter: drop-shadow(0 8px 12px #180c1240); }
+.journey-mascot { position: fixed; z-index: 45; width: 88px; bottom: max(var(--mascot-bottom, 20px), env(safe-area-inset-bottom)); filter: drop-shadow(0 8px 12px #180c1240); touch-action: pan-x pinch-zoom; }
 .journey-mascot[hidden] { display: none; }
 .journey-mascot[data-side="left"] { left: max(24px, env(safe-area-inset-left)); }
 .journey-mascot[data-side="right"] { right: max(24px, env(safe-area-inset-right)); }

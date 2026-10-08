@@ -1,3 +1,4 @@
+import { publicAsset } from "@/lib/assets/publicAsset";
 import { useEffect, useRef, useState } from "react";
 import { galleryFragment, galleryVertex } from "./galleryShaders";
 
@@ -130,7 +131,7 @@ export default function ReliefGarden({ active, night, reducedMotion }: {
       host.addEventListener('pointermove',move,{passive:true});host.addEventListener('pointerdown',down,{passive:true});
       host.addEventListener('pointerleave',leave);host.addEventListener('pointerup',up);host.addEventListener('pointercancel',leave);
       document.addEventListener('visibilitychange',visibility);node.addEventListener('webglcontextlost',contextLost);
-      Promise.all([load('/assets/hero-gallery/ivory-relief.webp',0,day),load('/assets/hero-gallery/night-botanical.webp',1,evening)]).then(()=>{
+      Promise.all([load(publicAsset('/assets/hero-gallery/ivory-relief.webp'),0,day),load(publicAsset('/assets/hero-gallery/night-botanical.webp'),1,evening)]).then(()=>{
         if(disposed||lost)return;loaded=true;node.dataset.renderer='webgl';previewUntil=performance.now()+1900;setReady(true);request();
       }).catch(()=>{if(!disposed){node.dataset.renderer='fallback';setReady(false);}});
       return () => {

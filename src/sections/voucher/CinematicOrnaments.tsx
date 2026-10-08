@@ -1,4 +1,5 @@
-export const CORNER_IMAGE = "/assets/envelope-voucher/chapter02_envelope_final_assets/chapter02_envelope_final_assets/corner-tr.png";
+import { publicAsset } from "@/lib/assets/publicAsset";
+export const CORNER_IMAGE = publicAsset("/assets/envelope-voucher/chapter02_envelope_final_assets/chapter02_envelope_final_assets/corner-tr.png");
 
 export default function CinematicOrnaments() {
   return <div className="envelope-frame" aria-hidden="true">

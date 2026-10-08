@@ -2,6 +2,12 @@
 
 Website sinh nhật dùng React, TypeScript và Vite.
 
+Link chia sẻ: https://tuvyyy.github.io/danh-cho-em-meo/
+
+GitHub Actions tự build và cập nhật website mỗi lần push lên `main`.
+Tên hiển thị nằm trong `index.html`; đường dẫn online dùng tên repository.
+Ảnh trong `public/` dùng `publicAsset()` để hoạt động cả ở localhost và trên GitHub Pages.
+
 ```sh
 npm install
 npm run dev
@@ -11,7 +17,7 @@ npm run build
 
 Dev server: `http://localhost:3333`. Chạy bản build với `npm run preview -- --port 3334`.
 
-- `src/`: giao diện, nội dung và hiệu ứng của 7 chương.
+- `src/`: giao diện, nội dung và hiệu ứng của 6 chương.
 - `public/assets/`: tài nguyên đang dùng. Giữ đủ 60 khung hoa vì đường dẫn được tạo động.
 - `tests/`: kiểm tra tương tác và chuyển chương hiện tại.
 - `.agents/`: hướng dẫn và công cụ hỗ trợ phát triển dự án.

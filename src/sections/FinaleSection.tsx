@@ -1,3 +1,4 @@
+import { publicAsset } from "@/lib/assets/publicAsset";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { BIRTHDAY_DATA } from "@/data/birthdayContent";
 import { useSceneExperience } from "@/components/effects/SceneExperience";
@@ -84,7 +85,7 @@ export default function FinaleSection({ onComplete }: { onComplete?: () => void 
       <div className="finale-centerpiece">
         <div className="cake-altar" data-mascot-obstacle>
           <div className="candle-aura" aria-hidden="true"/>
-          <div className="birthday-cake"><img src="/assets/birthday-cake/ivory-noir-cake.webp" alt="Bánh sinh nhật kem ngà, hoa hồng đen trắng và bướm bạc" width="1087" height="1446" decoding="async" draggable={false}/></div>
+          <div className="birthday-cake"><img src={publicAsset("/assets/birthday-cake/ivory-noir-cake.webp")} alt="Bánh sinh nhật kem ngà, hoa hồng đen trắng và bướm bạc" width="1087" height="1446" decoding="async" draggable={false}/></div>
           <div className="birthday-candle" aria-hidden="true">
             <div ref={flame} className="candle-flame-wrap">
               <div className="candle-room-glow"><i/></div>

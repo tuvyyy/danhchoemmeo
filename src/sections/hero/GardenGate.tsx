@@ -1,3 +1,4 @@
+import { publicAsset } from "@/lib/assets/publicAsset";
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import SunlitIronGate from './SunlitIronGate';
@@ -71,7 +72,7 @@ export default function GardenGate({ active, transitioning, reducedMotion, fineP
     </defs></svg>
     <div className="garden-gate__world" aria-hidden="true">
       <div className="garden-gate__set">
-        <img className="garden-gate__plate" src="/assets/garden-gate/estate-sunset.webp" width="1774" height="887" alt="" fetchPriority="high" onError={() => setArtFailed(true)} />
+        <img className="garden-gate__plate" src={publicAsset("/assets/garden-gate/estate-sunset.webp")} width="1774" height="887" alt="" fetchPriority="high" onError={() => setArtFailed(true)} />
         <div className="garden-gate__architecture">
           <div className="garden-gate__mist" />
           <div className="garden-gate__doors"><IronLeaf side="left" /><IronLeaf side="right" /></div>

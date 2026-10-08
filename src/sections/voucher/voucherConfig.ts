@@ -1,3 +1,4 @@
+import { publicAsset } from "@/lib/assets/publicAsset";
 export type EnvelopeState = "closed" | "opening" | "open" | "closing";
 // Seal lands on the taller envelope's flap tip without scaling the round seal.
 export const CLOSED_SEAL_Y_PERCENT = -190;
@@ -10,7 +11,7 @@ export type PaperAsset = {
   crop: readonly [x: number, y: number, width: number, height: number];
 };
 
-const ASSET_ROOT = "/assets/envelope-voucher/chapter02_envelope_final_assets/";
+const ASSET_ROOT = publicAsset("/assets/envelope-voucher/chapter02_envelope_final_assets/");
 
 // Percentages are tied to the supplied composition, not viewport coordinates.
 export const VOUCHER_PLACEMENTS: Record<string, { x: number; y: number; width: number; angle: number; order: number; exposed: string }> = {

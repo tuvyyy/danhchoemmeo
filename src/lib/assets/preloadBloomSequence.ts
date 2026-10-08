@@ -1,3 +1,4 @@
+import { publicAsset } from "@/lib/assets/publicAsset";
 /**
  * Preloader and memory cache for the 60-frame continuous WebP flower bloom sequence.
  * Uses the existing transparent version of the lily sequence, with opaque petals.
@@ -8,8 +9,8 @@ export type BloomSequence = 'pink' | 'blue';
 
 export function getBloomFrameUrl(frameIndex1Based: number, sequence: BloomSequence = 'pink'): string {
   const numStr = String(frameIndex1Based).padStart(3, "0");
-  if (sequence === 'blue') return `/assets/flowers/lily-blue-bloom/lily_blue_${numStr}.webp`;
-  return `/assets/flowers/lily-bloom-hd/lily_bloom_${numStr}.webp`;
+  if (sequence === 'blue') return publicAsset(`/assets/flowers/lily-blue-bloom/lily_blue_${numStr}.webp`);
+  return publicAsset(`/assets/flowers/lily-bloom-hd/lily_bloom_${numStr}.webp`);
 }
 
 export type BloomCanvasFrame = HTMLCanvasElement | HTMLImageElement;

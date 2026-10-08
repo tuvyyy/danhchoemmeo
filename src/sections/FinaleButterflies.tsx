@@ -1,3 +1,4 @@
+import { publicAsset } from "@/lib/assets/publicAsset";
 import type { CSSProperties } from 'react';
 
 const flights = [
@@ -18,9 +19,9 @@ export function FinaleButterflies() {
       '--flight-delay': `${flight.delay}s`, '--flap-duration': `${flight.flap}s`,
     } as CSSProperties}>
       <div className="butterfly-lift"><div className="silver-butterfly">
-        <span className="butterfly-wing butterfly-wing--left"><img src="/assets/birthday-cake/silver-butterfly.webp" alt="" draggable={false}/></span>
-        <span className="butterfly-wing butterfly-wing--right"><img src="/assets/birthday-cake/silver-butterfly.webp" alt="" draggable={false}/></span>
-        <img className="butterfly-body" src="/assets/birthday-cake/silver-butterfly.webp" alt="" draggable={false}/>
+        <span className="butterfly-wing butterfly-wing--left"><img src={publicAsset("/assets/birthday-cake/silver-butterfly.webp")} alt="" draggable={false}/></span>
+        <span className="butterfly-wing butterfly-wing--right"><img src={publicAsset("/assets/birthday-cake/silver-butterfly.webp")} alt="" draggable={false}/></span>
+        <img className="butterfly-body" src={publicAsset("/assets/birthday-cake/silver-butterfly.webp")} alt="" draggable={false}/>
       </div></div>
     </div>)}
   </div>;

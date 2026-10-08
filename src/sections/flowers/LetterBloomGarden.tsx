@@ -1,3 +1,4 @@
+import { publicAsset } from "@/lib/assets/publicAsset";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import FlowerBloomCanvas from './FlowerBloomCanvas';
 import { preloadBloomSequence } from '@/lib/assets/preloadBloomSequence';
@@ -47,12 +48,12 @@ export default function LetterBloomGarden({ active }: { active: boolean }) {
 
   return <div ref={root} className="letter-bloom-garden" data-running={running} data-bloomed={bloomed} aria-hidden="true">
     <div ref={pond} className="letter-bloom-garden__pond" data-swans="2" data-swan-interaction="paired">
-      <img className="pond-water" src="/assets/flowers/letter-garden/moonlit-pond.png" width="1774" height="887" decoding="async" alt="" />
+      <img className="pond-water" src={publicAsset("/assets/flowers/letter-garden/moonlit-pond.png")} width="1774" height="887" decoding="async" alt="" />
       <PondWaterCanvas running={running} pond={pond} />
       {[0,1].map(index=><div key={index} className={`pond-swimmer${index?' pond-swimmer--far':''}`} data-swan={index+1}>
         <div className="pond-swan-body">
-          <div className="pond-swan-float"><img className="pond-swan" src="/assets/flowers/letter-garden/swimming-swan.png" width="1254" height="1254" decoding="async" alt=""/></div>
-          <div className="pond-swan-reflection"><img src="/assets/flowers/letter-garden/swimming-swan.png" width="1254" height="1254" decoding="async" alt=""/></div>
+          <div className="pond-swan-float"><img className="pond-swan" src={publicAsset("/assets/flowers/letter-garden/swimming-swan.png")} width="1254" height="1254" decoding="async" alt=""/></div>
+          <div className="pond-swan-reflection"><img src={publicAsset("/assets/flowers/letter-garden/swimming-swan.png")} width="1254" height="1254" decoding="async" alt=""/></div>
         </div>
       </div>)}
       <svg className="pond-heart" viewBox="0 0 40 36" fill="none" aria-hidden="true">
@@ -69,9 +70,9 @@ export default function LetterBloomGarden({ active }: { active: boolean }) {
         onBloomComplete={() => finish(flower.id)} />)}
     </div>
     <div className="letter-bloom-garden__meadow" data-depth="foreground">
-      <img className="letter-bloom-garden__grass letter-bloom-garden__grass--left" src="/assets/flowers/nature/grass-airy-tall.png" alt="" />
-      <img className="letter-bloom-garden__grass letter-bloom-garden__grass--strip" src="/assets/flowers/nature/grass-back-strip.png" alt="" />
-      <img className="letter-bloom-garden__grass letter-bloom-garden__grass--right" src="/assets/flowers/nature/grass-airy-tall.png" alt="" />
+      <img className="letter-bloom-garden__grass letter-bloom-garden__grass--left" src={publicAsset("/assets/flowers/nature/grass-airy-tall.png")} alt="" />
+      <img className="letter-bloom-garden__grass letter-bloom-garden__grass--strip" src={publicAsset("/assets/flowers/nature/grass-back-strip.png")} alt="" />
+      <img className="letter-bloom-garden__grass letter-bloom-garden__grass--right" src={publicAsset("/assets/flowers/nature/grass-airy-tall.png")} alt="" />
     </div>
   </div>;
 }

@@ -2,7 +2,7 @@
 
 Website sinh nhật dùng React, TypeScript và Vite.
 
-Link chia sẻ: https://tuvyyy.github.io/danh-cho-em-meo/
+Link chia sẻ: https://tuvyyy.github.io/danhchomeo/
 
 GitHub Actions tự build và cập nhật website mỗi lần push lên `main`.
 Tên hiển thị nằm trong `index.html`; đường dẫn online dùng tên repository.

@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { useDialogFocus } from "@/components/effects/useDialogFocus";
 import { useSceneOverlay } from "@/components/effects/SceneExperience";
 import { useScenePreferences } from "@/components/effects/useScenePreferences";
-import VoucherAsset from "./VoucherAsset";
-import { ALL_INSPECTABLES, type Voucher } from "./voucherConfig";
+import VoucherTicket from "./VoucherTicket";
+import { ALL_INSPECTABLES, VOUCHER_RECIPIENT, type Voucher } from "./voucherConfig";
 
 export type VoucherSelection = {
   voucher: Voucher;
@@ -54,7 +54,7 @@ export default function VoucherDetail({ selection, onClose, onInspect }: {
           }}
           animate={{ x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 }}
           transition={{ duration: reducedMotion ? 0 : .45, ease: [.2, .8, .2, 1] }}>
-          <VoucherAsset asset={voucher.image} alt={`Voucher ${voucher.number}: ${voucher.title}. For: Em mèo. Valid forever.`} />
+          <VoucherTicket voucher={voucher} alt={`Voucher ${voucher.number}: ${voucher.title}. ${VOUCHER_RECIPIENT}. Valid forever.`} />
         </motion.div>
         <button type="button" className="ticket-inspection__previous" aria-label="Mục trước"
           onClick={() => setVoucher(items[(index + items.length - 1) % items.length])}>←</button>

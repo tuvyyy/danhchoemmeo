@@ -40,28 +40,35 @@ export type Voucher = {
   shortTitle: string;
   description: string;
   image: PaperAsset;
+  print?: { lineBreakAfter: number; titleTop: number; recipientTop: number };
 };
+
+export const VOUCHER_RECIPIENT = "FOR: EM MEO";
 
 export const VOUCHERS: readonly Voucher[] = [
   {
-    id: "food", number: "01", title: "Ăn ngon thoả thích", shortTitle: "Ăn ngon",
+    id: "food", number: "01", title: "Ăn uống tẹt ga", shortTitle: "Ăn uống tẹt ga",
     description: "Một bữa thật ngon, đúng món em đang thèm. Em chọn quán, chọn món — phần chiều em cứ để tui lo nha.",
-    image: asset("07_voucher_01_food.png", 1086, 1448, [113, 60, 864, 1331]),
+    image: asset("07_voucher_01_food-editable.png", 1086, 1448, [113, 60, 864, 1331]),
+    print: { lineBreakAfter: 2, titleTop: 27.2, recipientTop: 72.4 },
   },
   {
-    id: "coffee", number: "02", title: "Đi cà phê cùng nhau", shortTitle: "Cà phê",
-    description: "Một góc quán yên yên, món nước em thích và một buổi chẳng cần vội. Để dành hôm mình gặp nhau, ngồi kể đủ chuyện nha.",
-    image: asset("08_voucher_02_coffee.png", 1086, 1448, [145, 53, 796, 1326]),
+    id: "coffee", number: "02", title: "Đi lon ton cùng nhau", shortTitle: "Đi lon ton",
+    description: "Dạo phố, ghé một góc quán hay đi đâu đó em thích. Để dành hôm mình gặp nhau, cùng lon ton và kể đủ chuyện nha.",
+    image: asset("08_voucher_02_coffee-editable.png", 1086, 1448, [145, 53, 804, 1360]),
+    print: { lineBreakAfter: 3, titleTop: 25.5, recipientTop: 75.3 },
   },
   {
-    id: "movie", number: "03", title: "Xem phim tuỳ em chọn", shortTitle: "Xem phim",
-    description: "Phim tình cảm, hoạt hình hay phim em chờ mãi — hôm nay em chọn hết. Tui nhận phần bắp rang và ngồi cạnh em.",
-    image: asset("09_voucher_03_movie.png", 1086, 1448, [118, 56, 852, 1330]),
+    id: "movie", number: "03", title: "Giảm giá mua roi", shortTitle: "Giảm giá mua roi",
+    description: "Một phiếu giảm giá mua roi dành riêng cho em Meo. Giữ vé này, khi nào muốn dùng thì nhắc tui nha.",
+    image: asset("09_voucher_03_movie-editable.png", 1086, 1448, [121, 56, 879, 1374]),
+    print: { lineBreakAfter: 2, titleTop: 28, recipientTop: 73 },
   },
   {
-    id: "anywhere", number: "04", title: "Đi đâu cũng được", shortTitle: "Đi chơi",
-    description: "Một vòng dạo phố hay một chuyến đi xa hơn một chút. Cứ nói nơi em muốn đến, mình cùng dành một ngày cho nơi đó.",
-    image: asset("10_voucher_04_anywhere.png", 1086, 1448, [144, 96, 798, 1270]),
+    id: "anywhere", number: "04", title: "Yêu thương thương yêu", shortTitle: "Yêu thương",
+    description: "Một vé ôm, dỗ dành và yêu thương em thật nhiều. Hôm nào em mệt hay chỉ muốn được chiều, cứ đưa vé này cho tui nha.",
+    image: asset("10_voucher_04_anywhere-editable.png", 1086, 1448, [144, 96, 798, 1270]),
+    print: { lineBreakAfter: 2, titleTop: 26.5, recipientTop: 75 },
   },
 ];
 

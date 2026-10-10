@@ -1,5 +1,6 @@
 import { useId, type CSSProperties } from "react";
 import VoucherAsset from "./VoucherAsset";
+import VoucherTicket from "./VoucherTicket";
 import { ENVELOPE_ASSETS, VOUCHERS, VOUCHER_PLACEMENTS, type EnvelopeState } from "./voucherConfig";
 
 /** These same physical parts stay mounted at their final poses after opening. */
@@ -30,7 +31,7 @@ export default function EnvelopeArtwork({ state, onToggle, hovered, inspected, i
             data-ticket-artwork={voucher.id} data-hovered={hovered === voucher.id} data-inspected={inspected === voucher.id}
             style={{ left: `${placement.x}%`, top: `${placement.y}%`, width: `${placement.width}%`,
               zIndex: placement.order, "--ticket-angle": `${placement.angle}deg`,
-            } as CSSProperties}><div className="envelope__ticket-paper"><VoucherAsset asset={voucher.image} /></div></div>;
+            } as CSSProperties}><div className="envelope__ticket-paper"><VoucherTicket voucher={voucher} /></div></div>;
         })}
       </div>
       <div className="envelope__pocket"><VoucherAsset asset={ENVELOPE_ASSETS.pocket} stretch /></div>

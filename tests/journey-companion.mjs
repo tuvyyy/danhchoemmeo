@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import puppeteer from 'puppeteer-core';
+import { MASCOT_SCENES } from '../src/components/effects/mascot/mascotConfig.ts';
 
 const mobile = process.argv.includes('--mobile');
 const reduced = process.argv.includes('--reduced');
@@ -90,7 +91,7 @@ try {
   } else await page.click('.letter-next');
   await checkpoint('finale', '04');
   await page.click('.candle-blow-action');
-  await page.waitForFunction(() => document.querySelector('.journey-mascot__speech')?.textContent.includes('Chúc meo tuổi mới'));
+  await page.waitForFunction(expected => document.querySelector('.journey-mascot__speech')?.textContent.includes(expected), {}, MASCOT_SCENES.finale.messages[1]);
   await page.screenshot({ path: `${out}/04-wish-made.png` });
   await edge('finale');
   await page.click('.wish-next');
